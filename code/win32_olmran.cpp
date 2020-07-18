@@ -6,9 +6,12 @@
    $Notice: (C) Copyright 2020 by Jonathan Hawranko. All Rights Reserved. $
    ======================================================================== */
 
+#include <ws2tcpip.h>
 #include <windows.h>
 
 #define ID_EDITCHILD 100
+#define HOST_ADDRESS "192.168.1.208"
+#define HOST_PORT 4000
 
 #define global_variable static
 #define local_persist static
@@ -24,29 +27,17 @@ MainWindowCallback(HWND   Window,
 {
     LRESULT Result = 0;
     local_persist HWND GameOutput;
+    local_persist SOCKET sock;
     
-    TCHAR OutputString[] =  TEXT("Lorem ipsum dolor sit amet, consectetur ")
-        TEXT("adipisicing elit, sed do eiusmod tempor " )
-        TEXT("incididunt ut labore et dolore magna " )
-        TEXT("aliqua. Ut enim ad minim veniam, quis " )
-        TEXT("nostrud exercitation ullamco laboris nisi " )
-        TEXT("ut aliquip ex ea commodo consequat. Duis " )
-        TEXT("aute irure dolor in reprehenderit in " )
-        TEXT("voluptate velit esse cillum dolore eu " )
-        TEXT("fugiat nulla pariatur. Excepteur sint " )
-        TEXT("occaecat cupidatat non proident, sunt " )
-        TEXT("in culpa qui officia deserunt mollit " )
-        TEXT("anim id est laborum.");
-    
-    TCHAR WelcomeMessage[] = TEXT("This is the MUD Client for Olmran\r\n")
+    TCHAR OutputBytes[] = TEXT("This is the MUD Client for Olmran\r\n")
         TEXT("There are many like it, but this one is special!\r\n")
         TEXT("I leared C++ while creating it... maybe?");
-    
     
     switch(Message)
     {
         case WM_CREATE:
         {
+            // Create Edit Control
             GameOutput = CreateWindowEx(
                 0, TEXT("EDIT"),   // predefined class 
                 NULL,         // no window title 
@@ -58,70 +49,71 @@ MainWindowCallback(HWND   Window,
                 (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), 
                 NULL);        // pointer not needed 
             
-            // Add text to the window. 
-            SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) WelcomeMessage); 
-        } break; 
-        /*
-        case WM_COMMAND:
-        {
-            switch (WParam) 
+            // Initialize WinSock
+            WSAData data;
+            WORD ver = MAKEWORD(2,2);
+            int WSResult = WSAStartup(ver, &data);
+            
+            if (WSResult != 0)
             {
-                case IDM_EDUNDO:
-                {
-                    // Send WM_UNDO only if there is something to be undone. 
-                    
-                    if (SendMessage(GameOutput, EM_CANUNDO, 0, 0)) 
-                        SendMessage(GameOutput, WM_UNDO, 0, 0); 
-                    else 
-                    {
-                        MessageBox(GameOutput, 
-                                   L"Nothing to undo.", 
-                                   L"Undo notification", 
-                                   MB_OK); 
-                    }
-                } break; 
+                TCHAR ErrorOutput[] = TEXT("Can't start WinSock, Err #\r\n");
+                SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) ErrorOutput);
+                break;
+            }
+            
+            // Create socket
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            if (sock == INVALID_SOCKET)
+            {
+                TCHAR ErrorOutput[] = TEXT("Can't create socket, Err #\r\n");
+                SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) ErrorOutput);
+                break;
+            }
+            
+            // Fill in hint structure
+            sockaddr_in hint;
+            hint.sin_family = AF_INET;
+            hint.sin_port = htons(HOST_PORT);
+            inet_pton(AF_INET, HOST_ADDRESS, &hint.sin_addr);
+            
+            // Connect to server
+            int ConnResult = connect(sock, (sockaddr*) &hint, sizeof(hint), 0);
+            if (ConnResult == SOCKET_ERROR)
+            {
+                TCHAR ErrorOutput[] = TEXT("Can't connect to server, Err #\r\n");
+                SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) ErrorOutput);
                 
-                case IDM_EDCUT:
-                {
-                    SendMessage(GameOutput, WM_CUT, 0, 0); 
-                } break; 
-                
-                case IDM_EDCOPY:
-                {
-                    SendMessage(GameOutput, WM_COPY, 0, 0); 
-                }    break; 
-                
-                case IDM_EDPASTE:
-                {
-                    SendMessage(GameOutput, WM_PASTE, 0, 0); 
-                }    break; 
-                
-                case IDM_EDDEL:
-                {
-                    SendMessage(GameOutput, WM_CLEAR, 0, 0); 
-                }    break; 
-                
-                case IDM_ABOUT:
-                {
-                    DialogBox(hInst,                // current instance 
-                              L"AboutBox",           // resource to use 
-                              Window,                 // parent handle 
-                              (DLGPROC) About); 
-                }    break; 
-                
-                default: 
-                    return DefWindowProc(Window, Message, WParam, LParam); 
-            } 
+                closesocket(sock);
+                WSACleanup();
+                break;
+            }
+            
+            // Add text to the window. 
+            SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) OutputBytes); 
         } break; 
-        */
+        
         case WM_SETFOCUS:
         {
+            OutputDebugStringA("WM_SETFOCUS\n\r");
             SetFocus(GameOutput); 
+            
+            
+            // Listen loop
+            char buf[4096];
+            while (true)
+            {
+                ZeroMemory(buf, sizeof(buf));
+                int bytesReceived = recv(sock, buf, sizeof(buf), 0);
+                if (bytesReceived > 0)
+                {
+                    SendMessage(GameOutput, WM_SETTEXT, 0, (LPARAM) buf);
+                }
+            }
         } break; 
         
         case WM_SIZE:
         {
-            // Make the edit control the size of the window's client 
+            // Make the static control the size of the window's client 
             OutputDebugStringA("WM_SIZE\n\r");
             
             MoveWindow(GameOutput, 
@@ -129,7 +121,6 @@ MainWindowCallback(HWND   Window,
                        LOWORD(LParam),        // width of client area 
                        HIWORD(LParam),        // height of client area 
                        TRUE);                 // repaint window 
-            
         } break;
         
         case WM_DESTROY:
