@@ -137,36 +137,13 @@ extern "C" {
     
 #endif
     
-    /*
-      NOTE(jon): Services that the game provides to the platform layer.
-      (this may expand in the future - sound on separate thread, etc.)
-    */
-    
-    // FOUR THINGS - timing, controller/keyboard input, bitmap to use, sound buffer to use
-    /*
-    typedef struct game_offscreen_buffer
-    {
-        // NOTE(jon): Pixels are always 32-bits wide, Memory Order BB GG RR xx
-        void *Memory;
-        int Width;
-        int Height;
-        int Pitch;
-        int BytesPerPixel;
-    } game_offscreen_buffer;
-    */
     typedef struct game_sound_output_buffer
     {
         int SamplesPerSecond;
         int SampleCount;
         int16 *Samples;
     } game_sound_output_buffer;
-    /*
-    typedef struct game_button_state
-    {
-        int HalfTransitionCount;
-        bool32 EndedDown;
-    } game_button_state;
-    */
+    
     typedef struct game_memory
     {
         bool32 IsInitialized;
