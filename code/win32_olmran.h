@@ -32,8 +32,9 @@ struct game_state
     HWND Window;
     HWND GameOutput;
     bool32 isInitialized;
+    char *GameOutputBuffer;
+    uint32 GameOutputBufferLength;
 };
-
 
 global_variable bool GlobalRunning;
 global_variable win32_socket Socket;

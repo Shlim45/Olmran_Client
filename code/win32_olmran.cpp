@@ -10,11 +10,59 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 
-//#include "olmran.cpp"
 #include "win32_olmran.h"
 
+/* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
+internal void 
+win32_AppendText(const HWND GameOutput, TCHAR *newText)
+{
+    // get the current selection
+    DWORD StartPos, EndPos;
+    SendMessage( GameOutput, EM_GETSEL, reinterpret_cast<WPARAM>(&StartPos), reinterpret_cast<WPARAM>(&EndPos) );
+    
+    // move the caret to the end of the text
+    int outLength = GetWindowTextLength( GameOutput );
+    SendMessage( GameOutput, EM_SETSEL, outLength, outLength );
+    
+    // insert the text at the new caret position
+    SendMessage( GameOutput, EM_REPLACESEL, TRUE, reinterpret_cast<LPARAM>(newText) );
+    
+    // restore the previous selection
+    SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
+}
 
-void win32_CloseSocket()
+internal void
+SocketListenAndUpdate()
+{
+    if (GameState.isInitialized)
+    {
+        // TODO(jon):  Threading, this blocks the client lol
+        
+        int iResult;
+        // Receive until the peer closes the connection
+        do {
+            
+            iResult = recv(Socket.sock, GameState.GameOutputBuffer, GameState.GameOutputBufferLength, 0);
+            if ( iResult > 0 )
+            {
+                OutputDebugStringA("Bytes received: ?\n");//, iResult);
+                win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
+            }
+            else if ( iResult == 0 )
+                OutputDebugStringA("Connection closed\n");
+            else
+                OutputDebugStringA("recv failed: ?\n");//, WSAGetLastError());
+            
+        } while( iResult > 0 );
+        
+        // cleanup
+        closesocket(Socket.sock);
+        WSACleanup();
+    }
+}
+
+internal void 
+win32_CloseSocket()
 {
     closesocket(Socket.sock);
     WSACleanup();
@@ -22,7 +70,8 @@ void win32_CloseSocket()
     //Socket = {};
 }
 
-int64 win32_InitAndConnectSocket()
+internal int64 
+win32_InitAndConnectSocket()
 {
     // Initialize WinSock
     WSAData data;
@@ -59,24 +108,6 @@ int64 win32_InitAndConnectSocket()
     
     Socket.status = 1;
     return 0;
-}
-
-/* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
-void win32_AppendText(const HWND GameOutput, TCHAR *newText)
-{
-    // get the current selection
-    DWORD StartPos, EndPos;
-    SendMessage( GameOutput, EM_GETSEL, reinterpret_cast<WPARAM>(&StartPos), reinterpret_cast<WPARAM>(&EndPos) );
-    
-    // move the caret to the end of the text
-    int outLength = GetWindowTextLength( GameOutput );
-    SendMessage( GameOutput, EM_SETSEL, outLength, outLength );
-    
-    // insert the text at the new caret position
-    SendMessage( GameOutput, EM_REPLACESEL, TRUE, reinterpret_cast<LPARAM>(newText) );
-    
-    // restore the previous selection
-    SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
 }
 
 LRESULT CALLBACK
@@ -193,6 +224,10 @@ WinMain(
             GameState.Window = WindowHandle;
             GameState.isInitialized = true;
             
+            local_persist char recvbuf[4096];
+            GameState.GameOutputBuffer = recvbuf;
+            GameState.GameOutputBufferLength = 4096;
+            
             TCHAR OutputBytes[] = TEXT("This is the MUD Client for Olmran\r\n")
                 TEXT("There are many like it, but this one is special!\r\n")
                 TEXT("I leared C++ while creating it... maybe?");
@@ -202,6 +237,7 @@ WinMain(
             {
                 win32_AppendText(GameState.GameOutput, OutputBytes);
                 OutputDebugStringA("Socket Connected\r\n");
+                SocketListenAndUpdate();
             }
             else
             {
@@ -222,6 +258,7 @@ WinMain(
                 else
                     break;
             }
+            // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
             win32_CloseSocket();
         }
         else
