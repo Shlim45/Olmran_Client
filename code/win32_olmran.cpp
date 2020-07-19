@@ -7,6 +7,53 @@
    ======================================================================== */
 #include "win32_olmran.h"
 
+void win32_CloseSocket()
+{
+    closesocket(Socket.sock);
+    WSACleanup();
+    Socket.status = 0;
+    //Socket = {};
+}
+
+int64 win32_InitAndConnectSocket()
+{
+    // Initialize WinSock
+    WSAData data;
+    WORD ver = MAKEWORD(2,2);
+    int WSResult = WSAStartup(ver, &data);
+    
+    if (WSResult != 0)
+    {
+        // "Can't start WinSock, Err #"
+        return WSResult;
+    }
+    
+    // Create Socket
+    Socket.sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (Socket.sock == INVALID_SOCKET)
+    {
+        // "Can't create socket, Err #"
+        return INVALID_SOCKET;
+    }
+    
+    // Fill in hint structure
+    Socket.addr.sin_family = AF_INET;
+    Socket.addr.sin_port = htons(HOST_PORT);
+    inet_pton(AF_INET, HOST_ADDRESS, &Socket.addr.sin_addr);
+    
+    // Connect to server
+    if (connect(Socket.sock, (sockaddr*) &Socket.addr, sizeof(Socket.addr)) == SOCKET_ERROR)
+    {
+        // "Can't connect to server, Err #"
+        
+        win32_CloseSocket();
+        return SOCKET_ERROR;
+    }
+    
+    Socket.status = 1;
+    return 0;
+}
+
 /* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
 void win32_AppendText(const HWND GameOutput, TCHAR *newText)
 {
@@ -53,13 +100,6 @@ MainWindowCallback(HWND   Window,
                                         (HMENU) ID_EDITCHILD,   // edit control ID 
                                         (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), 
                                         NULL);        // pointer not needed 
-            
-            if (win32_InitAndConnectSocket(GameOutput))
-            {
-                win32_AppendText(GameOutput, OutputBytes);
-            }
-            
-            win32_AppendText(GameOutput, TEXT("\r\n\r\nAppending Test TeXt\r\n"));
         } break; 
         
         case WM_SETFOCUS:
@@ -83,13 +123,13 @@ MainWindowCallback(HWND   Window,
         case WM_DESTROY:
         {
             // TODO(jon):  Handle this as an error, recreate window?
-            running = false;
+            GlobalRunning = false;
         } break;
         
         case WM_CLOSE:
         {
             // TODO(jon):  Handle this with a message to the user?
-            running = false;
+            GlobalRunning = false;
         } break;
         
         case WM_ACTIVATEAPP:
@@ -106,53 +146,6 @@ MainWindowCallback(HWND   Window,
     }
     
     return Result;
-}
-
-bool win32_InitAndConnectSocket(HWND GameOutput)
-{
-    // Initialize WinSock
-    WSAData data;
-    WORD ver = MAKEWORD(2,2);
-    int WSResult = WSAStartup(ver, &data);
-    
-    if (WSResult != 0)
-    {
-        win32_AppendText(GameOutput, TEXT("Can't start WinSock, Err #\r\n"));
-        return false;
-    }
-    
-    // Create Socket
-    Socket.sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (Socket.sock == INVALID_SOCKET)
-    {
-        win32_AppendText(GameOutput, TEXT("Can't create socket, Err #\r\n"));
-        return false;
-    }
-    
-    // Fill in hint structure
-    Socket.addr.sin_family = AF_INET;
-    Socket.addr.sin_port = htons(HOST_PORT);
-    inet_pton(AF_INET, HOST_ADDRESS, &Socket.addr.sin_addr);
-    
-    // Connect to server
-    if (connect(Socket.sock, (sockaddr*) &Socket.addr, sizeof(Socket.addr)) == SOCKET_ERROR)
-    {
-        win32_AppendText(GameOutput, TEXT("Can't connect to server, Err #\r\n"));
-        
-        win32_CloseSocket();
-        return false;
-    }
-    
-    Socket.status = 1;
-    return true;
-}
-
-void win32_CloseSocket()
-{
-    closesocket(Socket.sock);
-    WSACleanup();
-    Socket.status = 0;
-    //Socket = {};
 }
 
 int CALLBACK
@@ -193,8 +186,15 @@ WinMain(
         
         if(WindowHandle)
         {
-            running = true;
-            while (running)
+            if (win32_InitAndConnectSocket()==0)
+            {
+                //win32_AppendText(GameOutput, OutputBytes);
+                OutputDebugStringA("Socket Connected\r\n");
+            }
+            
+            //win32_AppendText(GameOutput, TEXT("\r\n\r\nAppending Test TeXt\r\n"));
+            GlobalRunning = true;
+            while (GlobalRunning)
             {
                 MSG Message;
                 BOOL MessageResult = GetMessage(&Message, 0, 0, 0);
