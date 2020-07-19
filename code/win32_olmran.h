@@ -27,7 +27,16 @@ struct win32_state
 	void *GameMemoryBlock;
 };
 
+struct game_state
+{
+    HWND Window;
+    HWND GameOutput;
+    bool32 isInitialized;
+};
+
+
 global_variable bool GlobalRunning;
 global_variable win32_socket Socket;
+global_variable game_state GameState;
 
 #endif //WIN32_OLMRAN_H

@@ -78,6 +78,10 @@ extern "C" {
 #define local_persist static
 #define global_variable static
     
+#define ID_EDITCHILD 100
+#define HOST_ADDRESS "192.168.1.208"
+#define HOST_PORT 4000
+    
 #if OLMRAN_SLOW
 #define Assert(Expression) if (!(Expression)) {*(int *)0 = 0;}
 #else

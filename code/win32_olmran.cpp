@@ -10,11 +10,6 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 
-
-#define ID_EDITCHILD 100
-#define HOST_ADDRESS "192.168.1.208"
-#define HOST_PORT 4000
-
 //#include "olmran.cpp"
 #include "win32_olmran.h"
 
@@ -93,10 +88,6 @@ win32_MainWindowCallback(HWND   Window,
     LRESULT Result = 0;
     local_persist HWND GameOutput;
     
-    TCHAR OutputBytes[] = TEXT("This is the MUD Client for Olmran\r\n")
-        TEXT("There are many like it, but this one is special!\r\n")
-        TEXT("I leared C++ while creating it... maybe?");
-    
     switch(Message)
     {
         case WM_CREATE:
@@ -112,6 +103,7 @@ win32_MainWindowCallback(HWND   Window,
                                         (HMENU) ID_EDITCHILD,   // edit control ID 
                                         (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), 
                                         NULL);        // pointer not needed 
+            GameState.GameOutput = GameOutput;
         } break; 
         
         case WM_SETFOCUS:
@@ -198,13 +190,22 @@ WinMain(
         
         if(WindowHandle)
         {
+            GameState.Window = WindowHandle;
+            GameState.isInitialized = true;
+            
+            TCHAR OutputBytes[] = TEXT("This is the MUD Client for Olmran\r\n")
+                TEXT("There are many like it, but this one is special!\r\n")
+                TEXT("I leared C++ while creating it... maybe?");
+            
+            
             if (win32_InitAndConnectSocket()==0)
             {
-                //win32_AppendText(GameOutput, OutputBytes);
+                win32_AppendText(GameState.GameOutput, OutputBytes);
                 OutputDebugStringA("Socket Connected\r\n");
             }
             else
             {
+                win32_AppendText(GameState.GameOutput, TEXT("Could not connect to server.\r\n"));
                 OutputDebugStringA("Error in win32_InitAndConnectSocket()");
             }
             
