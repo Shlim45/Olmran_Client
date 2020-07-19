@@ -5,7 +5,19 @@
    $Creator: Jonathan Hawranko $
    $Notice: (C) Copyright 2020 by Jonathan Hawranko. All Rights Reserved. $
    ======================================================================== */
+#include "olmran_platform.h"
+
+#include <ws2tcpip.h>
+#include <windows.h>
+
+
+#define ID_EDITCHILD 100
+#define HOST_ADDRESS "192.168.1.208"
+#define HOST_PORT 4000
+
+//#include "olmran.cpp"
 #include "win32_olmran.h"
+
 
 void win32_CloseSocket()
 {
@@ -73,10 +85,10 @@ void win32_AppendText(const HWND GameOutput, TCHAR *newText)
 }
 
 LRESULT CALLBACK
-MainWindowCallback(HWND   Window,
-                   UINT   Message,
-                   WPARAM WParam,
-                   LPARAM LParam)
+win32_MainWindowCallback(HWND   Window,
+                         UINT   Message,
+                         WPARAM WParam,
+                         LPARAM LParam)
 {
     LRESULT Result = 0;
     local_persist HWND GameOutput;
@@ -158,7 +170,7 @@ WinMain(
     WNDCLASS WindowClass = {};
     // TODO(jon):  Check if any of this is needed.
     WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
-    WindowClass.lpfnWndProc = MainWindowCallback;
+    WindowClass.lpfnWndProc = win32_MainWindowCallback;
     WindowClass.hInstance = Instance;
     //    WindowClass.hIcon = ;
     //    WindowClass.hCursor = ;
@@ -191,8 +203,11 @@ WinMain(
                 //win32_AppendText(GameOutput, OutputBytes);
                 OutputDebugStringA("Socket Connected\r\n");
             }
+            else
+            {
+                OutputDebugStringA("Error in win32_InitAndConnectSocket()");
+            }
             
-            //win32_AppendText(GameOutput, TEXT("\r\n\r\nAppending Test TeXt\r\n"));
             GlobalRunning = true;
             while (GlobalRunning)
             {
