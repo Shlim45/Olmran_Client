@@ -9,7 +9,9 @@
 
 #include <ws2tcpip.h>
 #include <windows.h>
+#include <richedit.h>
 
+//#include "olmran_telnet.h"
 #include "win32_olmran.h"
 
 /* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
@@ -31,36 +33,6 @@ win32_AppendText(const HWND GameOutput, TCHAR *newText)
     SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
 }
 
-internal void
-SocketListenAndUpdate()
-{
-    if (GameState.isInitialized)
-    {
-        // TODO(jon):  Threading, this blocks the client lol
-        
-        int iResult;
-        // Receive until the peer closes the connection
-        do {
-            
-            iResult = recv(Socket.sock, GameState.GameOutputBuffer, GameState.GameOutputBufferLength, 0);
-            if ( iResult > 0 )
-            {
-                OutputDebugStringA("Bytes received: ?\n");//, iResult);
-                win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
-            }
-            else if ( iResult == 0 )
-                OutputDebugStringA("Connection closed\n");
-            else
-                OutputDebugStringA("recv failed: ?\n");//, WSAGetLastError());
-            
-        } while( iResult > 0 );
-        
-        // cleanup
-        closesocket(Socket.sock);
-        WSACleanup();
-    }
-}
-
 internal void 
 win32_CloseSocket()
 {
@@ -68,6 +40,22 @@ win32_CloseSocket()
     WSACleanup();
     Socket.status = 0;
     //Socket = {};
+}
+
+HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
+                    int x, int y,          // Location.
+                    int width, int height, // Dimensions.
+                    HMENU controlId,       // Control ID.
+                    HINSTANCE hinst)       // Application or DLL instance.
+{
+    LoadLibrary(TEXT("Riched32.dll"));
+    
+    HWND hwndEdit= CreateWindowEx(0, RICHEDIT_CLASS, TEXT("Game Output"),
+                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP, 
+                                  x, y, width, height, 
+                                  hwndOwner, controlId, hinst, NULL);
+    
+    return hwndEdit;
 }
 
 internal int64 
@@ -124,6 +112,7 @@ win32_MainWindowCallback(HWND   Window,
         case WM_CREATE:
         {
             // Create Edit Control
+            /*
             GameOutput = CreateWindowEx(
                                         0, TEXT("EDIT"),   // predefined class 
                                         NULL,         // no window title 
@@ -134,6 +123,9 @@ win32_MainWindowCallback(HWND   Window,
                                         (HMENU) ID_EDITCHILD,   // edit control ID 
                                         (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), 
                                         NULL);        // pointer not needed 
+*/
+            GameOutput = CreateRichEdit(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
+                                        (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameOutput = GameOutput;
         } break; 
         
@@ -182,6 +174,36 @@ win32_MainWindowCallback(HWND   Window,
     
     return Result;
 }
+
+DWORD WINAPI 
+SocketListenThreadProc(LPVOID lpParameter)
+{
+    if (GameState.isInitialized)
+    {
+        int iResult;
+        // Receive until the peer closes the connection
+        do {
+            
+            iResult = recv(Socket.sock, GameState.GameOutputBuffer, GameState.GameOutputBufferLength, 0);
+            if ( iResult > 0 )
+            {
+                OutputDebugStringA("Bytes received: ?\n");//, iResult);
+                win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
+            }
+            else if ( iResult == 0 )
+                OutputDebugStringA("Connection closed\n");
+            else
+                OutputDebugStringA("recv failed: ?\n");//, WSAGetLastError());
+            
+        } while( iResult > 0 );
+        
+        // cleanup
+        closesocket(Socket.sock);
+        WSACleanup();
+    }
+    return 0;
+}
+
 
 int CALLBACK
 WinMain(
@@ -232,17 +254,22 @@ WinMain(
                 TEXT("There are many like it, but this one is special!\r\n")
                 TEXT("I leared C++ while creating it... maybe?");
             
-            
+            DWORD ThreadID;
+            HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)
             {
                 win32_AppendText(GameState.GameOutput, OutputBytes);
                 OutputDebugStringA("Socket Connected\r\n");
-                SocketListenAndUpdate();
+                
+                char *Param = "Socket listening.\r\n";
+                
+                SocketListenThreadHandle = CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
             }
             else
             {
                 win32_AppendText(GameState.GameOutput, TEXT("Could not connect to server.\r\n"));
                 OutputDebugStringA("Error in win32_InitAndConnectSocket()");
+                SocketListenThreadHandle = 0;
             }
             
             GlobalRunning = true;
@@ -260,6 +287,7 @@ WinMain(
             }
             // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
             win32_CloseSocket();
+            if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }
         }
         else
         {
