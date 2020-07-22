@@ -33,20 +33,12 @@ win32_AppendText(const HWND GameOutput, TCHAR *newText)
     SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
 }
 
-internal void 
-win32_CloseSocket()
-{
-    closesocket(Socket.sock);
-    WSACleanup();
-    Socket.status = 0;
-    //Socket = {};
-}
-
-HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
-                    int x, int y,          // Location.
-                    int width, int height, // Dimensions.
-                    HMENU controlId,       // Control ID.
-                    HINSTANCE hinst)       // Application or DLL instance.
+internal HWND
+CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
+               int x, int y,          // Location.
+               int width, int height, // Dimensions.
+               HMENU controlId,       // Control ID.
+               HINSTANCE hinst)       // Application or DLL instance.
 {
     LoadLibrary(TEXT("Riched32.dll"));
     
@@ -56,6 +48,15 @@ HWND CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
                                   hwndOwner, controlId, hinst, NULL);
     
     return hwndEdit;
+}
+
+internal void 
+win32_CloseSocket()
+{
+    closesocket(Socket.sock);
+    WSACleanup();
+    Socket.status = 0;
+    //Socket = {};
 }
 
 internal int64 
@@ -112,18 +113,6 @@ win32_MainWindowCallback(HWND   Window,
         case WM_CREATE:
         {
             // Create Edit Control
-            /*
-            GameOutput = CreateWindowEx(
-                                        0, TEXT("EDIT"),   // predefined class 
-                                        NULL,         // no window title 
-                                        WS_CHILD | WS_VISIBLE | WS_VSCROLL | 
-                                        ES_LEFT | ES_MULTILINE | ES_READONLY, 
-                                        0, 0, 0, 0,   // set size in WM_SIZE message 
-                                        Window,         // parent window 
-                                        (HMENU) ID_EDITCHILD,   // edit control ID 
-                                        (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), 
-                                        NULL);        // pointer not needed 
-*/
             GameOutput = CreateRichEdit(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
                                         (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameOutput = GameOutput;
@@ -175,20 +164,43 @@ win32_MainWindowCallback(HWND   Window,
     return Result;
 }
 
+internal DWORD CALLBACK 
+GameOutputEditStreamCallback(DWORD_PTR bytesReceived, 
+                             LPBYTE lpBuff,
+                             LONG cb, 
+                             PLONG pcb)
+{
+    if (bytesReceived) 
+    {
+        win32_AppendText(GameState.GameOutput, (char *)bytesReceived);
+        return 0;
+    }
+    
+    return (DWORD)-1;
+}
+
 DWORD WINAPI 
 SocketListenThreadProc(LPVOID lpParameter)
 {
     if (GameState.isInitialized)
     {
         int iResult;
+        
         // Receive until the peer closes the connection
         do {
-            
             iResult = recv(Socket.sock, GameState.GameOutputBuffer, GameState.GameOutputBufferLength, 0);
             if ( iResult > 0 )
             {
-                OutputDebugStringA("Bytes received: ?\n");//, iResult);
-                win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
+                OutputDebugStringA("Bytes received: >0\n");//, iResult);
+                EDITSTREAM es = { 0 };
+                es.pfnCallback = GameOutputEditStreamCallback;
+                es.dwCookie    = (DWORD_PTR)GameState.GameOutputBuffer;
+                if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT, (LPARAM)&es) && es.dwError == 0) 
+                {
+                    OutputDebugStringA("Stream success!\n");
+                }
+                else if (es.dwError != 0)
+                    OutputDebugStringA("ew.dwError != 0\n");
             }
             else if ( iResult == 0 )
                 OutputDebugStringA("Connection closed\n");
