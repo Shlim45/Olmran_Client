@@ -6,111 +6,15 @@
    $Notice: (C) Copyright 2020 by Jonathan Hawranko. All Rights Reserved. $
    ======================================================================== */
 
-#include <iostream>
-#include <string.h>
 #include "olmran_platform.h"
 
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <richedit.h>
 
-//#include "olmran_telnet.h"
+#include "olmran_telnet.h"
 #include "win32_olmran.h"
 
-// Telnet
-
-const char TN_BELL = static_cast<char>(7);
-
-const char TN_EOR = static_cast<char>(239);
-const char TN_SE = static_cast<char>(240);
-const char TN_NOP = static_cast<char>(241);
-const char TN_DM = static_cast<char>(242);
-const char TN_B = static_cast<char>(243);
-const char TN_IP = static_cast<char>(244);
-const char TN_AO = static_cast<char>(245);
-const char TN_AYT = static_cast<char>(246);
-const char TN_EC = static_cast<char>(247);
-const char TN_EL = static_cast<char>(248);
-const char TN_GA = static_cast<char>(249);
-const char TN_SB = static_cast<char>(250);
-const char TN_WILL = static_cast<char>(251);
-const char TN_WONT = static_cast<char>(252);
-const char TN_DO = static_cast<char>(253);
-const char TN_DONT = static_cast<char>(254);
-const char TN_IAC = static_cast<char>(255);
-
-const char TNSB_IS = 0;
-const char TNSB_SEND = 1;
-
-
-const char OPT_ECHO = 1;
-const char OPT_STATUS = 5;
-const char OPT_TIMING_MARK = 6;
-const char OPT_TERMINAL_TYPE = 24;
-const char OPT_EOR = 25;
-const char OPT_NAWS = 31;
-const char OPT_MSDP = 69; // http://tintin.sourceforge.net/msdp/
-const char OPT_MSSP = static_cast<char>(70); // https://tintin.sourceforge.io/protocols/mssp/
-const char OPT_COMPRESS = 85;
-const char OPT_COMPRESS2 = 86;
-const char OPT_MSP = 90;
-const char OPT_MXP = 91;
-const char OPT_102 = 102;
-const char OPT_ATCP = static_cast<char>(200);
-const char OPT_GMCP = static_cast<char>(201);
-
-const char MSSP_VAR = 1;
-const char MSSP_VAL = 2;
-
-const char MSDP_VAR = 1;
-const char MSDP_VAL = 2;
-const char MSDP_TABLE_OPEN = 3;
-const char MSDP_TABLE_CLOSE = 4;
-const char MSDP_ARRAY_OPEN = 5;
-const char MSDP_ARRAY_CLOSE = 6;
-
-
-void processTelnetCommand(const std::string &command)
-{
-    char ch = command[1];
-    
-    char *_type;
-    switch ((uint8)ch) {
-        case 239:
-        _type = "TN_EOR";
-        break;
-        case 249:
-        _type = "TN_GA";
-        break;
-        case 250:
-        _type = "SB";
-        break;
-        case 251:
-        _type = "WILL";
-        break;
-        case 252:
-        _type = "WONT";
-        break;
-        case 253:
-        _type = "DO";
-        break;
-        case 254:
-        _type = "DONT";
-        break;
-        case 255:
-        _type = "IAC";
-        break;
-        default:
-        _type="";
-        //_type = QString::number((quint8)ch);
-        break;
-    }
-    if (command.size() > 2) {
-        std::cout << "SERVER sent telnet (" << command.size() << " bytes):" << _type << " + " << command[2] << std::endl;
-    } else {
-        std::cout << "SERVER sent telnet (" << command.size() << " bytes):" << _type << std::endl;
-    }
-}
 /* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
 internal void 
 win32_AppendText(const HWND GameOutput, TCHAR *newText)
@@ -140,14 +44,12 @@ CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
     LoadLibrary(TEXT("Riched32.dll"));
     
     HWND hwndEdit= CreateWindowEx(0, RICHEDIT_CLASS, TEXT("Game Output"),
-                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP, 
+                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | WS_VSCROLL | ES_AUTOVSCROLL, 
                                   x, y, width, height, 
-                                  hwndOwner, controlId, hinst, NULL);
+                                  hwndOwner, controlId, hinst, 0);
     
     return hwndEdit;
 }
-
-
 
 internal void 
 win32_CloseSocket()
@@ -264,19 +166,51 @@ win32_MainWindowCallback(HWND   Window,
 }
 
 internal DWORD CALLBACK 
-GameOutputEditStreamCallback(DWORD_PTR bytesReceived, 
+GameOutputEditStreamCallback(DWORD_PTR dwCookie, 
                              LPBYTE lpBuff,
                              LONG cb, 
                              PLONG pcb)
 {
-    if (bytesReceived) 
+    if (dwCookie) 
     {
-        processTelnetCommand((char *)bytesReceived);
-        win32_AppendText(GameState.GameOutput, (char *)bytesReceived);
+        processTelnetCommand((const char *)dwCookie);
+        //win32_AppendText(GameState.GameOutput, (char *)bytesReceived);
+        
+        const char *psBuffer = (const char*)dwCookie;
+        
+        //if (cb < strlen(psBuffer)) cb = (long) strlen(psBuffer);
+        
+        for (int i=0;i<cb;i++)
+        {
+            *(lpBuff+i) = psBuffer[i];
+        }
+        
+        //*pcb = cb;
+        
+        //*psBuffer = psBuffer->Mid(cb);
+        
         return 0;
     }
     
     return (DWORD)-1;
+}
+
+internal void
+win32_StreamToGameOutput(const char *buf, int bufLength)
+{
+    EDITSTREAM es = { 0 };
+    es.pfnCallback = GameOutputEditStreamCallback;
+    // NOTE(jon):  The cookie should be the new data, while lpBuff
+    // should be GameOutputBuffer (i believe?)
+    //es.dwCookie    = (DWORD_PTR)GameState.GameOutputBuffer;
+    es.dwCookie = (DWORD_PTR)buf;
+    if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT, (LPARAM)&es) && es.dwError == 0) 
+    {
+        OutputDebugStringA("Stream success!\n");
+    }
+    else if (es.dwError != 0)
+        OutputDebugStringA("ew.dwError != 0\n");
+    
 }
 
 DWORD WINAPI 
@@ -292,15 +226,7 @@ SocketListenThreadProc(LPVOID lpParameter)
             if ( iResult > 0 )
             {
                 OutputDebugStringA("Bytes received: >0\n");//, iResult);
-                EDITSTREAM es = { 0 };
-                es.pfnCallback = GameOutputEditStreamCallback;
-                es.dwCookie    = (DWORD_PTR)GameState.GameOutputBuffer;
-                if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT, (LPARAM)&es) && es.dwError == 0) 
-                {
-                    OutputDebugStringA("Stream success!\n");
-                }
-                else if (es.dwError != 0)
-                    OutputDebugStringA("ew.dwError != 0\n");
+                win32_StreamToGameOutput(GameState.GameOutputBuffer, GameState.GameOutputBufferLength);
             }
             else if ( iResult == 0 )
                 OutputDebugStringA("Connection closed\n");
