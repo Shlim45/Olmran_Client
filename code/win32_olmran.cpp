@@ -174,10 +174,30 @@ GameOutputEditStreamCallback(DWORD_PTR dwCookie,
     if (dwCookie) 
     {
         processTelnetCommand((const char *)dwCookie);
-        //win32_AppendText(GameState.GameOutput, (char *)bytesReceived);
+        //win32_AppendText(GameState.GameOutput, (char *)dwCookie);
         
         const char *psBuffer = (const char*)dwCookie;
         
+        //String smaller than buffer
+        if( strlen(psBuffer) < cb ) 
+        {
+            *pcb = (long) strlen(psBuffer);
+            memcpy(lpBuff,psBuffer,*pcb);
+            psBuffer = "";
+            *pcb = (long) strlen(psBuffer);
+        }
+        //String larger than buffer
+        else
+        {
+            *pcb = cb;
+            memcpy(lpBuff,psBuffer,*pcb);
+            memset(&psBuffer,0,*pcb-1);
+            //text.erase(0,*pcb-1);
+        }
+        
+        return 0;
+        
+        /*
         //if (cb < strlen(psBuffer)) cb = (long) strlen(psBuffer);
         
         for (int i=0;i<cb;i++)
@@ -190,9 +210,11 @@ GameOutputEditStreamCallback(DWORD_PTR dwCookie,
         //*psBuffer = psBuffer->Mid(cb);
         
         return 0;
+*/
     }
     
     return (DWORD)-1;
+    
 }
 
 internal void
@@ -213,6 +235,75 @@ win32_StreamToGameOutput(const char *buf, int bufLength)
     
 }
 
+internal void
+ProcessInputFromSocket(char *recvBuf)
+{
+    char tmpBuf[4096] = {0};
+    uint16 recvIndex = 0;
+    uint16 tmpIndex = 0;
+    while (recvBuf[recvIndex] != 0)
+    {
+        // NOTE(jon):  Filtering telnet commands
+        
+        if(recvBuf[recvIndex] == TN_GA)
+        { OutputDebugStringA("GA\n\r"); }
+        else if(recvBuf[recvIndex] == TN_NOP)
+        { OutputDebugStringA("NOP\n\r"); }
+        else if(recvBuf[recvIndex] == TN_SE)
+        { OutputDebugStringA("SE\n\r"); }
+        else if(recvBuf[recvIndex] == TN_EOR)
+        { OutputDebugStringA("EOR\n\r"); }
+        else if (recvBuf[recvIndex] == TN_IAC)
+        { OutputDebugStringA("IAC\n\r"); }
+        else if(recvBuf[recvIndex] == TN_WILL)
+        { OutputDebugStringA("WILL\n\r"); }
+        else if(recvBuf[recvIndex] == TN_WONT)
+        { OutputDebugStringA("WONT\n\r"); }
+        else if(recvBuf[recvIndex] == TN_DO)
+        { OutputDebugStringA("DO\n\r"); }
+        else if(recvBuf[recvIndex] == TN_DONT)
+        { OutputDebugStringA("DONT\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_ECHO)
+        { OutputDebugStringA("ECHO\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_STATUS)
+        { OutputDebugStringA("STATUS\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_TIMING_MARK)
+        { OutputDebugStringA("TIMING_MARK\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_TERMINAL_TYPE)
+        { OutputDebugStringA("TERMINAL_TYPE\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_EOR)
+        { OutputDebugStringA("EOR\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_NAWS)
+        { OutputDebugStringA("NAWS\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_COMPRESS)
+        { OutputDebugStringA("COMPRESS\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_COMPRESS2)
+        { OutputDebugStringA("COMPRESS2\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_MSP)
+        { OutputDebugStringA("MSP\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_MXP)
+        { OutputDebugStringA("MXP\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_102)
+        { OutputDebugStringA("102\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_ATCP)
+        { OutputDebugStringA("ATCP\n\r"); }
+        else if(recvBuf[recvIndex] == OPT_GMCP)
+        { OutputDebugStringA("GMCP\n\r"); }
+        else
+        {
+            tmpBuf[tmpIndex] = recvBuf[recvIndex];
+            tmpIndex++;
+        }
+        recvIndex++;
+    }
+    
+    memcpy(GameState.GameOutputBuffer, tmpBuf, GameState.GameOutputBufferLength);
+    
+    // TODO(jon):  Remove this when streamin is fixed.
+    if(strlen(tmpBuf)>0)
+        win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
+}
+
 DWORD WINAPI 
 SocketListenThreadProc(LPVOID lpParameter)
 {
@@ -226,6 +317,7 @@ SocketListenThreadProc(LPVOID lpParameter)
             if ( iResult > 0 )
             {
                 OutputDebugStringA("Bytes received: >0\n");//, iResult);
+                ProcessInputFromSocket(GameState.GameOutputBuffer);
                 win32_StreamToGameOutput(GameState.GameOutputBuffer, GameState.GameOutputBufferLength);
             }
             else if ( iResult == 0 )
