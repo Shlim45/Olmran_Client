@@ -31,6 +31,7 @@ struct game_state
 {
     HWND Window;
     HWND GameOutput;
+    HWND GameInput;
     bool32 isInitialized;
     char *GameOutputBuffer;
     uint32 GameOutputBufferLength;

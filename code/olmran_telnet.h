@@ -36,8 +36,6 @@ const char OPT_TIMING_MARK = 6;
 const char OPT_TERMINAL_TYPE = 24;
 const char OPT_EOR = 25;
 const char OPT_NAWS = 31;
-const char OPT_MSDP = 69; // http://tintin.sourceforge.net/msdp/
-const char OPT_MSSP = static_cast<char>(70); // https://tintin.sourceforge.io/protocols/mssp/
 const char OPT_COMPRESS = 85;
 const char OPT_COMPRESS2 = 86;
 const char OPT_MSP = 90;
@@ -94,7 +92,7 @@ void processTelnetCommand(const char *command)
     }
     if (strlen(command) > 2) 
     {
-        OutputDebugStringA("SERVER sent telnet: "); 
+        OutputDebugStringA("\r\nSERVER sent telnet: "); 
         OutputDebugStringA(_type);
         OutputDebugStringA(" + ");
         const char tmpBuf[2] = {command[2], '\0'};
@@ -102,7 +100,7 @@ void processTelnetCommand(const char *command)
         OutputDebugStringA("\r\n");
     } else 
     {
-        OutputDebugStringA("SERVER sent telnet: ");
+        OutputDebugStringA("\r\nSERVER sent telnet: ");
         OutputDebugStringA(_type);
         OutputDebugStringA("\r\n");
     }

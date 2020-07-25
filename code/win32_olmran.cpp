@@ -52,6 +52,21 @@ CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
     return hwndEdit;
 }
 
+internal HWND
+CreateInputBox(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
+{
+    HWND hwndInput = CreateWindowEx(
+                                    0, TEXT("EDIT"),   // predefined class 
+                                    NULL,         // no window title 
+                                    WS_CHILD | WS_VISIBLE | ES_LEFT, 
+                                    0, 0, 0, 0,   // set size in WM_SIZE message 
+                                    hwndOwner,         // parent window 
+                                    controlId,   // edit control ID 
+                                    hinst, 
+                                    NULL);        // pointer not needed 
+    return hwndInput;
+}
+
 internal void 
 win32_CloseSocket()
 {
@@ -108,6 +123,7 @@ win32_MainWindowCallback(HWND   Window,
 {
     LRESULT Result = 0;
     local_persist HWND GameOutput;
+    local_persist HWND GameInput;
     
     switch(Message)
     {
@@ -117,6 +133,10 @@ win32_MainWindowCallback(HWND   Window,
             GameOutput = CreateRichEdit(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
                                         (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameOutput = GameOutput;
+            
+            // Create Input Control
+            GameInput = CreateInputBox(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameState.GameInput = GameInput;
         } break; 
         
         case WM_SETFOCUS:
@@ -133,8 +153,15 @@ win32_MainWindowCallback(HWND   Window,
             MoveWindow(GameOutput, 
                        0, 0,                  // starting x- and y-coordinates 
                        LOWORD(LParam),        // width of client area 
-                       HIWORD(LParam),        // height of client area 
+                       HIWORD(LParam)-25,     // height of client area 
                        TRUE);                 // repaint window 
+            
+            MoveWindow(GameInput, 
+                       0, HIWORD(LParam)-25,  // starting x- and y-coordinates 
+                       LOWORD(LParam),        // width of client area 
+                       25,                    // height of client area 
+                       TRUE);                 // repaint window 
+            
         } break;
         
         case WM_DESTROY:
@@ -311,8 +338,8 @@ ProcessInputFromSocket(char *recvBuf)
 #if 0
         if (recvBuf[recvIndex] >= TN_EOR && recvBuf[recvIndex] <= TN_IAC)
         {
-            char tCommand[4] = { 0 };
-            for (int tIndex = 0; tIndex < 4; tIndex++)
+            char tCommand[3] = { 0 };
+            for (int tIndex = 0; tIndex < 3; tIndex++)
             {
                 if (recvBuf[recvIndex+tIndex] == '\0')
                     break;
@@ -321,57 +348,65 @@ ProcessInputFromSocket(char *recvBuf)
             processTelnetCommand(tCommand);
         }
 #endif
-        
-        switch (recvBuf[recvIndex])
+        if (recvBuf[recvIndex] >= ' ' && recvBuf[recvIndex] <= '~')
         {
-            case TN_GA:
-            { OutputDebugStringA("GA\n\r"); } break;
-            case TN_NOP:
-            { OutputDebugStringA("NOP\n\r"); } break;
-            case TN_SE:
-            { OutputDebugStringA("SE\n\r"); } break;
-            case TN_EOR:
-            { OutputDebugStringA("EOR\n\r"); } break;
-            case TN_IAC:
-            { OutputDebugStringA("IAC "); } break;
-            case TN_WILL:
-            { OutputDebugStringA("WILL "); } break;
-            case TN_WONT:
-            { OutputDebugStringA("WONT "); } break;
-            case TN_DO:
-            { OutputDebugStringA("DO "); } break;
-            case TN_DONT:
-            { OutputDebugStringA("DONT "); } break;
-            case OPT_ECHO:
-            { OutputDebugStringA("ECHO\n\r"); } break;
-            case OPT_STATUS:
-            { OutputDebugStringA("STATUS\n\r"); } break;
-            case OPT_TIMING_MARK:
-            { OutputDebugStringA("TIMING_MARK\n\r"); } break;
-            case OPT_TERMINAL_TYPE:
-            { OutputDebugStringA("TERMINAL_TYPE\n\r"); } break;
-            case OPT_EOR:
-            { OutputDebugStringA("EOR\n\r"); } break;
-            case OPT_NAWS:
-            { OutputDebugStringA("NAWS\n\r"); } break;
-            //case OPT_COMPRESS:
-            //{ OutputDebugStringA("COMPRESS\n\r"); } break;
-            //case OPT_COMPRESS2:
-            //{ OutputDebugStringA("COMPRESS2\n\r"); } break;
-            //case OPT_MSP:
-            //{ OutputDebugStringA("MSP\n\r"); } break;
-            //case OPT_MXP:
-            //{ OutputDebugStringA("MXP\n\r"); } break;
-            //case OPT_102:
-            //{ OutputDebugStringA("102\n\r"); } break;
-            case OPT_ATCP:
-            { OutputDebugStringA("ATCP\n\r"); } break;
-            case OPT_GMCP:
-            { OutputDebugStringA("GMCP\n\r"); } break;
-            default:
+            // valid char
+            tmpBuf[tmpIndex] = recvBuf[recvIndex];
+            tmpIndex++;
+        }
+        else if (recvBuf[recvIndex] >= 9 && recvBuf[recvIndex] <= 13)
+        {
+            // valid formatting
+            if (recvBuf[recvIndex] != 13) // prevent double spacing (convert from CRLF to LF)
             {
                 tmpBuf[tmpIndex] = recvBuf[recvIndex];
                 tmpIndex++;
+            }
+        }
+        else
+        {
+            switch (recvBuf[recvIndex])
+            {
+                case TN_GA:
+                { OutputDebugStringA("GA\n\r"); } break;
+                case TN_NOP:
+                { OutputDebugStringA("NOP\n\r"); } break;
+                case TN_SE:
+                { OutputDebugStringA("SE\n\r"); } break;
+                case TN_EOR:
+                { OutputDebugStringA("EOR\n\r"); } break;
+                case TN_IAC:
+                { OutputDebugStringA("IAC "); } break;
+                case TN_WILL:
+                { OutputDebugStringA("WILL "); } break;
+                case TN_WONT:
+                { OutputDebugStringA("WONT "); } break;
+                case TN_DO:
+                { OutputDebugStringA("DO "); } break;
+                case TN_DONT:
+                { OutputDebugStringA("DONT "); } break;
+                case OPT_ECHO:
+                { OutputDebugStringA("ECHO\n\r"); } break;
+                case OPT_STATUS:
+                { OutputDebugStringA("STATUS\n\r"); } break;
+                case OPT_TIMING_MARK:
+                { OutputDebugStringA("TIMING_MARK\n\r"); } break;
+                case OPT_TERMINAL_TYPE:
+                { OutputDebugStringA("TERMINAL_TYPE\n\r"); } break;
+                case OPT_EOR:
+                { OutputDebugStringA("EOR\n\r"); } break;
+                case OPT_NAWS:
+                { OutputDebugStringA("NAWS\n\r"); } break;
+                case OPT_ATCP:
+                { OutputDebugStringA("ATCP\n\r"); } break;
+                case OPT_GMCP:
+                { OutputDebugStringA("GMCP\n\r"); } break;
+                default:
+                {
+                    OutputDebugStringA("" + recvBuf[recvIndex]);
+                    //tmpBuf[tmpIndex] = recvBuf[recvIndex];
+                    //tmpIndex++;
+                }
             }
         }
         recvIndex++;
