@@ -25,15 +25,29 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
     cf.crTextColor = RGB(186,218,85);// <----- the color of the text
-    SendMessage( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
+    SendMessageA( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
     
     CHARRANGE cr;
     cr.cpMin = -1;
     cr.cpMax = -1;
-    SendMessage(GameOutput, EM_EXSETSEL, 0, (LPARAM)&cr);
-    SendMessage(GameOutput, EM_REPLACESEL, 0, (LPARAM)newText);
+    SendMessageA(GameOutput, EM_EXSETSEL, 0, (LPARAM)&cr);
+    SendMessageA(GameOutput, EM_REPLACESEL, 0, (LPARAM)newText);
 }
 #endif
+
+internal uint32
+win32_SendInputThroughSocket(SOCKET s, const char *buf, int len, int flags)
+{
+    uint32 iResult;
+    iResult = send( s, buf, (int)strlen(buf), 0 );
+    if (iResult == SOCKET_ERROR) {
+        OutputDebugStringA("send failed with error\n");
+        closesocket(s);
+        WSACleanup();
+        return 1;
+    }
+    return iResult;
+}
 
 internal HWND
 CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
@@ -44,29 +58,70 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
 {
     LoadLibrary(TEXT("Riched32.dll"));
     
-    HWND hwndEdit= CreateWindowEx(0, RICHEDIT_CLASS, TEXT("Game Output"),
-                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
-                                  x, y, width, height, 
-                                  hwndOwner, controlId, hinst, 0);
+    HWND hwndEdit= CreateWindowExA(0, RICHEDIT_CLASS, TEXT("Game Output"),
+                                   ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
+                                   x, y, width, height, 
+                                   hwndOwner, controlId, hinst, 0);
     
     // Set Background Color
-    SendMessage( hwndEdit, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
+    SendMessageA( hwndEdit, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
     
     return hwndEdit;
+}
+
+global_variable WNDPROC oldEditProc;
+
+LRESULT CALLBACK InputEditProc(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+        case WM_KEYDOWN:
+        {
+            switch (wParam)
+            {
+                case VK_RETURN:
+                {
+                    // TODO(jon):  Send input
+                    char inputBuf[512] = {0};
+                    int inputLength = GetWindowTextA(               // calls GetWindowTextA and returns length (not including \0)
+                                                     GameState.GameInput,       // A handle to the edit control.
+                                                     (LPSTR) inputBuf,          // A pointer to the buffer that will receive the text.
+                                                     GameState.GameInputBufferLength// The maximum number of characters to copy to the buffer, including the NULL terminator.
+                                                     );
+                    win32_SendInputThroughSocket(Socket.sock, inputBuf, 512, 0);
+                    SetWindowTextA(GameState.GameInput, "");
+                    return 0;
+                } break;
+                case VK_ESCAPE:
+                {
+                    SetWindowTextA(GameState.GameInput, "");
+                    return 0;
+                } break;
+                default:
+                {
+                    return CallWindowProc(oldEditProc, wnd, msg, wParam, lParam);
+                }
+            }
+        } break;
+        default:
+        return CallWindowProc(oldEditProc, wnd, msg, wParam, lParam);
+    }
 }
 
 internal HWND
 CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
 {
-    HWND hwndInput = CreateWindowEx(
-                                    0, TEXT("EDIT"),   // predefined class 
-                                    NULL,         // no window title 
-                                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT, 
-                                    0, 0, 0, 0,   // set size in WM_SIZE message 
-                                    hwndOwner,         // parent window 
-                                    controlId,   // edit control ID 
-                                    hinst, 
-                                    NULL);        // pointer not needed 
+    HWND hwndInput = CreateWindowExA(
+                                     0, TEXT("EDIT"),   // predefined class 
+                                     NULL,         // no window title 
+                                     WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT, 
+                                     0, 0, 0, 0,   // set size in WM_SIZE message 
+                                     hwndOwner,         // parent window 
+                                     controlId,   // edit control ID 
+                                     hinst, 
+                                     NULL);        // pointer not needed 
+    oldEditProc = (WNDPROC)SetWindowLongPtr(hwndInput, GWLP_WNDPROC, (LONG_PTR)InputEditProc);
+    
     return hwndInput;
 }
 
@@ -144,7 +199,7 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_SETFOCUS:
         {
-            OutputDebugStringA("WM_SETFOCUS\n\r");
+            // OutputDebugStringA("WM_SETFOCUS\n\r");
             SetFocus(GameOutput); 
         } break; 
         
@@ -197,7 +252,48 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_ACTIVATEAPP:
         {
-            OutputDebugStringA("WM_ACTIVATEAPP\n\r");
+            // OutputDebugStringA("WM_ACTIVATEAPP\n\r");
+            
+        } break;
+        
+        case WM_SYSKEYDOWN:
+        case WM_SYSKEYUP:
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+        {
+            uint32 KeyCode = (uint32) WParam;
+            switch (KeyCode)
+            {
+                case VK_MBUTTON:
+                case VK_END:
+                {
+                    // TODO(jon):  middle mouse button / end key, scroll game output to EOF
+                } break;
+                case VK_ESCAPE:
+                {
+                    // TODO(jon):  Clear input bar
+                } break;
+                case VK_PRIOR:
+                {
+                    // TODO(jon):  page up
+                } break;
+                case VK_NEXT:
+                {
+                    // TODO(jon):  page down
+                } break;
+                case VK_UP:
+                {
+                    // TODO(jon):  up arrow, cycle through input history
+                } break;
+                case VK_DOWN:
+                {
+                    // TODO(jon):  down arrow, cycle through input history
+                } break;
+                case VK_NUMPAD0:
+                {
+                    // TODO(jon):  NUMPAD 0 - 9
+                } break;
+            }
             
         } break;
         
@@ -330,7 +426,7 @@ win32_StreamToGameOutput(const char *buf, int bufLength)
     es.dwCookie = (DWORD_PTR)buf;
     if (strlen(buf) > 0)
     {
-        if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT|SFF_SELECTION, (LPARAM)&es) && es.dwError == 0) 
+        if (SendMessageA(GameState.GameOutput, EM_STREAMIN, SF_TEXT|SFF_SELECTION, (LPARAM)&es) && es.dwError == 0) 
         {
             OutputDebugStringA("Stream success!\n");
         }
@@ -478,10 +574,9 @@ WinMain(
     WindowClass.hInstance = Instance;
     //    WindowClass.hIcon = ;
     //    WindowClass.hCursor = ;
-    //    WindowClass.hbrBackground = ;
+    //    WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     //    WindowClass.lpszMenuName = ;
     WindowClass.lpszClassName = "OlmranWindowClass";
-    //    WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     
     if(RegisterClass(&WindowClass))
     {
@@ -509,6 +604,10 @@ WinMain(
             GameState.GameOutputBuffer = recvbuf;
             GameState.GameOutputBufferLength = 4096;
             
+            local_persist char sendbuf[512];
+            GameState.GameInputBuffer = sendbuf;
+            GameState.GameInputBufferLength = 512;
+            
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)
@@ -530,7 +629,7 @@ WinMain(
             while (GlobalRunning)
             {
                 MSG Message;
-                BOOL MessageResult = GetMessage(&Message, 0, 0, 0);
+                BOOL MessageResult = GetMessageA(&Message, 0, 0, 0);
                 if(MessageResult > 0)
                 {
                     TranslateMessage(&Message);
