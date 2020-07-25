@@ -34,7 +34,9 @@ struct game_state
     HWND GameInput;
     bool32 isInitialized;
     char *GameOutputBuffer;
-    uint32 GameOutputBufferLength;
+    uint16 GameOutputBufferLength;
+    char *GameInputBuffer;
+    uint16 GameInputBufferLength;
 };
 
 global_variable bool GlobalRunning;
