@@ -298,7 +298,7 @@ win32_StreamToGameOutput(const char *buf, int bufLength)
 internal void
 ProcessInputFromSocket(char *recvBuf)
 {
-#if 0
+#if 1
     local_persist TCHAR tmpBuf[4096];
     memset(tmpBuf,0,4096);
     uint16 recvIndex = 0;
@@ -354,16 +354,16 @@ ProcessInputFromSocket(char *recvBuf)
             { OutputDebugStringA("EOR\n\r"); } break;
             case OPT_NAWS:
             { OutputDebugStringA("NAWS\n\r"); } break;
-            case OPT_COMPRESS:
-            { OutputDebugStringA("COMPRESS\n\r"); } break;
-            case OPT_COMPRESS2:
-            { OutputDebugStringA("COMPRESS2\n\r"); } break;
-            case OPT_MSP:
-            { OutputDebugStringA("MSP\n\r"); } break;
-            case OPT_MXP:
-            { OutputDebugStringA("MXP\n\r"); } break;
-            case OPT_102:
-            { OutputDebugStringA("102\n\r"); } break;
+            //case OPT_COMPRESS:
+            //{ OutputDebugStringA("COMPRESS\n\r"); } break;
+            //case OPT_COMPRESS2:
+            //{ OutputDebugStringA("COMPRESS2\n\r"); } break;
+            //case OPT_MSP:
+            //{ OutputDebugStringA("MSP\n\r"); } break;
+            //case OPT_MXP:
+            //{ OutputDebugStringA("MXP\n\r"); } break;
+            //case OPT_102:
+            //{ OutputDebugStringA("102\n\r"); } break;
             case OPT_ATCP:
             { OutputDebugStringA("ATCP\n\r"); } break;
             case OPT_GMCP:
@@ -376,6 +376,7 @@ ProcessInputFromSocket(char *recvBuf)
         }
         recvIndex++;
     }
+    memset(recvBuf, 0, 4096);
     memcpy(recvBuf, tmpBuf, sizeof(tmpBuf));
 #endif
     
