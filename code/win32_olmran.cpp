@@ -20,47 +20,13 @@
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)
 {
-    /*
-    // get the current selection
-    DWORD StartPos, EndPos;
-    SendMessage( GameOutput, EM_GETSEL, reinterpret_cast<WPARAM>(&StartPos), reinterpret_cast<WPARAM>(&EndPos) );
-    
-    // move the caret to the end of the text
-    int outLength = GetWindowTextLength( GameOutput );
-    SendMessage( GameOutput, EM_SETSEL, outLength, outLength );
-    
-    // insert the text at the new caret position
-    SendMessage( GameOutput, EM_REPLACESEL, TRUE, reinterpret_cast<LPARAM>(newText) );
-    
-    // restore the previous selection
-    SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
-*/
-#if 0
-    // Append new text at end of log
-	int iOriginalLength = GetWindowTextLength(GameOutput); 
-	SendMessage(GameOutput, EM_SETSEL, WPARAM(iOriginalLength), LPARAM(iOriginalLength));
-	SendMessage(GameOutput, EM_REPLACESEL, WPARAM(FALSE), LPARAM(newText));
-    
-	// Get new length and select the text between the original end and the new end
-	int iNumLinesMinusOne = int(SendMessage(GameOutput, EM_GETLINECOUNT, 0, 0)) - 1;
-	iOriginalLength -= iNumLinesMinusOne;
-	int iNewLength = GetWindowTextLength(GameOutput) - iNumLinesMinusOne; 
-	SendMessage(GameOutput, EM_SETSEL, WPARAM(iOriginalLength), LPARAM(iNewLength));
-    
-	// Set colour of selected text 
-    CHARFORMAT cf;
-	cf.crTextColor = RGB(200,50,50);
-	SendMessage(GameOutput, EM_SETCHARFORMAT, SCF_SELECTION, LPARAM(&cf));
-#endif
     CHARFORMAT cf;
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
     cf.crTextColor = RGB(55,200,100);// <----- the color of the text
     SendMessage( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
-    /*SendMessage(hwnd, EM_SETSEL, 0, -1);
-    SendMessage(hwnd, EM_SETSEL, -1, -1);
-    SendMessage(hwnd, EM_REPLACESEL, 0, (LPARAM)msg.c_str());*/
+    
     CHARRANGE cr;
     cr.cpMin = -1;
     cr.cpMax = -1;
@@ -92,7 +58,6 @@ win32_CloseSocket()
     closesocket(Socket.sock);
     WSACleanup();
     Socket.status = 0;
-    //Socket = {};
 }
 
 internal int64 
@@ -105,7 +70,7 @@ win32_InitAndConnectSocket()
     
     if (WSResult != 0)
     {
-        // "Can't start WinSock, Err #"
+        OutputDebugStringA("Can't start WinSock, Err #");
         return WSResult;
     }
     
@@ -113,7 +78,7 @@ win32_InitAndConnectSocket()
     Socket.sock = socket(AF_INET, SOCK_STREAM, 0);
     if (Socket.sock == INVALID_SOCKET)
     {
-        // "Can't create socket, Err #"
+        OutputDebugStringA("Can't create socket, Err #");
         return INVALID_SOCKET;
     }
     
@@ -125,7 +90,7 @@ win32_InitAndConnectSocket()
     // Connect to server
     if (connect(Socket.sock, (sockaddr*) &Socket.addr, sizeof(Socket.addr)) == SOCKET_ERROR)
     {
-        // "Can't connect to server, Err #"
+        OutputDebugStringA("Can't connect to server, Err #");
         
         win32_CloseSocket();
         return SOCKET_ERROR;
@@ -415,10 +380,8 @@ ProcessInputFromSocket(char *recvBuf)
 #endif
     
     // TODO(jon):  Remove this when streamin is fixed.
-#if 1
     if( strlen(recvBuf)>0 )
         win32_AppendText( GameState.GameOutput, recvBuf );
-#endif
 }
 
 DWORD WINAPI 
