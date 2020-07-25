@@ -15,10 +15,12 @@
 #include "olmran_telnet.h"
 #include "win32_olmran.h"
 
+#if 1
 /* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
 internal void 
-win32_AppendText(const HWND GameOutput, TCHAR *newText)
+win32_AppendText(const HWND GameOutput, const char *newText)
 {
+    /*
     // get the current selection
     DWORD StartPos, EndPos;
     SendMessage( GameOutput, EM_GETSEL, reinterpret_cast<WPARAM>(&StartPos), reinterpret_cast<WPARAM>(&EndPos) );
@@ -32,7 +34,40 @@ win32_AppendText(const HWND GameOutput, TCHAR *newText)
     
     // restore the previous selection
     SendMessage( GameOutput, EM_SETSEL, StartPos, EndPos );
+*/
+#if 0
+    // Append new text at end of log
+	int iOriginalLength = GetWindowTextLength(GameOutput); 
+	SendMessage(GameOutput, EM_SETSEL, WPARAM(iOriginalLength), LPARAM(iOriginalLength));
+	SendMessage(GameOutput, EM_REPLACESEL, WPARAM(FALSE), LPARAM(newText));
+    
+	// Get new length and select the text between the original end and the new end
+	int iNumLinesMinusOne = int(SendMessage(GameOutput, EM_GETLINECOUNT, 0, 0)) - 1;
+	iOriginalLength -= iNumLinesMinusOne;
+	int iNewLength = GetWindowTextLength(GameOutput) - iNumLinesMinusOne; 
+	SendMessage(GameOutput, EM_SETSEL, WPARAM(iOriginalLength), LPARAM(iNewLength));
+    
+	// Set colour of selected text 
+    CHARFORMAT cf;
+	cf.crTextColor = RGB(200,50,50);
+	SendMessage(GameOutput, EM_SETCHARFORMAT, SCF_SELECTION, LPARAM(&cf));
+#endif
+    CHARFORMAT cf;
+    memset( &cf, 0, sizeof cf );
+    cf.cbSize = sizeof cf;
+    cf.dwMask = CFM_COLOR;
+    cf.crTextColor = RGB(55,200,100);// <----- the color of the text
+    SendMessage( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
+    /*SendMessage(hwnd, EM_SETSEL, 0, -1);
+    SendMessage(hwnd, EM_SETSEL, -1, -1);
+    SendMessage(hwnd, EM_REPLACESEL, 0, (LPARAM)msg.c_str());*/
+    CHARRANGE cr;
+    cr.cpMin = -1;
+    cr.cpMax = -1;
+    SendMessage(GameOutput, EM_EXSETSEL, 0, (LPARAM)&cr);
+    SendMessage(GameOutput, EM_REPLACESEL, 0, (LPARAM)newText);
 }
+#endif
 
 internal HWND
 CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
@@ -165,6 +200,55 @@ win32_MainWindowCallback(HWND   Window,
     return Result;
 }
 
+#if 0
+internal DWORD CALLBACK
+DebugEditStreamCallback(DWORD_PTR dwCookie, // data to stream in
+                        LPBYTE lpBuff,      // fills this buffer with data to transfer into the rich edit control
+                        LONG cb,            // Number of bytes to read or write.
+                        PLONG pcb)
+{
+    /*
+    The control calls the callback function repeatedly, transferring a portion of the data with each call. 
+The control continues to call the callback function until one of the following conditions occurs:
+    
+    - The callback function returns a nonzero value.
+    - The callback function returns zero in the * pcb parameter.
+    - An error occurs that prevents the rich edit control from transferring data into or out of itself. Examples are out-of-memory situations, failure of a system function, or an invalid character in the read buffer.
+    - For a stream-in operation, the RTF code contains data specifying the end of an RTF block.
+    - For a stream-in operation on a single-line edit control, the callback reads in an end-of-paragraph character (CR, LF, VT, LS, or PS).
+    */
+    
+    if (dwCookie)
+    {
+        // TODO(jon):  Copy contents of dwCookie into lpBuff, if it will fit
+        const char *inBuf = (char *) dwCookie;
+        long bufLen = (long) strlen(inBuf);
+        
+        if ( bufLen > 0 )
+        {
+            //String smaller than buffer
+            if ( bufLen < cb ) 
+            {
+                *pcb = bufLen;
+                memcpy(lpBuff,inBuf,*pcb);
+                inBuf = "";
+                *pcb = 0;
+            }
+            //String larger than buffer
+            else
+            {
+                *pcb = cb;
+                memcpy(lpBuff,inBuf,*pcb);
+                memset(&inBuf,0,*pcb-1);
+            }
+        }
+        return 0;                           // Returns zero to indicate success.
+    }
+    return (DWORD) -1;                      // Returns a nonzero value to indicate an error.
+}
+#endif
+
+#if 0
 internal DWORD CALLBACK 
 GameOutputEditStreamCallback(DWORD_PTR dwCookie, 
                              LPBYTE lpBuff,
@@ -174,7 +258,9 @@ GameOutputEditStreamCallback(DWORD_PTR dwCookie,
     if (dwCookie) 
     {
         processTelnetCommand((const char *)dwCookie);
-        //win32_AppendText(GameState.GameOutput, (char *)dwCookie);
+#if 1
+        win32_AppendText(GameState.GameOutput, (char *)dwCookie);
+#endif
         
         const char *psBuffer = (const char*)dwCookie;
         
@@ -214,94 +300,125 @@ GameOutputEditStreamCallback(DWORD_PTR dwCookie,
     }
     
     return (DWORD)-1;
-    
 }
+#endif
 
+#if 0
 internal void
 win32_StreamToGameOutput(const char *buf, int bufLength)
 {
     EDITSTREAM es = { 0 };
+#if 0
     es.pfnCallback = GameOutputEditStreamCallback;
+#else
+    es.pfnCallback = DebugEditStreamCallback;
+#endif
     // NOTE(jon):  The cookie should be the new data, while lpBuff
     // should be GameOutputBuffer (i believe?)
     //es.dwCookie    = (DWORD_PTR)GameState.GameOutputBuffer;
     es.dwCookie = (DWORD_PTR)buf;
-    if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT, (LPARAM)&es) && es.dwError == 0) 
+    if (strlen(buf) > 0)
     {
-        OutputDebugStringA("Stream success!\n");
+        if (SendMessage(GameState.GameOutput, EM_STREAMIN, SF_TEXT|SFF_SELECTION, (LPARAM)&es) && es.dwError == 0) 
+        {
+            OutputDebugStringA("Stream success!\n");
+        }
+        else if (es.dwError != 0)
+            OutputDebugStringA("ew.dwError != 0\n");
     }
-    else if (es.dwError != 0)
-        OutputDebugStringA("ew.dwError != 0\n");
     
 }
+#endif
 
 internal void
 ProcessInputFromSocket(char *recvBuf)
 {
-    char tmpBuf[4096] = {0};
+#if 0
+    local_persist TCHAR tmpBuf[4096];
+    memset(tmpBuf,0,4096);
     uint16 recvIndex = 0;
     uint16 tmpIndex = 0;
+    if (strlen(recvBuf) == 0)
+        return;
     while (recvBuf[recvIndex] != 0)
     {
         // NOTE(jon):  Filtering telnet commands
-        
-        if(recvBuf[recvIndex] == TN_GA)
-        { OutputDebugStringA("GA\n\r"); }
-        else if(recvBuf[recvIndex] == TN_NOP)
-        { OutputDebugStringA("NOP\n\r"); }
-        else if(recvBuf[recvIndex] == TN_SE)
-        { OutputDebugStringA("SE\n\r"); }
-        else if(recvBuf[recvIndex] == TN_EOR)
-        { OutputDebugStringA("EOR\n\r"); }
-        else if (recvBuf[recvIndex] == TN_IAC)
-        { OutputDebugStringA("IAC\n\r"); }
-        else if(recvBuf[recvIndex] == TN_WILL)
-        { OutputDebugStringA("WILL\n\r"); }
-        else if(recvBuf[recvIndex] == TN_WONT)
-        { OutputDebugStringA("WONT\n\r"); }
-        else if(recvBuf[recvIndex] == TN_DO)
-        { OutputDebugStringA("DO\n\r"); }
-        else if(recvBuf[recvIndex] == TN_DONT)
-        { OutputDebugStringA("DONT\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_ECHO)
-        { OutputDebugStringA("ECHO\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_STATUS)
-        { OutputDebugStringA("STATUS\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_TIMING_MARK)
-        { OutputDebugStringA("TIMING_MARK\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_TERMINAL_TYPE)
-        { OutputDebugStringA("TERMINAL_TYPE\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_EOR)
-        { OutputDebugStringA("EOR\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_NAWS)
-        { OutputDebugStringA("NAWS\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_COMPRESS)
-        { OutputDebugStringA("COMPRESS\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_COMPRESS2)
-        { OutputDebugStringA("COMPRESS2\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_MSP)
-        { OutputDebugStringA("MSP\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_MXP)
-        { OutputDebugStringA("MXP\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_102)
-        { OutputDebugStringA("102\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_ATCP)
-        { OutputDebugStringA("ATCP\n\r"); }
-        else if(recvBuf[recvIndex] == OPT_GMCP)
-        { OutputDebugStringA("GMCP\n\r"); }
-        else
+#if 0
+        if (recvBuf[recvIndex] >= TN_EOR && recvBuf[recvIndex] <= TN_IAC)
         {
-            tmpBuf[tmpIndex] = recvBuf[recvIndex];
-            tmpIndex++;
+            char tCommand[4] = { 0 };
+            for (int tIndex = 0; tIndex < 4; tIndex++)
+            {
+                if (recvBuf[recvIndex+tIndex] == '\0')
+                    break;
+                tCommand[tIndex] = recvBuf[recvIndex+tIndex];
+            }
+            processTelnetCommand(tCommand);
+        }
+#endif
+        
+        switch (recvBuf[recvIndex])
+        {
+            case TN_GA:
+            { OutputDebugStringA("GA\n\r"); } break;
+            case TN_NOP:
+            { OutputDebugStringA("NOP\n\r"); } break;
+            case TN_SE:
+            { OutputDebugStringA("SE\n\r"); } break;
+            case TN_EOR:
+            { OutputDebugStringA("EOR\n\r"); } break;
+            case TN_IAC:
+            { OutputDebugStringA("IAC "); } break;
+            case TN_WILL:
+            { OutputDebugStringA("WILL "); } break;
+            case TN_WONT:
+            { OutputDebugStringA("WONT "); } break;
+            case TN_DO:
+            { OutputDebugStringA("DO "); } break;
+            case TN_DONT:
+            { OutputDebugStringA("DONT "); } break;
+            case OPT_ECHO:
+            { OutputDebugStringA("ECHO\n\r"); } break;
+            case OPT_STATUS:
+            { OutputDebugStringA("STATUS\n\r"); } break;
+            case OPT_TIMING_MARK:
+            { OutputDebugStringA("TIMING_MARK\n\r"); } break;
+            case OPT_TERMINAL_TYPE:
+            { OutputDebugStringA("TERMINAL_TYPE\n\r"); } break;
+            case OPT_EOR:
+            { OutputDebugStringA("EOR\n\r"); } break;
+            case OPT_NAWS:
+            { OutputDebugStringA("NAWS\n\r"); } break;
+            case OPT_COMPRESS:
+            { OutputDebugStringA("COMPRESS\n\r"); } break;
+            case OPT_COMPRESS2:
+            { OutputDebugStringA("COMPRESS2\n\r"); } break;
+            case OPT_MSP:
+            { OutputDebugStringA("MSP\n\r"); } break;
+            case OPT_MXP:
+            { OutputDebugStringA("MXP\n\r"); } break;
+            case OPT_102:
+            { OutputDebugStringA("102\n\r"); } break;
+            case OPT_ATCP:
+            { OutputDebugStringA("ATCP\n\r"); } break;
+            case OPT_GMCP:
+            { OutputDebugStringA("GMCP\n\r"); } break;
+            default:
+            {
+                tmpBuf[tmpIndex] = recvBuf[recvIndex];
+                tmpIndex++;
+            }
         }
         recvIndex++;
     }
-    
-    memcpy(GameState.GameOutputBuffer, tmpBuf, GameState.GameOutputBufferLength);
+    memcpy(recvBuf, tmpBuf, sizeof(tmpBuf));
+#endif
     
     // TODO(jon):  Remove this when streamin is fixed.
-    if(strlen(tmpBuf)>0)
-        win32_AppendText(GameState.GameOutput, GameState.GameOutputBuffer);
+#if 1
+    if( strlen(recvBuf)>0 )
+        win32_AppendText( GameState.GameOutput, recvBuf );
+#endif
 }
 
 DWORD WINAPI 
@@ -310,20 +427,30 @@ SocketListenThreadProc(LPVOID lpParameter)
     if (GameState.isInitialized)
     {
         int iResult;
+        local_persist char recvbuf[4096];
+        memset(recvbuf, 0, 4096);
         
         // Receive until the peer closes the connection
         do {
-            iResult = recv(Socket.sock, GameState.GameOutputBuffer, GameState.GameOutputBufferLength, 0);
+            iResult = recv(Socket.sock, recvbuf, 4096, 0);
             if ( iResult > 0 )
             {
                 OutputDebugStringA("Bytes received: >0\n");//, iResult);
-                ProcessInputFromSocket(GameState.GameOutputBuffer);
-                win32_StreamToGameOutput(GameState.GameOutputBuffer, GameState.GameOutputBufferLength);
+                if (strlen(recvbuf) > 0)
+                {
+                    ProcessInputFromSocket(recvbuf);
+#if 0
+                    win32_StreamToGameOutput(recvbuf, 4096);
+#endif
+                }
             }
             else if ( iResult == 0 )
                 OutputDebugStringA("Connection closed\n");
             else
+            {
+                int error = WSAGetLastError();
                 OutputDebugStringA("recv failed: ?\n");//, WSAGetLastError());
+            }
             
         } while( iResult > 0 );
         
@@ -388,7 +515,9 @@ WinMain(
             HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)
             {
+#if 0
                 win32_AppendText(GameState.GameOutput, OutputBytes);
+#endif
                 OutputDebugStringA("Socket Connected\r\n");
                 
                 char *Param = "Socket listening.\r\n";
@@ -397,7 +526,9 @@ WinMain(
             }
             else
             {
+#if 0
                 win32_AppendText(GameState.GameOutput, TEXT("Could not connect to server.\r\n"));
+#endif
                 OutputDebugStringA("Error in win32_InitAndConnectSocket()");
                 SocketListenThreadHandle = 0;
             }

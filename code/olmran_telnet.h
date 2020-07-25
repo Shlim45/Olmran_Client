@@ -88,13 +88,13 @@ void processTelnetCommand(const char *command)
         _type = "IAC";
         break;
         default:
-        _type="";
-        //_type = QString::number((quint8)ch);
+        //_type="";
+        _type = &ch;
         break;
     }
     if (strlen(command) > 2) 
     {
-        OutputDebugStringA("SERVER sent telnet:"); 
+        OutputDebugStringA("SERVER sent telnet: "); 
         OutputDebugStringA(_type);
         OutputDebugStringA(" + ");
         const char tmpBuf[2] = {command[2], '\0'};
@@ -102,7 +102,7 @@ void processTelnetCommand(const char *command)
         OutputDebugStringA("\r\n");
     } else 
     {
-        OutputDebugStringA("SERVER sent telnet:");
+        OutputDebugStringA("SERVER sent telnet: ");
         OutputDebugStringA(_type);
         OutputDebugStringA("\r\n");
     }
