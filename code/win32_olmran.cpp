@@ -24,7 +24,7 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
-    cf.crTextColor = RGB(55,200,100);// <----- the color of the text
+    cf.crTextColor = RGB(186,218,85);// <----- the color of the text
     SendMessage( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
     
     CHARRANGE cr;
@@ -36,29 +36,32 @@ win32_AppendText(const HWND GameOutput, const char *newText)
 #endif
 
 internal HWND
-CreateRichEdit(HWND hwndOwner,        // Dialog box handle.
-               int x, int y,          // Location.
-               int width, int height, // Dimensions.
-               HMENU controlId,       // Control ID.
-               HINSTANCE hinst)       // Application or DLL instance.
+CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
+                 int x, int y,          // Location.
+                 int width, int height, // Dimensions.
+                 HMENU controlId,       // Control ID.
+                 HINSTANCE hinst)       // Application or DLL instance.
 {
     LoadLibrary(TEXT("Riched32.dll"));
     
     HWND hwndEdit= CreateWindowEx(0, RICHEDIT_CLASS, TEXT("Game Output"),
-                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_TABSTOP | WS_VSCROLL | ES_AUTOVSCROLL, 
+                                  ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
                                   x, y, width, height, 
                                   hwndOwner, controlId, hinst, 0);
+    
+    // Set Background Color
+    SendMessage( hwndEdit, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
     
     return hwndEdit;
 }
 
 internal HWND
-CreateInputBox(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
+CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
 {
     HWND hwndInput = CreateWindowEx(
                                     0, TEXT("EDIT"),   // predefined class 
                                     NULL,         // no window title 
-                                    WS_CHILD | WS_VISIBLE | ES_LEFT, 
+                                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT, 
                                     0, 0, 0, 0,   // set size in WM_SIZE message 
                                     hwndOwner,         // parent window 
                                     controlId,   // edit control ID 
@@ -130,12 +133,12 @@ win32_MainWindowCallback(HWND   Window,
         case WM_CREATE:
         {
             // Create Edit Control
-            GameOutput = CreateRichEdit(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
-                                        (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameOutput = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
+                                          (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameOutput = GameOutput;
             
             // Create Input Control
-            GameInput = CreateInputBox(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameInput = GameInput;
         } break; 
         
@@ -150,18 +153,34 @@ win32_MainWindowCallback(HWND   Window,
             // Make the static control the size of the window's client 
             OutputDebugStringA("WM_SIZE\n\r");
             
-            MoveWindow(GameOutput, 
-                       0, 0,                  // starting x- and y-coordinates 
-                       LOWORD(LParam),        // width of client area 
-                       HIWORD(LParam)-25,     // height of client area 
+            MoveWindow(GameState.GameOutput, 
+                       5, 5,                  // starting x- and y-coordinates 
+                       LOWORD(LParam)-10,     // width of client area 
+                       HIWORD(LParam)-40,     // height of client area 
                        TRUE);                 // repaint window 
             
-            MoveWindow(GameInput, 
-                       0, HIWORD(LParam)-25,  // starting x- and y-coordinates 
-                       LOWORD(LParam),        // width of client area 
-                       25,                    // height of client area 
+            MoveWindow(GameState.GameInput, 
+                       5, HIWORD(LParam)-30,  // starting x- and y-coordinates 
+                       LOWORD(LParam)-10,     // width of client area 
+                       20,                    // height of client area 
                        TRUE);                 // repaint window 
             
+            SetFocus(GameState.GameInput);
+            
+#if 0
+            // TODO(jon):  Handle input
+            void Edit_GetText(               // calls GetWindowTextA and returns length (not including \0)
+                              hwndCtl,       // A handle to the edit control.
+                              lpch,          // A pointer to the buffer that will receive the text.
+                              cchMax         // The maximum number of characters to copy to the buffer, including the NULL terminator.
+                              );
+            
+            // TODO(jon): input history
+            void Edit_SetText(
+                              hwndCtl,
+                              lpsz           // A pointer to a null-terminated string to be set as the text in the control.
+                              );
+#endif
         } break;
         
         case WM_DESTROY:
@@ -335,19 +354,7 @@ ProcessInputFromSocket(char *recvBuf)
     while (recvBuf[recvIndex] != 0)
     {
         // NOTE(jon):  Filtering telnet commands
-#if 0
-        if (recvBuf[recvIndex] >= TN_EOR && recvBuf[recvIndex] <= TN_IAC)
-        {
-            char tCommand[3] = { 0 };
-            for (int tIndex = 0; tIndex < 3; tIndex++)
-            {
-                if (recvBuf[recvIndex+tIndex] == '\0')
-                    break;
-                tCommand[tIndex] = recvBuf[recvIndex+tIndex];
-            }
-            processTelnetCommand(tCommand);
-        }
-#endif
+        
         if (recvBuf[recvIndex] >= ' ' && recvBuf[recvIndex] <= '~')
         {
             // valid char
@@ -402,11 +409,7 @@ ProcessInputFromSocket(char *recvBuf)
                 case OPT_GMCP:
                 { OutputDebugStringA("GMCP\n\r"); } break;
                 default:
-                {
-                    OutputDebugStringA("" + recvBuf[recvIndex]);
-                    //tmpBuf[tmpIndex] = recvBuf[recvIndex];
-                    //tmpIndex++;
-                }
+                OutputDebugStringA("\nDEFAULT: " + (char)recvBuf[recvIndex]);
             }
         }
         recvIndex++;
@@ -468,7 +471,7 @@ WinMain(
         LPSTR       CommandLine,
         int         ShowCode)
 {
-    WNDCLASS WindowClass = {};
+    WNDCLASSA WindowClass = {};
     // TODO(jon):  Check if any of this is needed.
     WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
     WindowClass.lpfnWndProc = win32_MainWindowCallback;
@@ -506,17 +509,10 @@ WinMain(
             GameState.GameOutputBuffer = recvbuf;
             GameState.GameOutputBufferLength = 4096;
             
-            TCHAR OutputBytes[] = TEXT("This is the MUD Client for Olmran\r\n")
-                TEXT("There are many like it, but this one is special!\r\n")
-                TEXT("I leared C++ while creating it... maybe?");
-            
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)
             {
-#if 0
-                win32_AppendText(GameState.GameOutput, OutputBytes);
-#endif
                 OutputDebugStringA("Socket Connected\r\n");
                 
                 char *Param = "Socket listening.\r\n";
@@ -525,9 +521,7 @@ WinMain(
             }
             else
             {
-#if 0
                 win32_AppendText(GameState.GameOutput, TEXT("Could not connect to server.\r\n"));
-#endif
                 OutputDebugStringA("Error in win32_InitAndConnectSocket()");
                 SocketListenThreadHandle = 0;
             }
