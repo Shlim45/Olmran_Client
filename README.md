@@ -35,7 +35,7 @@ build
 
 Running (without debugger)
 ```
-cd \Build\
+cd \build\
 win32_olmran.exe
 ```
 ## Running the tests
