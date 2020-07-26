@@ -76,47 +76,61 @@ GetANSIColor(const char *ANSI)
 
 // NOTE(jon): takes the processed input from recv AFTER telnet filtered
 internal void
-ANSITest(char *strbuf)
+ParseBufferForANSI(char *strbuf)
 {
     if (strlen(strbuf) > 0)
     {
         uint16 aPos = 0;    // current char position in strbuf
-        uint16 aIndex = 0;  // index of next Escape sequence
+        uint16 aIndex = 0;  // index of LAST Escape sequence
         uint16 mIndex = 0;  // index of "m" terminating Escape sequence
-        local_persist char tmpbuf[512] = {0};
+        const int tmpBufSize = Kilobytes(4);
+        char tmpbuf[tmpBufSize] = {0};
         char *head;
         head = strbuf;
         bool32 stillSearching = true;  // true until no more Escape sequences
-        uint16 n = 0;
         bool32 processing = false;
         uint16 strLength = (uint16) strlen(strbuf);
         
-        while (stillSearching && n < strLength && n != 512)
+        while (stillSearching && aPos < strLength && aPos != tmpBufSize)
         {
-            if (strbuf[n] == '\u001B')
+            if (strbuf[aPos] == '\u001B')
             {
-                aIndex = n;
+                aIndex = aPos;
                 int advanceAmount = mIndex == 0 ? aIndex : (aIndex-(mIndex+1));
+                memset(tmpbuf, 0, tmpBufSize);
                 strncpy_s(tmpbuf,head,advanceAmount);
                 win32_AppendText(GameState.GameOutput.Window, tmpbuf);
                 head += advanceAmount; // do after
-                aPos = aIndex;
                 processing = true;
-                memset(tmpbuf, 0, 512);
             }
-            else if (strbuf[n] == 'm' && processing)
+            else if (processing && strbuf[aPos] == 'm')
             {
-                // TODO(jon): handle CRESET not ending in a 0
-                mIndex = n;
-                strncpy_s(tmpbuf,head,mIndex+1-aPos);
+                mIndex = aPos;
+                memset(tmpbuf, 0, tmpBufSize);
+                strncpy_s(tmpbuf,head,mIndex+1-aIndex); 
                 GameState.CurrentColor = GetANSIColor(tmpbuf);
                 head += strlen(tmpbuf);
-                memset(tmpbuf, 0, 512);
                 processing = false;
             }
-            else if (strbuf[n] == '\0')
+            else if(processing && strbuf[aPos] == '0')
+            {
+                // NOTE(jon):  Attempt at handling "\u001B[0"
+                if (aPos < (tmpBufSize+1))
+                {
+                    if (strbuf[aPos+1] != ';' && strbuf[aPos+1] != 'm')
+                    {
+                        mIndex = aPos;
+                        memset(tmpbuf, 0, tmpBufSize);
+                        strncpy_s(tmpbuf,head,mIndex+1-aIndex); 
+                        GameState.CurrentColor = GetANSIColor(tmpbuf);
+                        head += strlen(tmpbuf);
+                        processing = false;
+                    }
+                }
+            }
+            else if (strbuf[aPos] == '\0')
                 stillSearching = false;
-            n++;
+            aPos++;
 #if 0
             mIndex = strstr(head, "m");  // find first escape
             if (mIndex==nullptr)
@@ -133,15 +147,24 @@ ANSITest(char *strbuf)
 #endif
         }
         
-        if (aPos == 0)
+        if (aIndex == 0)
         {
             win32_AppendText(GameState.GameOutput.Window, strbuf);
         }
-        else if (!processing)
+        else if (!processing && strlen(head) != 0)
         {
-            strncpy_s(tmpbuf,head,strlen(head));
-            win32_AppendText(GameState.GameOutput.Window, tmpbuf);
-            memset(tmpbuf, 0, 512);
+            int copySize = mIndex+1-aPos;
+            if (copySize > 0)
+            {
+                memset(tmpbuf, 0, tmpBufSize);
+                strncpy_s(tmpbuf,head,copySize);
+                win32_AppendText(GameState.GameOutput.Window, tmpbuf);
+            }
+        }
+        else
+        {
+            // TODO(jon):  buffer ended in middle of processing ANSI
+            OutputDebugStringA("ANSI: buffer ended without closing ansi sequence");
         }
     }
 }

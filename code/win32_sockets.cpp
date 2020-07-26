@@ -98,8 +98,9 @@ win32_InitAndConnectSocket()
 internal void
 ProcessInputFromSocket(char *recvBuf)
 {
-    local_persist TCHAR tmpBuf[4096];
-    memset(tmpBuf,0,4096);
+    const int tmpBufSize = Kilobytes(4);
+    local_persist TCHAR tmpBuf[tmpBufSize];
+    memset(tmpBuf,0,tmpBufSize);
     uint16 recvIndex = 0;
     uint16 tmpIndex = 0;
     if (strlen(recvBuf) == 0)
@@ -174,12 +175,12 @@ ProcessInputFromSocket(char *recvBuf)
         recvIndex++;
     }
     // clear recvBuf and fill it with 
-    memset(recvBuf, 0, 4096);
+    memset(recvBuf, 0, tmpBufSize);
     
     // TODO(jon):  Remove this when streamin is fixed.
     if( strlen(tmpBuf)>0 )
     {
-        ANSITest(tmpBuf);
+        ParseBufferForANSI(tmpBuf);
         //win32_AppendText( GameState.GameOutput, recvBuf );
     }
 }
