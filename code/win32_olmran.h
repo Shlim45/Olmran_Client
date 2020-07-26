@@ -43,4 +43,7 @@ global_variable bool GlobalRunning;
 global_variable win32_socket Socket;
 global_variable game_state GameState;
 
+internal void
+win32_AppendText(const HWND GameOutput, const char *newText);
+
 #endif //WIN32_OLMRAN_H
