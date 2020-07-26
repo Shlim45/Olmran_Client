@@ -98,7 +98,7 @@ ANSITest(char *strbuf)
                 aIndex = n;
                 int advanceAmount = mIndex == 0 ? aIndex : (aIndex-(mIndex+1));
                 strncpy_s(tmpbuf,head,advanceAmount);
-                win32_AppendText(GameState.GameOutput, tmpbuf);
+                win32_AppendText(GameState.GameOutput.Window, tmpbuf);
                 head += advanceAmount; // do after
                 aPos = aIndex;
                 processing = true;
@@ -135,12 +135,12 @@ ANSITest(char *strbuf)
         
         if (aPos == 0)
         {
-            win32_AppendText(GameState.GameOutput, strbuf);
+            win32_AppendText(GameState.GameOutput.Window, strbuf);
         }
         else if (!processing)
         {
             strncpy_s(tmpbuf,head,strlen(head));
-            win32_AppendText(GameState.GameOutput, tmpbuf);
+            win32_AppendText(GameState.GameOutput.Window, tmpbuf);
             memset(tmpbuf, 0, 512);
         }
     }

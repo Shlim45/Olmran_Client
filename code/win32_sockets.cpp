@@ -17,17 +17,17 @@ internal uint32
 win32_SendInputThroughSocket(SOCKET s, game_state gState)
 {
     int inputLength = GetWindowTextA(                                   // returns length (not including \0)
-                                     gState.GameInput,                  // A handle to the edit control.
-                                     (LPSTR) GameState.GameInputBuffer, // buffer to receive text.
-                                     gState.GameInputBufferLength       // max number of chars to copy, including the NULL terminator.
+                                     gState.GameInput.Window,                  // A handle to the edit control.
+                                     (LPSTR) gState.GameInput.Buffer, // buffer to receive text.
+                                     gState.GameInput.BufferLength       // max number of chars to copy, including the NULL terminator.
                                      );
-    SetWindowTextA(gState.GameInput, "");
-    GameState.GameInputBuffer[inputLength] = '\n';
-    inputLength = (int) strlen(GameState.GameInputBuffer);
+    SetWindowTextA(gState.GameInput.Window, "");
+    gState.GameInput.Buffer[inputLength] = '\n';
+    inputLength = (int) strlen(gState.GameInput.Buffer);
     
     uint32 iResult;
-    iResult = win32_WriteToSocket( s, GameState.GameInputBuffer, (int)strlen(GameState.GameInputBuffer), 0 );
-    memset(GameState.GameInputBuffer, 0, GameState.GameInputBufferLength);
+    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
     return iResult;
 }
 

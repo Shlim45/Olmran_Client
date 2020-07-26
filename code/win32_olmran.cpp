@@ -26,8 +26,8 @@ win32_MainWindowCallback(HWND   Window,
                          LPARAM LParam)
 {
     LRESULT Result = 0;
-    local_persist HWND GameOutput;
-    local_persist HWND GameInput;
+    HWND GameOutput;
+    HWND GameInput;
     
     switch(Message)
     {
@@ -36,37 +36,34 @@ win32_MainWindowCallback(HWND   Window,
             // Create Edit Control
             GameOutput = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
                                           (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
-            GameState.GameOutput = GameOutput;
+            GameState.GameOutput.Window = GameOutput;
             
             // Create Input Control
             GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
-            GameState.GameInput = GameInput;
+            GameState.GameInput.Window = GameInput;
         } break; 
         
         case WM_SETFOCUS:
         {
-            // OutputDebugStringA("WM_SETFOCUS\n\r");
-            SetFocus(GameState.GameInput); 
+            SetFocus(GameState.GameInput.Window); 
         } break; 
         
         case WM_SIZE:
         {
-            // Make the static control the size of the window's client 
-            OutputDebugStringA("WM_SIZE\n\r");
-            
-            MoveWindow(GameState.GameOutput, 
+            // Make the control the size of the window's client 
+            MoveWindow(GameState.GameOutput.Window, 
                        5, 5,                  // starting x- and y-coordinates 
                        LOWORD(LParam)-10,     // width of client area 
                        HIWORD(LParam)-40,     // height of client area 
                        TRUE);                 // repaint window 
             
-            MoveWindow(GameState.GameInput, 
+            MoveWindow(GameState.GameInput.Window, 
                        5, HIWORD(LParam)-30,  // starting x- and y-coordinates 
                        LOWORD(LParam)-10,     // width of client area 
                        20,                    // height of client area 
                        TRUE);                 // repaint window 
             
-            SetFocus(GameState.GameInput);
+            SetFocus(GameState.GameInput.Window);
         } break;
         
         case WM_DESTROY:
@@ -83,12 +80,11 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_ACTIVATEAPP:
         {
-            SetFocus(GameState.GameInput);
+            SetFocus(GameState.GameInput.Window);
         } break;
         
         default:
         {
-            //            OutputDebugStringA("default case\n\r");
             Result = DefWindowProc(Window, Message, WParam, LParam);
         }
     }
@@ -137,12 +133,12 @@ WinMain(
             GameState.isInitialized = true;
             
             local_persist char recvbuf[4096];
-            GameState.GameOutputBuffer = recvbuf;
-            GameState.GameOutputBufferLength = 4096;
+            GameState.GameOutput.Buffer = recvbuf;
+            GameState.GameOutput.BufferLength = 4096;
             
             local_persist char sendbuf[512];
-            GameState.GameInputBuffer = sendbuf;
-            GameState.GameInputBufferLength = 512;
+            GameState.GameInput.Buffer = sendbuf;
+            GameState.GameInput.BufferLength = 512;
             
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
@@ -156,7 +152,7 @@ WinMain(
             }
             else
             {
-                win32_AppendText(GameState.GameOutput, TEXT("Could not connect to server.\r\n"));
+                win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\r\n"));
                 OutputDebugStringA("Error in win32_InitAndConnectSocket()");
                 SocketListenThreadHandle = 0;
             }
