@@ -87,7 +87,6 @@ ANSITest(char *strbuf)
         char *head;
         head = strbuf;
         bool32 stillSearching = true;  // true until no more Escape sequences
-        
         uint16 n = 0;
         bool32 processing = false;
         uint16 strLength = (uint16) strlen(strbuf);
@@ -97,9 +96,10 @@ ANSITest(char *strbuf)
             if (strbuf[n] == '\u001B')
             {
                 aIndex = n;
-                strncpy_s(tmpbuf,head,aIndex);
+                int advanceAmount = mIndex == 0 ? aIndex : (aIndex-(mIndex+1));
+                strncpy_s(tmpbuf,head,advanceAmount);
                 win32_AppendText(GameState.GameOutput, tmpbuf);
-                head += n; // do after
+                head += advanceAmount; // do after
                 aPos = aIndex;
                 processing = true;
                 memset(tmpbuf, 0, 512);
@@ -131,6 +131,17 @@ ANSITest(char *strbuf)
                 strncpy(tmpbuf,head,mIndex+1);
             }
 #endif
+        }
+        
+        if (aPos == 0)
+        {
+            win32_AppendText(GameState.GameOutput, strbuf);
+        }
+        else if (!processing)
+        {
+            strncpy_s(tmpbuf,head,strlen(head));
+            win32_AppendText(GameState.GameOutput, tmpbuf);
+            memset(tmpbuf, 0, 512);
         }
     }
 }
