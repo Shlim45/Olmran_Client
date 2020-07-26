@@ -31,6 +31,20 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
     return iResult;
 }
 
+internal uint32
+win32_WriteStringToSocket(SOCKET s, game_state gState, char *str)
+{
+    uint16 inputLength;
+    inputLength = (uint16)strlen(str);
+    strcpy_s(gState.GameInput.Buffer, gState.GameInput.BufferLength, str);
+    gState.GameInput.Buffer[inputLength] = '\n';
+    inputLength = (uint16) strlen(gState.GameInput.Buffer);
+    
+    uint32 iResult;
+    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
+    return iResult;
+}
 
 internal void 
 win32_CloseSocket()

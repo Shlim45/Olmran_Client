@@ -41,6 +41,7 @@ struct game_state
     game_buffer GameOutput;
     game_buffer GameInput;
     COLORREF CurrentColor;
+    bool32 AutoSneak;
 };
 
 global_variable bool GlobalRunning;

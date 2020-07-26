@@ -44,6 +44,9 @@ win32_MainWindowCallback(HWND   Window,
             
             // Set starting Text Color
             GameState.CurrentColor = C_RESET;
+            
+            // Set autosneak
+            GameState.AutoSneak = false;
         } break; 
         
         case WM_SETFOCUS:
