@@ -60,7 +60,7 @@ LRESULT CALLBACK InputEditProc(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 
                 case VK_ESCAPE:
                 {
-                    SetWindowTextA(GameState.GameInput, "");
+                    SetWindowTextA(GameState.GameInput.Window, "");
                     return 0;
                 } break;
                 
