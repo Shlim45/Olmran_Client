@@ -2,6 +2,9 @@
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)
 {
+    if (strlen(newText) == 0)
+        return;
+    
     LRESULT start_lines, end_lines;
     start_lines = SendMessage(GameOutput, EM_GETLINECOUNT,0,0);
     
