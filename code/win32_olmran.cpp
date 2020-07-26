@@ -36,16 +36,34 @@ win32_AppendText(const HWND GameOutput, const char *newText)
 #endif
 
 internal uint32
-win32_SendInputThroughSocket(SOCKET s, const char *buf, int len, int flags)
+win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
 {
     uint32 iResult;
-    iResult = send( s, buf, (int)strlen(buf), 0 );
+    iResult = send( s, buf, bufLen, flags );
     if (iResult == SOCKET_ERROR) {
         OutputDebugStringA("send failed with error\n");
         closesocket(s);
         WSACleanup();
         return 1;
     }
+    return iResult;
+}
+
+internal uint32
+win32_SendInputThroughSocket(SOCKET s, game_state gState)
+{
+    char inputBuf[512] = {0};
+    int inputLength = GetWindowTextA(                           // returns length (not including \0)
+                                     gState.GameInput,       // A handle to the edit control.
+                                     (LPSTR) inputBuf,          // A pointer to the buffer that will receive the text.
+                                     gState.GameInputBufferLength// The maximum number of characters to copy to the buffer, including the NULL terminator.
+                                     );
+    SetWindowTextA(gState.GameInput, "");
+    inputBuf[inputLength] = '\n';
+    inputLength = (int) strlen(inputBuf);
+    
+    uint32 iResult;
+    iResult = win32_WriteToSocket( s, inputBuf, (int)strlen(inputBuf), 0 );
     return iResult;
 }
 
@@ -58,10 +76,10 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
 {
     LoadLibrary(TEXT("Riched32.dll"));
     
-    HWND hwndEdit= CreateWindowExA(0, RICHEDIT_CLASS, TEXT("Game Output"),
+    HWND hwndEdit= CreateWindowExA(0, RICHEDIT_CLASS, NULL,
                                    ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
                                    x, y, width, height, 
-                                   hwndOwner, controlId, hinst, 0);
+                                   hwndOwner, controlId, hinst, NULL);
     
     // Set Background Color
     SendMessageA( hwndEdit, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
@@ -81,22 +99,47 @@ LRESULT CALLBACK InputEditProc(HWND wnd, UINT msg, WPARAM wParam, LPARAM lParam)
             {
                 case VK_RETURN:
                 {
-                    // TODO(jon):  Send input
-                    char inputBuf[512] = {0};
-                    int inputLength = GetWindowTextA(               // calls GetWindowTextA and returns length (not including \0)
-                                                     GameState.GameInput,       // A handle to the edit control.
-                                                     (LPSTR) inputBuf,          // A pointer to the buffer that will receive the text.
-                                                     GameState.GameInputBufferLength// The maximum number of characters to copy to the buffer, including the NULL terminator.
-                                                     );
-                    win32_SendInputThroughSocket(Socket.sock, inputBuf, 512, 0);
-                    SetWindowTextA(GameState.GameInput, "");
+                    win32_SendInputThroughSocket(Socket.sock, GameState);
                     return 0;
                 } break;
+                
                 case VK_ESCAPE:
                 {
                     SetWindowTextA(GameState.GameInput, "");
                     return 0;
                 } break;
+                
+                case VK_MBUTTON:
+                case VK_END:
+                {
+                    // TODO(jon):  middle mouse button / end key, scroll game output to EOF
+                } //break;
+                
+                case VK_PRIOR:
+                {
+                    // TODO(jon):  page up
+                } //break;
+                
+                case VK_NEXT:
+                {
+                    // TODO(jon):  page down
+                } //break;
+                
+                case VK_UP:
+                {
+                    // TODO(jon):  up arrow, cycle through input history
+                } //break;
+                
+                case VK_DOWN:
+                {
+                    // TODO(jon):  down arrow, cycle through input history
+                } //break;
+                
+                case VK_NUMPAD0:
+                {
+                    // TODO(jon):  NUMPAD 0 - 9
+                } //break;
+                
                 default:
                 {
                     return CallWindowProc(oldEditProc, wnd, msg, wParam, lParam);
@@ -120,6 +163,18 @@ CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
                                      controlId,   // edit control ID 
                                      hinst, 
                                      NULL);        // pointer not needed 
+    
+    // Set Background Color
+    SendMessageA( hwndInput, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
+    
+    CHARFORMAT cf;
+    memset( &cf, 0, sizeof cf );
+    cf.cbSize = sizeof cf;
+    cf.dwMask = CFM_COLOR;
+    cf.crTextColor = RGB(186,218,85);// <----- the color of the text
+    SendMessageA( hwndInput, EM_SETCHARFORMAT, (LPARAM)SPF_SETDEFAULT, (LPARAM) &cf);
+    
+    
     oldEditProc = (WNDPROC)SetWindowLongPtr(hwndInput, GWLP_WNDPROC, (LONG_PTR)InputEditProc);
     
     return hwndInput;
@@ -221,21 +276,6 @@ win32_MainWindowCallback(HWND   Window,
                        TRUE);                 // repaint window 
             
             SetFocus(GameState.GameInput);
-            
-#if 0
-            // TODO(jon):  Handle input
-            void Edit_GetText(               // calls GetWindowTextA and returns length (not including \0)
-                              hwndCtl,       // A handle to the edit control.
-                              lpch,          // A pointer to the buffer that will receive the text.
-                              cchMax         // The maximum number of characters to copy to the buffer, including the NULL terminator.
-                              );
-            
-            // TODO(jon): input history
-            void Edit_SetText(
-                              hwndCtl,
-                              lpsz           // A pointer to a null-terminated string to be set as the text in the control.
-                              );
-#endif
         } break;
         
         case WM_DESTROY:
@@ -253,47 +293,6 @@ win32_MainWindowCallback(HWND   Window,
         case WM_ACTIVATEAPP:
         {
             // OutputDebugStringA("WM_ACTIVATEAPP\n\r");
-            
-        } break;
-        
-        case WM_SYSKEYDOWN:
-        case WM_SYSKEYUP:
-        case WM_KEYDOWN:
-        case WM_KEYUP:
-        {
-            uint32 KeyCode = (uint32) WParam;
-            switch (KeyCode)
-            {
-                case VK_MBUTTON:
-                case VK_END:
-                {
-                    // TODO(jon):  middle mouse button / end key, scroll game output to EOF
-                } break;
-                case VK_ESCAPE:
-                {
-                    // TODO(jon):  Clear input bar
-                } break;
-                case VK_PRIOR:
-                {
-                    // TODO(jon):  page up
-                } break;
-                case VK_NEXT:
-                {
-                    // TODO(jon):  page down
-                } break;
-                case VK_UP:
-                {
-                    // TODO(jon):  up arrow, cycle through input history
-                } break;
-                case VK_DOWN:
-                {
-                    // TODO(jon):  down arrow, cycle through input history
-                } break;
-                case VK_NUMPAD0:
-                {
-                    // TODO(jon):  NUMPAD 0 - 9
-                } break;
-            }
             
         } break;
         
@@ -574,7 +573,7 @@ WinMain(
     WindowClass.hInstance = Instance;
     //    WindowClass.hIcon = ;
     //    WindowClass.hCursor = ;
-    //    WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
+    WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     //    WindowClass.lpszMenuName = ;
     WindowClass.lpszClassName = "OlmranWindowClass";
     
