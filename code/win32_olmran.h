@@ -34,19 +34,13 @@ struct game_buffer
     uint16 BufferLength;
 };
 
-struct game_text_color
-{
-    COLORREF DefaultColor;
-    COLORREF CurrentColor;
-};
-
 struct game_state
 {
     HWND Window;
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
-    game_text_color Colors;
+    COLORREF CurrentColor;
 };
 
 global_variable bool GlobalRunning;
