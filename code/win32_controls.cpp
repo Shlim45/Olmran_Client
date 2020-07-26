@@ -9,8 +9,7 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
-    //cf.crTextColor = RGB(186,218,85);
-    cf.crTextColor = GameState.Colors.CurrentColor;
+    cf.crTextColor = GameState.CurrentColor;
     SendMessageA( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
     
     CHARRANGE cr;

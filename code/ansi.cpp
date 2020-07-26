@@ -109,7 +109,7 @@ ANSITest(char *strbuf)
                 // TODO(jon): handle CRESET not ending in a 0
                 mIndex = n;
                 strncpy_s(tmpbuf,head,mIndex+1-aPos);
-                GetANSIColor(tmpbuf);
+                GameState.CurrentColor = GetANSIColor(tmpbuf);
                 head += strlen(tmpbuf);
                 memset(tmpbuf, 0, 512);
                 processing = false;

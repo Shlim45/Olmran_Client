@@ -184,7 +184,6 @@ SocketListenThreadProc(LPVOID lpParameter)
             iResult = recv(Socket.sock, recvbuf, 4096, 0);
             if ( iResult > 0 )
             {
-                OutputDebugStringA("Bytes received: >0\n");//, iResult);
                 if (strlen(recvbuf) > 0)
                 {
                     ProcessInputFromSocket(recvbuf);
