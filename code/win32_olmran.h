@@ -27,16 +27,19 @@ struct win32_state
 	void *GameMemoryBlock;
 };
 
+struct game_buffer
+{
+    HWND Window;
+    char *Buffer;
+    uint16 BufferLength;
+};
+
 struct game_state
 {
     HWND Window;
-    HWND GameOutput;
-    HWND GameInput;
     bool32 isInitialized;
-    char *GameOutputBuffer;
-    uint16 GameOutputBufferLength;
-    char *GameInputBuffer;
-    uint16 GameInputBufferLength;
+    game_buffer GameOutput;
+    game_buffer GameInput;
 };
 
 global_variable bool GlobalRunning;
