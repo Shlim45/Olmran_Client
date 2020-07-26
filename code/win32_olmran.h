@@ -40,6 +40,7 @@ struct game_state
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
+    COLORREF CurrentColor;
 };
 
 global_variable bool GlobalRunning;

@@ -41,6 +41,9 @@ win32_MainWindowCallback(HWND   Window,
             // Create Input Control
             GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameInput.Window = GameInput;
+            
+            // Set starting Text Color
+            GameState.CurrentColor = C_RESET;
         } break; 
         
         case WM_SETFOCUS:

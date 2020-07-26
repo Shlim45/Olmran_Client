@@ -9,7 +9,7 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
-    cf.crTextColor = RGB(186,218,85);
+    cf.crTextColor = GameState.CurrentColor;
     SendMessageA( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
     
     CHARRANGE cr;
@@ -118,7 +118,7 @@ CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
                                      controlId,   // edit control ID 
                                      hinst, 
                                      NULL);        // pointer not needed 
-    
+#if 0
     // Set Background Color
     SendMessageA( hwndInput, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
     
@@ -128,7 +128,7 @@ CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
     cf.dwMask = CFM_COLOR;
     cf.crTextColor = RGB(186,218,85);// <----- the color of the text
     SendMessageA( hwndInput, EM_SETCHARFORMAT, (LPARAM)SPF_SETDEFAULT, (LPARAM) &cf);
-    
+#endif
     
     oldEditProc = (WNDPROC)SetWindowLongPtr(hwndInput, GWLP_WNDPROC, (LONG_PTR)InputEditProc);
     
