@@ -46,7 +46,7 @@ win32_MainWindowCallback(HWND   Window,
         case WM_SETFOCUS:
         {
             // OutputDebugStringA("WM_SETFOCUS\n\r");
-            SetFocus(GameOutput); 
+            SetFocus(GameState.GameInput); 
         } break; 
         
         case WM_SIZE:
@@ -83,8 +83,7 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_ACTIVATEAPP:
         {
-            // OutputDebugStringA("WM_ACTIVATEAPP\n\r");
-            
+            SetFocus(GameState.GameInput);
         } break;
         
         default:
