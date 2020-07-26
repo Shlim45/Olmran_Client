@@ -79,6 +79,7 @@ extern "C" {
 #define global_variable static
     
 #define ID_EDITCHILD 100
+#define ID_INPUTCHILD 101
 #define HOST_ADDRESS "192.168.1.208"
 #define HOST_PORT 4000
     
