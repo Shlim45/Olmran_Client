@@ -1,13 +1,15 @@
 
-/* https://stackoverflow.com/questions/16329007/win32-appending-text-to-an-edit-control */
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)
 {
+    LRESULT start_lines, end_lines;
+    start_lines = SendMessage(GameOutput, EM_GETLINECOUNT,0,0);
+    
     CHARFORMAT cf;
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
-    cf.crTextColor = RGB(186,218,85);// <----- the color of the text
+    cf.crTextColor = RGB(186,218,85);
     SendMessageA( GameOutput, EM_SETCHARFORMAT, (LPARAM)SCF_SELECTION, (LPARAM) &cf);
     
     CHARRANGE cr;
@@ -15,6 +17,9 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     cr.cpMax = -1;
     SendMessageA(GameOutput, EM_EXSETSEL, 0, (LPARAM)&cr);
     SendMessageA(GameOutput, EM_REPLACESEL, 0, (LPARAM)newText);
+    
+    end_lines = SendMessage(GameOutput, EM_GETLINECOUNT,0,0);
+    SendMessage(GameOutput, EM_LINESCROLL, 0, end_lines - start_lines);
 }
 
 internal HWND
