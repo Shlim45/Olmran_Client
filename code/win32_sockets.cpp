@@ -16,18 +16,18 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
 internal uint32
 win32_SendInputThroughSocket(SOCKET s, game_state gState)
 {
-    char inputBuf[512] = {0};
-    int inputLength = GetWindowTextA(                           // returns length (not including \0)
-                                     gState.GameInput,       // A handle to the edit control.
-                                     (LPSTR) inputBuf,          // A pointer to the buffer that will receive the text.
-                                     gState.GameInputBufferLength// The maximum number of characters to copy to the buffer, including the NULL terminator.
+    int inputLength = GetWindowTextA(                                   // returns length (not including \0)
+                                     gState.GameInput,                  // A handle to the edit control.
+                                     (LPSTR) GameState.GameInputBuffer, // buffer to receive text.
+                                     gState.GameInputBufferLength       // max number of chars to copy, including the NULL terminator.
                                      );
     SetWindowTextA(gState.GameInput, "");
-    inputBuf[inputLength] = '\n';
-    inputLength = (int) strlen(inputBuf);
+    GameState.GameInputBuffer[inputLength] = '\n';
+    inputLength = (int) strlen(GameState.GameInputBuffer);
     
     uint32 iResult;
-    iResult = win32_WriteToSocket( s, inputBuf, (int)strlen(inputBuf), 0 );
+    iResult = win32_WriteToSocket( s, GameState.GameInputBuffer, (int)strlen(GameState.GameInputBuffer), 0 );
+    memset(GameState.GameInputBuffer, 0, GameState.GameInputBufferLength);
     return iResult;
 }
 
