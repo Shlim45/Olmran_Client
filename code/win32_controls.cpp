@@ -8,7 +8,7 @@ win32_AppendText(const HWND GameOutput, const char *newText)
     LRESULT start_lines, end_lines;
     start_lines = SendMessage(GameOutput, EM_GETLINECOUNT,0,0);
     
-    CHARFORMAT cf;
+    CHARFORMATA cf;
     memset( &cf, 0, sizeof cf );
     cf.cbSize = sizeof cf;
     cf.dwMask = CFM_COLOR;
@@ -49,6 +49,13 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
     
     // Set Background Color
     SendMessageA( hwndEdit, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
+    
+    // Set Font
+    HFONT Font; 
+    
+    // Retrieve a handle to the variable stock font.  
+    Font = (HFONT)GetStockObject(OEM_FIXED_FONT); 
+    SendMessageA(hwndEdit, WM_SETFONT, (WPARAM)Font, TRUE);
     
     return hwndEdit;
 }
