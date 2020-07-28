@@ -1,4 +1,3 @@
-
 internal uint32
 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
 {
@@ -21,13 +20,18 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
                                      (LPSTR) gState.GameInput.Buffer, // buffer to receive text.
                                      gState.GameInput.BufferLength       // max number of chars to copy, including the NULL terminator.
                                      );
+    
     SetWindowTextA(gState.GameInput.Window, "");
-    gState.GameInput.Buffer[inputLength] = '\n';
+    
+    if (inputLength < gState.GameInput.BufferLength - 1)
+        gState.GameInput.Buffer[inputLength] = '\n';
     inputLength = (int) strlen(gState.GameInput.Buffer);
     
     uint32 iResult;
     iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    
     memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
+    
     return iResult;
 }
 
@@ -36,13 +40,18 @@ win32_WriteStringToSocket(SOCKET s, game_state gState, char *str)
 {
     uint16 inputLength;
     inputLength = (uint16)strlen(str);
+    
     strcpy_s(gState.GameInput.Buffer, gState.GameInput.BufferLength, str);
-    gState.GameInput.Buffer[inputLength] = '\n';
+    
+    if (inputLength < gState.GameInput.BufferLength - 1)
+        gState.GameInput.Buffer[inputLength] = '\n';
     inputLength = (uint16) strlen(gState.GameInput.Buffer);
     
     uint32 iResult;
     iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    
     memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
+    
     return iResult;
 }
 
@@ -94,89 +103,19 @@ win32_InitAndConnectSocket()
     return 0;
 }
 
-
 internal void
 ProcessInputFromSocket(char *recvBuf)
 {
+    if (strlen(recvBuf) == 0)
+        return;
+    
     const int tmpBufSize = Kilobytes(4);
     local_persist TCHAR tmpBuf[tmpBufSize];
     memset(tmpBuf,0,tmpBufSize);
-    uint16 recvIndex = 0;
-    uint16 tmpIndex = 0;
-    if (strlen(recvBuf) == 0)
-        return;
-    while (recvBuf[recvIndex] != 0)
-    {
-        // NOTE(jon):  Filtering telnet commands
-        
-        if (recvBuf[recvIndex] >= ' ' && recvBuf[recvIndex] <= '~')
-        {
-            // valid char
-            tmpBuf[tmpIndex] = recvBuf[recvIndex];
-            tmpIndex++;
-        }
-        else if (recvBuf[recvIndex] >= 9 && recvBuf[recvIndex] <= 13)
-        {
-            // valid formatting
-            if (recvBuf[recvIndex] != 13) // prevent double spacing (convert from CRLF to LF)
-            {
-                tmpBuf[tmpIndex] = recvBuf[recvIndex];
-                tmpIndex++;
-            }
-        }
-        else if (recvBuf[recvIndex] == '\u001B')
-        {
-            // valid Escape sequence
-            tmpBuf[tmpIndex] = recvBuf[recvIndex];
-            tmpIndex++;
-        }
-        else
-        {
-            switch (recvBuf[recvIndex])
-            {
-                case TN_GA:
-                { OutputDebugStringA("GA\n\r"); } break;
-                case TN_NOP:
-                { OutputDebugStringA("NOP\n\r"); } break;
-                case TN_SE:
-                { OutputDebugStringA("SE\n\r"); } break;
-                case TN_EOR:
-                { OutputDebugStringA("EOR\n\r"); } break;
-                case TN_IAC:
-                { OutputDebugStringA("IAC "); } break;
-                case TN_WILL:
-                { OutputDebugStringA("WILL "); } break;
-                case TN_WONT:
-                { OutputDebugStringA("WONT "); } break;
-                case TN_DO:
-                { OutputDebugStringA("DO "); } break;
-                case TN_DONT:
-                { OutputDebugStringA("DONT "); } break;
-                case OPT_ECHO:
-                { OutputDebugStringA("ECHO\n\r"); } break;
-                case OPT_STATUS:
-                { OutputDebugStringA("STATUS\n\r"); } break;
-                case OPT_TIMING_MARK:
-                { OutputDebugStringA("TIMING_MARK\n\r"); } break;
-                case OPT_TERMINAL_TYPE:
-                { OutputDebugStringA("TERMINAL_TYPE\n\r"); } break;
-                case OPT_EOR:
-                { OutputDebugStringA("EOR\n\r"); } break;
-                case OPT_NAWS:
-                { OutputDebugStringA("NAWS\n\r"); } break;
-                case OPT_ATCP:
-                { OutputDebugStringA("ATCP\n\r"); } break;
-                case OPT_GMCP:
-                { OutputDebugStringA("GMCP\n\r"); } break;
-                default:
-                OutputDebugStringA("\nDEFAULT: " + (char)recvBuf[recvIndex]);
-            }
-        }
-        recvIndex++;
-    }
+    
+    TelnetNegotiation(Telnet, tmpBuf, recvBuf, (uint32) strlen(recvBuf));
     // clear recvBuf and fill it with 
     memset(recvBuf, 0, tmpBufSize);
-    
     // TODO(jon):  Remove this when streamin is fixed.
     if( strlen(tmpBuf)>0 )
     {

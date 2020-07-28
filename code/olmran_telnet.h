@@ -29,82 +29,48 @@ const char TN_IAC = static_cast<char>(255);
 const char TNSB_IS = 0;
 const char TNSB_SEND = 1;
 
-
-const char OPT_ECHO = 1;
-const char OPT_STATUS = 5;
-const char OPT_TIMING_MARK = 6;
+const char OPT_BINARY        = 0;
+const char OPT_ECHO          = 1;
+const char OPT_SGA           = 3;
+const char OPT_STATUS        = 5;
+const char OPT_TIMING_MARK   = 6;
 const char OPT_TERMINAL_TYPE = 24;
-const char OPT_EOR = 25;
-const char OPT_NAWS = 31;
-const char OPT_COMPRESS = 85;
-const char OPT_COMPRESS2 = 86;
-const char OPT_MSP = 90;
-const char OPT_MXP = 91;
-const char OPT_102 = 102;
-const char OPT_ATCP = static_cast<char>(200);
-const char OPT_GMCP = static_cast<char>(201);
+const char OPT_EOR           = 25;
+const char OPT_NAWS          = 31;
+const char OPT_MSDP          = 69;
+const char OPT_COMPRESS      = 85;
+const char OPT_COMPRESS2     = 86;
+const char OPT_MSP           = 90;
+const char OPT_MXP           = 91;
+const char OPT_102           = 102;
+const char OPT_ATCP          = static_cast<char>(200);
+const char OPT_GMCP          = static_cast<char>(201);
+
+const char CUSTOM_CLIENT_BYTE = static_cast<char>(222);
+
+const char TN_QUAL_IS        = static_cast<char>(0);
+const char TN_QUAL_SEND      = static_cast<char>(1);
 
 const char MSSP_VAR = 1;
 const char MSSP_VAL = 2;
 
-const char MSDP_VAR = 1;
-const char MSDP_VAL = 2;
-const char MSDP_TABLE_OPEN = 3;
+const char MSDP_VAR         = 1;
+const char MSDP_VAL         = 2;
+const char MSDP_TABLE_OPEN  = 3;
 const char MSDP_TABLE_CLOSE = 4;
-const char MSDP_ARRAY_OPEN = 5;
+const char MSDP_ARRAY_OPEN  = 5;
 const char MSDP_ARRAY_CLOSE = 6;
 
-
-void processTelnetCommand(const char *command)
-{
-    char ch = command[1];
-    
-    char *_type;
-    switch ((uint8)ch) {
-        case 239:
-        _type = "TN_EOR";
-        break;
-        case 249:
-        _type = "TN_GA";
-        break;
-        case 250:
-        _type = "SB";
-        break;
-        case 251:
-        _type = "WILL";
-        break;
-        case 252:
-        _type = "WONT";
-        break;
-        case 253:
-        _type = "DO";
-        break;
-        case 254:
-        _type = "DONT";
-        break;
-        case 255:
-        _type = "IAC";
-        break;
-        default:
-        //_type="";
-        _type = &ch;
-        break;
-    }
-    if (strlen(command) > 2) 
-    {
-        OutputDebugStringA("\r\nSERVER sent telnet: "); 
-        OutputDebugStringA(_type);
-        OutputDebugStringA(" + ");
-        const char tmpBuf[2] = {command[2], '\0'};
-        OutputDebugStringA(tmpBuf);
-        OutputDebugStringA("\r\n");
-    } else 
-    {
-        OutputDebugStringA("\r\nSERVER sent telnet: ");
-        OutputDebugStringA(_type);
-        OutputDebugStringA("\r\n");
-    }
-}
-
+const char STATE_DATA          = 0;
+const char STATE_IAC           = 1;
+const char STATE_IACSB         = 2;
+const char STATE_IACWILL       = 3;
+const char STATE_IACDO         = 4;
+const char STATE_IACWONT       = 5;
+const char STATE_IACDONT       = 6;
+const char STATE_IACSBIAC      = 7;
+const char STATE_IACSBDATA     = 8;
+const char STATE_IACSBDATAIAC  = 9;
+const char STATE_IACGMCPDATA   = 10;
 
 #endif //OLMRAN_TELNET_H

@@ -12,9 +12,10 @@
 #include <windows.h>
 #include <richedit.h>
 
-#include "olmran_telnet.h"
 #include "win32_olmran.h"
 
+#include "olmran_gmcp.cpp"
+#include "olmran_telnet.cpp"
 #include "ansi.cpp"
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
@@ -151,6 +152,8 @@ WinMain(
             if (win32_InitAndConnectSocket()==0)
             {
                 OutputDebugStringA("Socket Connected\r\n");
+                
+                TelnetInit(Telnet);
                 
                 char *Param = "Socket listening.\r\n";
                 
