@@ -34,12 +34,21 @@ struct game_buffer
     uint16 BufferLength;
 };
 
+struct user_input_history
+{
+    uint8 NumberOfCommands;
+    uint8 CurrentPosition;
+    uint16 BufferSize;
+    char *Commands;
+};
+
 struct game_state
 {
     HWND Window;
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
+    user_input_history CommandHistory;
     COLORREF CurrentColor;
     bool32 AutoSneak;
 };
@@ -53,7 +62,7 @@ struct telnet_negotiation_buffer
     uint16 subNegSize;
 };
 
-struct telnet_X_buffers // lol naming
+struct telnet_x_buffers // lol naming
 {
     char *receivedDX; // What IAC DO(NT) request do we have already received?
     char *receivedWX; // What IAC WILL/WONT ...
@@ -68,7 +77,7 @@ struct telnet_state
     char negState;            // Current negotiation state
     int32 outOffset;
     telnet_negotiation_buffer negBuffers; // name?
-    telnet_X_buffers xBuffers;
+    telnet_x_buffers xBuffers;
 };
 
 global_variable bool GlobalRunning;

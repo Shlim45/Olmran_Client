@@ -103,16 +103,26 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 case VK_UP:
                 {
                     // TODO(jon):  up arrow, cycle through input history
-                    if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak north" : "north");
+                    if (KeyBeingPressed && !KeyWasDown)
+                    {
+                        if (!Numlock)
+                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak north" : "north");
+                        else
+                            CycleThroughUserInputHistory(-1);
+                    }
                     return 0;
                 } break;
                 
                 case VK_DOWN:
                 {
-                    // TODO(jon):  down arrow, cycle through input history
-                    if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak south" : "south");
+                    // TODO(jon):  Numlock is a bad toggle for this.  Have an option on the client.
+                    if (KeyBeingPressed && !KeyWasDown)
+                    {
+                        if (!Numlock)
+                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southeast" : "southeast");
+                        else
+                            CycleThroughUserInputHistory(-1);
+                    }
                     return 0;
                 } break;
                 

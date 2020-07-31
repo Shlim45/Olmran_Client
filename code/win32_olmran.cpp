@@ -17,6 +17,7 @@
 #include "olmran_gmcp.cpp"
 #include "olmran_telnet.cpp"
 #include "ansi.cpp"
+#include "olmran_state.cpp"
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 
@@ -146,6 +147,15 @@ WinMain(
             local_persist char sendbuf[512];
             GameState.GameInput.Buffer = sendbuf;
             GameState.GameInput.BufferLength = 512;
+            
+#if 0
+            local_persist char commandHistoryBuffer[10][512];
+            memset(commandHistoryBuffer, 0, 5120);
+            GameState.CommandHistory.Commands = *commandHistoryBuffer;
+            GameState.CommandHistory.BufferSize = 512;
+            GameState.CommandHistory.NumberOfCommands = 10;
+            GameState.CommandHistory.CurrentPosition = 0;
+#endif
             
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
