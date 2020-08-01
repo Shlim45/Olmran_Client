@@ -49,9 +49,11 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                     int inputLength = GetWindowTextA(GameState.GameInput.Window,
                                                      (LPSTR) GameState.CommandHistory.CurrentCommand,
                                                      GameState.CommandHistory.CurrentSize);
-                    
-                    UpdateCommandHistory();
-                    win32_SendInputThroughSocket(Socket.sock, GameState);
+                    if (inputLength > 0)
+                    {
+                        UpdateCommandHistory();
+                        win32_SendInputThroughSocket(Socket.sock, GameState);
+                    }
                     return 0;
                 } break;
                 

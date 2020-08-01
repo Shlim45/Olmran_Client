@@ -164,7 +164,7 @@ ParseBufferForANSI(char *strbuf)
         else
         {
             // TODO(jon):  buffer ended in middle of processing ANSI
-            OutputDebugStringA("ANSI: buffer ended without closing ansi sequence");
+            OutputDebugStringA("ANSI: buffer ended without closing ansi sequence\n");
         }
     }
 }

@@ -7,6 +7,7 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
         OutputDebugStringA("send failed with error\n");
         closesocket(s);
         WSACleanup();
+        GlobalRunning = false;
         return 1;
     }
     return iResult;
@@ -157,7 +158,7 @@ SocketListenThreadProc(LPVOID lpParameter)
             else
             {
                 int error = WSAGetLastError();
-                OutputDebugStringA("recv failed: ?\n");//, WSAGetLastError());
+                OutputDebugStringA("recv failed: Closed by user?\n");//, WSAGetLastError());
             }
             
         } while( iResult > 0 );
@@ -165,6 +166,9 @@ SocketListenThreadProc(LPVOID lpParameter)
         // cleanup
         closesocket(Socket.sock);
         WSACleanup();
+        
+        // NOTE(jon):  This will close the window when socket disconnects
+        GlobalRunning = false;
     }
     return 0;
 }
