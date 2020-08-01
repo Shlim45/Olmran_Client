@@ -1,3 +1,13 @@
+#if 0
+internal void
+InitializeCommandHistory(game_state gState, char *buffer)
+{
+    gState.CommandHistory.Commands = buffer;
+    gState.CommandHistory.BufferSize = 512;
+    gState.CommandHistory.NumberOfCommands = 10;
+    gState.CommandHistory.CurrentPosition = -1;
+}
+#endif
 
 internal void
 CycleThroughUserInputHistory(int8 Direction)
@@ -28,10 +38,15 @@ CycleThroughUserInputHistory(int8 Direction)
         && GameState.CommandHistory.CurrentPosition < (GameState.CommandHistory.NumberOfCommands-1))
     {
         // cycle up
-        GameState.CommandHistory.CurrentPosition++;
+        char *NewText = GameState.CommandHistory.Commands + ((GameState.CommandHistory.CurrentPosition+1) * GameState.CommandHistory.BufferSize);
         
-        SetWindowTextA(GameState.GameInput.Window,
-                       GameState.CommandHistory.Commands + (GameState.CommandHistory.CurrentPosition * GameState.CommandHistory.BufferSize));
+        if (NewText[0] != 0)
+        {
+            GameState.CommandHistory.CurrentPosition++;
+            
+            SetWindowTextA(GameState.GameInput.Window,
+                           GameState.CommandHistory.Commands + (GameState.CommandHistory.CurrentPosition * GameState.CommandHistory.BufferSize));
+        }
     }
     else if (Direction < 0 && GameState.CommandHistory.CurrentPosition > -1)
     {
