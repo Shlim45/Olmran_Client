@@ -136,6 +136,8 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
                         win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak west" : "west");
+                    else
+                        return CallWindowProc(DefaultWindowProc, Window, Message, wParam, lParam);
                     return 0;
                 } break;
                 
@@ -143,6 +145,8 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
                         win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak east" : "east");
+                    else
+                        return CallWindowProc(DefaultWindowProc, Window, Message, wParam, lParam);
                     return 0;
                 } break;
                 
