@@ -46,6 +46,11 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
             {
                 case VK_RETURN:
                 {
+                    int inputLength = GetWindowTextA(GameState.GameInput.Window,
+                                                     (LPSTR) GameState.CommandHistory.CurrentCommand,
+                                                     GameState.CommandHistory.CurrentSize);
+                    
+                    UpdateCommandHistory();
                     win32_SendInputThroughSocket(Socket.sock, GameState);
                     return 0;
                 } break;
@@ -53,6 +58,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 case VK_ESCAPE:
                 {
                     SetWindowTextA(GameState.GameInput.Window, "");
+                    GameState.CommandHistory.CurrentPosition = -1;
                     return 0;
                 } break;
                 
@@ -70,7 +76,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
             bool32 KeyWasDown = lParam & (1<<30);
             switch (wParam)
             {
-                // handled in WM_CHAR listener
+                // handled in WM_CHAR listener to prevent BEEP
                 case VK_RETURN:
                 case VK_ESCAPE:
                 { return 0; } break;
@@ -108,7 +114,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                         if (!Numlock)
                             win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak north" : "north");
                         else
-                            CycleThroughUserInputHistory(-1);
+                            CycleThroughUserInputHistory(1);
                     }
                     return 0;
                 } break;
@@ -119,7 +125,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                     if (KeyBeingPressed && !KeyWasDown)
                     {
                         if (!Numlock)
-                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southeast" : "southeast");
+                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak south" : "south");
                         else
                             CycleThroughUserInputHistory(-1);
                     }
