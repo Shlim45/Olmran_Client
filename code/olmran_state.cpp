@@ -13,11 +13,14 @@ CycleThroughUserInputHistory(int8 Direction)
     }
     else if (GameState.CommandHistory.CurrentPosition == 0 && Direction < 0)
     {
-        int Success = SetWindowTextA(GameState.GameInput.Window,
-                                     GameState.CommandHistory.CurrentCommand);
+        bool32 Success = SetWindowTextA(GameState.GameInput.Window,
+                                        GameState.CommandHistory.CurrentCommand);
         if (Success)
         {
             memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
+            
+            GameState.CommandHistory.CurrentPosition--;
+            
         }
     }
     
@@ -27,31 +30,73 @@ CycleThroughUserInputHistory(int8 Direction)
         // cycle up
         GameState.CommandHistory.CurrentPosition++;
         
-        int Success = SetWindowTextA(GameState.GameInput.Window,
-                                     GameState.CommandHistory.Commands);
-        if (Success)
-        {
-            //memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
-        }
+        SetWindowTextA(GameState.GameInput.Window,
+                       GameState.CommandHistory.Commands + (GameState.CommandHistory.CurrentPosition * GameState.CommandHistory.BufferSize));
     }
     else if (Direction < 0 && GameState.CommandHistory.CurrentPosition > -1)
     {
         // cycle down
         GameState.CommandHistory.CurrentPosition--;
+        
+        SetWindowTextA(GameState.GameInput.Window,
+                       GameState.CommandHistory.Commands + (GameState.CommandHistory.CurrentPosition * GameState.CommandHistory.BufferSize));
     }
+    
+    // Set caret to end
+    int index = GetWindowTextLengthA( GameState.GameInput.Window );
+    SendMessage( GameState.GameInput.Window, EM_SETSEL, (WPARAM)index, (LPARAM)index );
 }
 
 internal void
 UpdateCommandHistory()
 {
+    for (int Slot = GameState.CommandHistory.NumberOfCommands - 1;
+         Slot >= 0;
+         Slot--)
+    {
+        // clear this buffer slot
+        memset(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * Slot),
+               0, GameState.CommandHistory.BufferSize);
+        
+        // copy previous slot to this slot
+        strcpy_s(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * Slot),
+                 GameState.CommandHistory.BufferSize,
+                 GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (Slot-1)));
+        
+        if (Slot == 0)
+        {
+            // This copies the CurrentCommand buffer into the Commands[0] buffer.
+            strcpy_s(GameState.CommandHistory.Commands, GameState.CommandHistory.BufferSize,
+                     GameState.CommandHistory.CurrentCommand);
+            
+            // Clear CurrentCommand buffer
+            memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
+            
+            // Reset position
+            GameState.CommandHistory.CurrentPosition = -1;
+        }
+    }
+#if 0
+    // clear last slot of buffer
+    memset(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-1)),
+           0,
+           GameState.CommandHistory.BufferSize);
+    
+    // copy previous slot to this slot
+    strcpy_s(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-1)),
+             GameState.CommandHistory.BufferSize,
+             GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-2)));
     // NOTE(jon):  This clears the entire command history, which is currently only 1.
-    memset(GameState.CommandHistory.Commands, 0, GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
+    //memset(GameState.CommandHistory.Commands, 0, GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
     
     // This copies the CurrentCommand buffer into the Commands[0] buffer.
     strcpy_s(GameState.CommandHistory.Commands, GameState.CommandHistory.BufferSize,
              GameState.CommandHistory.CurrentCommand);
     
+    // Clear CurrentCommand buffer
     memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
     
+    // Reset position
     GameState.CommandHistory.CurrentPosition = -1;
+#endif
 }

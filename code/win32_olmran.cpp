@@ -146,10 +146,10 @@ WinMain(
             GameState.GameInput.Buffer = sendbuf;
             GameState.GameInput.BufferLength = 512;
             
-            local_persist char lastCommand[512];
-            GameState.CommandHistory.Commands = lastCommand;
+            local_persist char lastCommands[5120];
+            GameState.CommandHistory.Commands = lastCommands;
             GameState.CommandHistory.BufferSize = 512;
-            GameState.CommandHistory.NumberOfCommands = 1;
+            GameState.CommandHistory.NumberOfCommands = 10;
             GameState.CommandHistory.CurrentPosition = -1;
             
             local_persist char currentCommand[512];
