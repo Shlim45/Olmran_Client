@@ -34,12 +34,21 @@ struct game_buffer
     uint16 BufferLength;
 };
 
+#if 0
+struct client_bitmaps
+{
+    HBITMAP gameAssets;
+};
+#endif
+
 struct user_input_history
 {
     uint8 NumberOfCommands;
-    uint8 CurrentPosition;
+    int16 CurrentPosition;
     uint16 BufferSize;
     char *Commands;
+    uint16 CurrentSize;
+    char *CurrentCommand;
 };
 
 struct game_state
@@ -48,6 +57,7 @@ struct game_state
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
+    //client_bitmaps Bitmaps;
     user_input_history CommandHistory;
     COLORREF CurrentColor;
     bool32 AutoSneak;

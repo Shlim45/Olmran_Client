@@ -148,14 +148,15 @@ WinMain(
             GameState.GameInput.Buffer = sendbuf;
             GameState.GameInput.BufferLength = 512;
             
-#if 0
-            local_persist char commandHistoryBuffer[10][512];
-            memset(commandHistoryBuffer, 0, 5120);
-            GameState.CommandHistory.Commands = *commandHistoryBuffer;
+            local_persist char lastCommand[512];
+            GameState.CommandHistory.Commands = lastCommand;
             GameState.CommandHistory.BufferSize = 512;
-            GameState.CommandHistory.NumberOfCommands = 10;
-            GameState.CommandHistory.CurrentPosition = 0;
-#endif
+            GameState.CommandHistory.NumberOfCommands = 1;
+            GameState.CommandHistory.CurrentPosition = -1;
+            
+            local_persist char currentCommand[512];
+            GameState.CommandHistory.CurrentCommand = currentCommand;
+            GameState.CommandHistory.CurrentSize = 512;
             
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
