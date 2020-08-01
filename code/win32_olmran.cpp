@@ -38,10 +38,12 @@ win32_MainWindowCallback(HWND   Window,
             // Create Edit Control
             GameOutput = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
                                           (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameState.GameOutput = {};
             GameState.GameOutput.Window = GameOutput;
             
             // Create Input Control
             GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameState.GameInput = {};
             GameState.GameInput.Window = GameInput;
             
             // Set starting Text Color
@@ -139,10 +141,6 @@ WinMain(
         {
             GameState.Window = WindowHandle;
             GameState.isInitialized = true;
-            
-            local_persist char recvbuf[4096];
-            GameState.GameOutput.Buffer = recvbuf;
-            GameState.GameOutput.BufferLength = 4096;
             
             local_persist char sendbuf[512];
             GameState.GameInput.Buffer = sendbuf;

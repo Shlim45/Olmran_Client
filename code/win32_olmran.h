@@ -30,8 +30,8 @@ struct win32_state
 struct game_buffer
 {
     HWND Window;
-    char *Buffer;
     uint16 BufferLength;
+    char *Buffer;
 };
 
 #if 0

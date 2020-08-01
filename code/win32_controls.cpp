@@ -85,7 +85,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 case VK_END:
                 {
                     if (wParam == VK_END && !Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southwest" : "southwest");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southwest" : "southwest");
                     // TODO(jon):  middle mouse button / end key, scroll game output to last line
                     return 0;
                 } break;
@@ -94,7 +94,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 {
                     // TODO(jon):  page up
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak northeast" : "northeast");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northeast" : "northeast");
                     return 0;
                 } break;
                 
@@ -102,7 +102,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 {
                     // TODO(jon):  page down
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southeast" : "southeast");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southeast" : "southeast");
                     return 0;
                 } break;
                 
@@ -112,7 +112,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                     if (KeyBeingPressed && !KeyWasDown)
                     {
                         if (!Numlock)
-                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak north" : "north");
+                            win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak north" : "north");
                         else
                             CycleThroughUserInputHistory(1);
                     }
@@ -125,7 +125,7 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                     if (KeyBeingPressed && !KeyWasDown)
                     {
                         if (!Numlock)
-                            win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak south" : "south");
+                            win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak south" : "south");
                         else
                             CycleThroughUserInputHistory(-1);
                     }
@@ -135,70 +135,70 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 case VK_LEFT:
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak west" : "west");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak west" : "west");
                     return 0;
                 } break;
                 
                 case VK_RIGHT:
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak east" : "east");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak east" : "east");
                     return 0;
                 } break;
                 
                 case VK_HOME:
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak northwest" : "northwest");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northwest" : "northwest");
                     return 0;
                 } break;
                 
                 case VK_INSERT:
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, "look");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "look");
                     return 0;
                 } break;
                 
                 case VK_DELETE:
                 {
                     if (!Numlock && KeyBeingPressed && !KeyWasDown)
-                        win32_WriteStringToSocket(Socket.sock, GameState, "hide");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "hide");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD0:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, "look");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "look");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD1:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southwest" : "southwest");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southwest" : "southwest");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD2:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak south" : "south");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak south" : "south");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD3:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak southeast" : "southeast");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southeast" : "southeast");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD4:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak west" : "west");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak west" : "west");
                     return 0;
                 } break;
                 
@@ -220,63 +220,63 @@ LRESULT HandleHotKeys(WNDPROC DefaultWindowProc, HWND Window, UINT Message, WPAR
                 case VK_NUMPAD6:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak east" : "east");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak east" : "east");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD7:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak northwest" : "northwest");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northwest" : "northwest");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD8:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak north" : "north");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak north" : "north");
                     return 0;
                 } break;
                 
                 case VK_NUMPAD9:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak northeast" : "northeast");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northeast" : "northeast");
                     return 0;
                 } break;
                 
                 case VK_ADD:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak down" : "down");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak down" : "down");
                     return 0;
                 } break;
                 
                 case VK_SUBTRACT:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak up" : "up");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak up" : "up");
                     return 0;
                 } break;
                 
                 case VK_MULTIPLY:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, GameState.AutoSneak ? "sneak genportal" : "go genportal");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak genportal" : "go genportal");
                     return 0;
                 } break;
                 
                 case VK_DIVIDE:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, "open genportal");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "open genportal");
                     return 0;
                 } break;
                 
                 case VK_DECIMAL:
                 {
                     if (Message == WM_KEYDOWN)
-                        win32_WriteStringToSocket(Socket.sock, GameState, "hide");
+                        win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "hide");
                     return 0;
                 } break;
                 

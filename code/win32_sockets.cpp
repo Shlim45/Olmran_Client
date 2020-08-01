@@ -36,21 +36,21 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
 }
 
 internal uint32
-win32_WriteStringToSocket(SOCKET s, game_state gState, char *str)
+win32_WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
 {
     uint16 inputLength;
     inputLength = (uint16)strlen(str);
     
-    strcpy_s(gState.GameInput.Buffer, gState.GameInput.BufferLength, str);
+    strcpy_s(GameInput.Buffer, GameInput.BufferLength, str);
     
-    if (inputLength < gState.GameInput.BufferLength - 1)
-        gState.GameInput.Buffer[inputLength] = '\n';
-    inputLength = (uint16) strlen(gState.GameInput.Buffer);
+    if (inputLength < GameInput.BufferLength - 1)
+        GameInput.Buffer[inputLength] = '\n';
+    inputLength = (uint16) strlen(GameInput.Buffer);
     
     uint32 iResult;
-    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    iResult = win32_WriteToSocket( s, GameInput.Buffer, (int)strlen(GameInput.Buffer), 0 );
     
-    memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
+    memset(GameInput.Buffer, 0, GameInput.BufferLength);
     
     return iResult;
 }
@@ -130,19 +130,25 @@ SocketListenThreadProc(LPVOID lpParameter)
     if (GameState.isInitialized)
     {
         int iResult;
+        
         local_persist char recvbuf[4096];
-        memset(recvbuf, 0, 4096);
+        game_buffer OutputBuffer = {};
+        OutputBuffer.Window = GameState.GameOutput.Window;
+        OutputBuffer.BufferLength = 4096;
+        OutputBuffer.Buffer = recvbuf;
+        
+        GameState.GameOutput = OutputBuffer;
         
         // Receive until the peer closes the connection
         do {
-            iResult = recv(Socket.sock, recvbuf, 4096, 0);
+            iResult = recv(Socket.sock, OutputBuffer.Buffer, OutputBuffer.BufferLength, 0);
             if ( iResult > 0 )
             {
-                if (strlen(recvbuf) > 0)
+                if (strlen(OutputBuffer.Buffer) > 0)
                 {
-                    ProcessInputFromSocket(recvbuf);
+                    ProcessInputFromSocket(OutputBuffer.Buffer);
 #if 0
-                    win32_StreamToGameOutput(recvbuf, 4096);
+                    win32_StreamToGameOutput(OutputBuffer.Buffer, OutputBuffer.BufferLength);
 #endif
                 }
             }
