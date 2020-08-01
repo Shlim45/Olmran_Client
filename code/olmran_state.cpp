@@ -76,27 +76,4 @@ UpdateCommandHistory()
             GameState.CommandHistory.CurrentPosition = -1;
         }
     }
-#if 0
-    // clear last slot of buffer
-    memset(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-1)),
-           0,
-           GameState.CommandHistory.BufferSize);
-    
-    // copy previous slot to this slot
-    strcpy_s(GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-1)),
-             GameState.CommandHistory.BufferSize,
-             GameState.CommandHistory.Commands + (GameState.CommandHistory.BufferSize * (GameState.CommandHistory.NumberOfCommands-2)));
-    // NOTE(jon):  This clears the entire command history, which is currently only 1.
-    //memset(GameState.CommandHistory.Commands, 0, GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
-    
-    // This copies the CurrentCommand buffer into the Commands[0] buffer.
-    strcpy_s(GameState.CommandHistory.Commands, GameState.CommandHistory.BufferSize,
-             GameState.CommandHistory.CurrentCommand);
-    
-    // Clear CurrentCommand buffer
-    memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
-    
-    // Reset position
-    GameState.CommandHistory.CurrentPosition = -1;
-#endif
 }
