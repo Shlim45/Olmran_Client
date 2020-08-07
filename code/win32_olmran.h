@@ -51,6 +51,13 @@ struct user_input_history
     char *CurrentCommand;
 };
 
+struct gmcp_buffer
+{
+    char *BufferIn;
+    char *BufferOut;
+    uint32 BufferSize;
+};
+
 struct game_state
 {
     HWND Window;
@@ -59,6 +66,7 @@ struct game_state
     game_buffer GameInput;
     //client_bitmaps Bitmaps;
     user_input_history CommandHistory;
+    gmcp_buffer GMCP;
     COLORREF CurrentColor;
     bool32 AutoSneak;
 };

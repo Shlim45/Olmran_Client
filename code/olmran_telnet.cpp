@@ -179,7 +179,7 @@ TelnetNegotiation(telnet_state Tel, char *outBuffer, char *inData, uint32 inData
                 TelnetSendResponse(TN_IAC, reply, b);
                 if (b == OPT_GMCP)
                 {
-                    // TODO(jon):  addGMCPSupport();
+                    addGMCPSupport();
                 }
                 Tel.negState = STATE_DATA;
             } break;

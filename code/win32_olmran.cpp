@@ -156,6 +156,12 @@ WinMain(
             GameState.CommandHistory.CurrentCommand = currentCommand;
             GameState.CommandHistory.CurrentSize = 512;
             
+            local_persist char GMCPBufferOut[1024];
+            local_persist char GMCPBufferIn[1024];
+            GameState.GMCP.BufferOut = GMCPBufferOut;
+            GameState.GMCP.BufferIn = GMCPBufferIn;
+            GameState.GMCP.BufferSize = 1024;
+            
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)
