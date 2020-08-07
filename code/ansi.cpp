@@ -131,29 +131,17 @@ ParseBufferForANSI(char *strbuf)
             else if (strbuf[aPos] == '\0')
                 stillSearching = false;
             aPos++;
-#if 0
-            mIndex = strstr(head, "m");  // find first escape
-            if (mIndex==nullptr)
-            {
-                // TODO(jon):  This buffer ends halfway thru the ansi string!
-                // handle
-                stillSearching = false;
-                continue;
-            }
-            else
-            {
-                strncpy(tmpbuf,head,mIndex+1);
-            }
-#endif
         }
         
         if (aIndex == 0)
         {
             win32_AppendText(GameState.GameOutput.Window, strbuf);
+            return;
         }
-        else if (!processing && strlen(head) != 0)
+        
+        if (!processing && strlen(head) > 0)
         {
-            int copySize = mIndex+1-aPos;
+            int copySize = aPos-(mIndex+1);
             if (copySize > 0)
             {
                 memset(tmpbuf, 0, tmpBufSize);
@@ -161,10 +149,14 @@ ParseBufferForANSI(char *strbuf)
                 win32_AppendText(GameState.GameOutput.Window, tmpbuf);
             }
         }
-        else
+        else if (processing)
         {
             // TODO(jon):  buffer ended in middle of processing ANSI
             OutputDebugStringA("ANSI: buffer ended without closing ansi sequence\n");
+        }
+        else
+        {
+            OutputDebugStringA("ANSI: buffer..?\n");
         }
     }
 }

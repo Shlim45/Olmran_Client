@@ -41,6 +41,9 @@ handleGMCP()
     
     char *command = strtok_s(GameState.GMCP.BufferIn, " ", &command);
     
+    OutputDebugStringA("GMCP Command: ");
+    OutputDebugStringA(command);
+    OutputDebugStringA("\n");
     // TODO(jon):  iterate over SupportedGMCPMessages to find matching command
 }
 

@@ -12,7 +12,6 @@ InitializeCommandHistory(game_state gState, char *buffer)
 internal void
 SetCaretToEnd(HWND TextBoxHandle)
 {
-    // NOTE(jon):  When finished, set caret to end of GameInput textbox.
     int index = GetWindowTextLengthA( TextBoxHandle );
     SendMessage( TextBoxHandle, EM_SETSEL, (WPARAM)index, (LPARAM)index );
 }
@@ -46,7 +45,6 @@ CycleThroughUserInputHistory(int8 Direction)
     
     if (*pos < 0 && Direction > 0)
         StoreCurrentCommand();
-    
     else if (*pos == 0 && Direction < 0)
     {
         bool32 Success = RestorePreviousCommand();
