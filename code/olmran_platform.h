@@ -80,7 +80,13 @@ extern "C" {
     
 #define ID_EDITCHILD 100
 #define ID_INPUTCHILD 101
+#if 1
+    // Connect to local server
 #define HOST_ADDRESS "192.168.1.208"
+#else
+    // Connect to olmran.net
+#define HOST_ADDRESS "52.15.57.217"
+#endif
 #define HOST_PORT 4000
     
 #if OLMRAN_SLOW

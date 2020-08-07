@@ -33,63 +33,6 @@ const char SupportedGMCPMessages[TOTAL_SUPPORTED_GMCP_MESSAGES][25] =
     "accountdata"
 };
 
-internal void
-handleGMCP()
-{
-    if (GameState.GMCP.BufferIn[0] == 0)
-        return;
-    
-    char *command = strtok_s(GameState.GMCP.BufferIn, " ", &command);
-    
-    OutputDebugStringA("GMCP Command: ");
-    OutputDebugStringA(command);
-    OutputDebugStringA("\n");
-    // TODO(jon):  iterate over SupportedGMCPMessages to find matching command
-}
-
-internal void
-handle_gmcp(char *subData, int dataSize)
-{
-    // check that dataSize > 1 (for handling custom client byte?)
-    if (dataSize > 1)
-    {
-        // create local copy of subdata
-        char *data = subData;
-        
-        // check that string has more than one _
-        int count = 0;
-        int first = 0;
-        for (int i = 0; i < dataSize; i++)
-        {
-            if (data[i] == 0)
-                break;
-            if (data[i] == '_')
-            {
-                if(++count==1)
-                    first = i;
-            }
-        }
-        
-        // if so, replace first _ with a .
-        if (count > 1 && first <= dataSize)
-            data[first] = '.';
-        
-        memset(GameState.GMCP.BufferIn, 0, GameState.GMCP.BufferSize);
-        strncpy_s(GameState.GMCP.BufferIn, GameState.GMCP.BufferSize,
-                  data, strlen(data));
-        
-        
-        OutputDebugStringA("GMCP In: ");
-        OutputDebugStringA(subData);
-        OutputDebugStringA("\n");
-        
-        handleGMCP();
-    }
-    // zero out Telnet.negBuffers.subNegotiation
-    memset(Telnet.negBuffers.subNegotiation, 0, Telnet.negBuffers.subNegSize);
-    
-    // call GMCPHandlers.handleGMCP(data) - this will update the client etc.
-}
 
 internal void 
 sendGMCP()
@@ -112,9 +55,7 @@ sendGMCP()
     msg[Pos++]=static_cast<char>(240);
     
     win32_WriteToSocket(Socket.sock, msg, Pos, 0);
-    //msg = addBytes(msg, input);
-    //msg = addBytes(msg, new byte[]{IAC, SE});
-    //write(msg);
+    memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
 }
 
 internal void
@@ -146,8 +87,82 @@ addGMCPSupport()
     GMCPBuffer[Pos++] = ']';
     GMCPBuffer[Pos++] = 0;
     
-    memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
+    //memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
     strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
               GMCPBuffer, Pos);
     sendGMCP();
+}
+
+internal void
+handleGMCP()
+{
+    if (GameState.GMCP.BufferIn[0] == 0)
+        return;
+    char *nextToken = {};
+    const char *command = strtok_s(GameState.GMCP.BufferIn, " ", &nextToken);
+    
+    OutputDebugStringA("GMCP Command: ");
+    OutputDebugStringA(command);
+    OutputDebugStringA("\n");
+    // TODO(jon):  iterate over SupportedGMCPMessages to find matching command
+    
+    if (strcmp ("charinfo", command) == 0)
+    {
+        //memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
+        strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
+                  "char_status", 11);
+        sendGMCP();
+        
+        strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
+                  "char_base", 9);
+        sendGMCP();
+        
+        strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
+                  "char_vitals", 11);
+        sendGMCP();
+    }
+}
+
+internal void
+handle_gmcp(char *subData, int dataSize)
+{
+    // check that dataSize > 1 (for handling custom client byte?)
+    if (dataSize > 1)
+    {
+        // create local copy of subdata
+        char *data = subData;
+        
+        // check that string has more than one _
+        int count = 0;
+        int first = 0;
+        for (int i = 0; i < dataSize; i++)
+        {
+            if (data[i] == 0)
+                break;
+            if (data[i] == '_')
+            {
+                if(++count==1)
+                    first = i;
+            }
+        }
+        
+        // if so, replace first _ with a .
+        if (count > 1 && first <= dataSize)
+            data[first] = '.';
+        
+        memset(GameState.GMCP.BufferIn, 0, GameState.GMCP.BufferSize);
+        strncpy_s(GameState.GMCP.BufferIn, GameState.GMCP.BufferSize,
+                  data, dataSize);
+        data = {};
+        
+        OutputDebugStringA("GMCP In: ");
+        OutputDebugStringA(GameState.GMCP.BufferIn);
+        OutputDebugStringA("\n");
+        
+        handleGMCP();
+    }
+    // zero out Telnet.negBuffers.subNegotiation
+    memset(Telnet.negBuffers.subNegotiation, 0, Telnet.negBuffers.subNegSize);
+    
+    // call GMCPHandlers.handleGMCP(data) - this will update the client etc.
 }
