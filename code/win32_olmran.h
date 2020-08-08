@@ -58,6 +58,28 @@ struct gmcp_buffer
     uint32 BufferSize;
 };
 
+struct user_account
+{};
+
+struct user_player
+{
+    char Name[255];
+    char Gender[255];
+    char Class[255];
+    char Race[255];
+    char Title[255];
+    char Guild[255];
+    uint8 Realm;
+    uint16 Level;
+    uint32 ExpTNL;
+};
+
+struct user
+{
+    user_account Account;
+    user_player Player;
+};
+
 struct game_state
 {
     HWND Window;
@@ -69,6 +91,7 @@ struct game_state
     gmcp_buffer GMCP;
     COLORREF CurrentColor;
     bool32 AutoSneak;
+    user User;
 };
 
 struct telnet_negotiation_buffer

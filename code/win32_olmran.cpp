@@ -162,6 +162,8 @@ WinMain(
             GameState.GMCP.BufferIn = GMCPBufferIn;
             GameState.GMCP.BufferSize = 1024;
             
+            GameState.User.Player = {};
+            
             DWORD ThreadID;
             HANDLE SocketListenThreadHandle;
             if (win32_InitAndConnectSocket()==0)

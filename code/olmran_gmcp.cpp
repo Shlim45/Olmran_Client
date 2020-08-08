@@ -1,3 +1,7 @@
+/* In every .c file that uses jsmn include only declarations: */
+//#define JSMN_HEADER
+#include "jsmn.h"
+
 #define TOTAL_SUPPORTED_GMCP_MESSAGES 29
 
 const char SupportedGMCPMessages[TOTAL_SUPPORTED_GMCP_MESSAGES][25] =
@@ -93,20 +97,36 @@ addGMCPSupport()
     sendGMCP();
 }
 
+internal int 
+jsoneq(const char *json, jsmntok_t *tok, const char *s) 
+{
+    if (tok->type == JSMN_STRING
+        && (int)strlen(s) == tok->end - tok->start
+        && strncmp(json + tok->start, s, tok->end - tok->start) == 0)
+    {
+        return 0;
+    }
+    return -1;
+}
+
 internal void
 handleGMCP()
 {
     if (GameState.GMCP.BufferIn[0] == 0)
         return;
-    char *nextToken = {};
-    const char *command = strtok_s(GameState.GMCP.BufferIn, " ", &nextToken);
+    
+    char *jsonObject = {};
+    const char *command = strtok_s(GameState.GMCP.BufferIn, " ", &jsonObject);
     
     OutputDebugStringA("GMCP Command: ");
     OutputDebugStringA(command);
     OutputDebugStringA("\n");
     // TODO(jon):  iterate over SupportedGMCPMessages to find matching command
     
-    if (strcmp ("charinfo", command) == 0)
+    jsmn_parser parser = {};
+    jsmntok_t tokens[30] = {};
+    
+    if (strcmp("charinfo", command) == 0)
     {
         //memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
         strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
@@ -120,6 +140,244 @@ handleGMCP()
         strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
                   "char_vitals", 11);
         sendGMCP();
+    }
+    else if (strcmp("logout", command) == 0)
+    {
+        memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
+    }
+    else if (strcmp("char.base", command) == 0)
+    {
+        jsmn_init(&parser);
+        
+        // NOTE(jon):  Returns the total number of tokens in the jsonObject.
+        // The entire JSON object itself counts as 1 token, with tokens 1-n
+        // being the inner parts.
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 30);
+        
+        if (Result > 0)
+        {
+            // handle tokens
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                // we have a json object!
+                char valueBuff[255] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    
+                    if (jsoneq(jsonObject, &tokens[Index], "name") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Player.Name, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Name:      ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "gender") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Player.Gender, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Gender:    ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "class") == 0) 
+                    {
+                        continue;
+#if 0
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        // NOTE(jon):  This is the base class, not really used.
+                        
+                        // use the value
+                        OutputDebugStringA("Class:     ");
+#endif
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "subclass") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Player.Class, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Subclass:  ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "race") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Player.Race, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Race:      ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "realm") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Realm = (uint8) valueInt;
+                        // use the value
+                        OutputDebugStringA("Realm:     ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "perlevel") == 0) 
+                    {
+                        continue;
+#if 0
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        // NOTE(jon):  this value is the total exp the player
+                        // needs to lvl, which isnt used at the moment
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.ExpTotalTNL = valueInt;
+                        // use the value
+                        OutputDebugStringA("Perlevel:  ");
+#endif
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "pretitle") == 0) 
+                    {
+                        // add 3 to skip the "*, "
+                        memcpy( valueBuff, &jsonObject[start+3], size-3 );
+                        memcpy( GameState.User.Player.Title, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Pretitle:  ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "clan") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Player.Guild, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("Clan:      ");
+                        
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 255);
+                    valueInt = 0;
+                }
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
+        
+    }
+    else if (strcmp("char.status", command) == 0)
+    {
+        
+        jsmn_init(&parser);
+        
+        // NOTE(jon):  Returns the total number of tokens in the jsonObject.
+        // The entire JSON object itself counts as 1 token, with tokens 1-n
+        // being the inner parts.
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 30);
+        
+        if (Result > 0)
+        {
+            // handle tokens
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                // we have a json object!
+                char valueBuff[255] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    if (jsoneq(jsonObject, &tokens[Index], "level") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Level = (uint16) valueInt;
+                        // use the value
+                        OutputDebugStringA("Level:     ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "tnl") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.ExpTNL = valueInt;
+                        // use the value
+                        OutputDebugStringA("ExpTNL:    ");
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 255);
+                    valueInt = 0;
+                }
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
     }
 }
 
