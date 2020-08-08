@@ -162,6 +162,7 @@ WinMain(
             GameState.GMCP.BufferIn = GMCPBufferIn;
             GameState.GMCP.BufferSize = 1024;
             
+            GameState.User.Account = {};
             GameState.User.Player = {};
             
             DWORD ThreadID;

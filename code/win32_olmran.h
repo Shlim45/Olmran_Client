@@ -58,20 +58,36 @@ struct gmcp_buffer
     uint32 BufferSize;
 };
 
+// {"name": "Zuid","class": "Wizard","level": "44","gender": "M","realm": "3"}
+struct thin_player
+{
+    char Name[256];
+    char Class[256];
+    uint16 Level;
+    uint8 Realm;
+    char Gender;
+};
+
+// TODO(jon):  Cap account characters
 struct user_account
-{};
+{
+    thin_player Characters[10];
+    uint8 CharCount;
+    char LastPlayed[256];
+    bool32 LoggedIn;
+};
 
 struct user_player
 {
-    char Name[255];
-    char Gender[255];
-    char Class[255];
-    char Race[255];
-    char Title[255];
-    char Guild[255];
-    uint8 Realm;
-    uint16 Level;
+    char Name[256];
+    char Gender[256];
+    char Class[256];
+    char Race[256];
+    char Title[256];
+    char Guild[256];
     uint32 ExpTNL;
+    uint16 Level;
+    uint8 Realm;
 };
 
 struct user
@@ -131,4 +147,8 @@ win32_AppendText(const HWND GameOutput, const char *newText);
 
 internal uint32
 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
+
+internal void
+win32_UpdateClientTitle();
+
 #endif //WIN32_OLMRAN_H

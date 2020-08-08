@@ -124,7 +124,7 @@ handleGMCP()
     // TODO(jon):  iterate over SupportedGMCPMessages to find matching command
     
     jsmn_parser parser = {};
-    jsmntok_t tokens[30] = {};
+    jsmntok_t tokens[128] = {};
     
     if (strcmp("charinfo", command) == 0)
     {
@@ -141,9 +141,85 @@ handleGMCP()
                   "char_vitals", 11);
         sendGMCP();
     }
+    else if (strcmp("loggedin", command) == 0)
+    {
+        GameState.User.Account.LoggedIn = true;
+    }
     else if (strcmp("logout", command) == 0)
     {
         memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
+        GameState.User.Account.LoggedIn = false;
+        win32_UpdateClientTitle();
+    }
+    else if (strcmp("accountdata", command) == 0)
+    {
+        jsmn_init(&parser);
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            // handle tokens
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                char valueBuff[256] = {};
+                char arrayBuff[1024] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index++)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    
+                    if (jsoneq(jsonObject, &tokens[Index], "characters") == 0) 
+                    {
+                        memcpy( arrayBuff, &jsonObject[start], size );
+                        
+                        // use the value
+                        OutputDebugStringA("Characters: ");
+                        OutputDebugStringA(arrayBuff);
+                        Index++;
+                        
+                        // TODO(jon):  Loop over the array here
+                        // the array is of characterCount number of jsonObjects
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "characterCount") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Account.CharCount = (uint8) valueInt;
+                        Index++;
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "lastCharacter") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        memcpy( GameState.User.Account.LastPlayed, valueBuff, size );
+                        
+                        // use the value
+                        OutputDebugStringA("LastPlayed: ");
+                        Index++;
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 256);
+                    valueInt = 0;
+                }
+            }
+        }
     }
     else if (strcmp("char.base", command) == 0)
     {
@@ -152,15 +228,14 @@ handleGMCP()
         // NOTE(jon):  Returns the total number of tokens in the jsonObject.
         // The entire JSON object itself counts as 1 token, with tokens 1-n
         // being the inner parts.
-        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 30);
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
         
         if (Result > 0)
         {
             // handle tokens
             if (tokens[0].type == JSMN_OBJECT)
             {
-                // we have a json object!
-                char valueBuff[255] = {};
+                char valueBuff[256] = {};
                 uint32 valueInt = 0;
                 
                 for (int Index = 1, Size = Result; Index < Size; Index+=2)
@@ -178,6 +253,9 @@ handleGMCP()
                     {
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Name, valueBuff, size );
+                        
+                        GameState.User.Account.LoggedIn = true;
+                        win32_UpdateClientTitle();
                         
                         // use the value
                         OutputDebugStringA("Name:      ");
@@ -267,7 +345,7 @@ handleGMCP()
                     OutputDebugStringA("\n");
                     
                     // clear the value
-                    memset(valueBuff, 0, 255);
+                    memset(valueBuff, 0, 256);
                     valueInt = 0;
                 }
             }
@@ -300,18 +378,13 @@ handleGMCP()
         
         jsmn_init(&parser);
         
-        // NOTE(jon):  Returns the total number of tokens in the jsonObject.
-        // The entire JSON object itself counts as 1 token, with tokens 1-n
-        // being the inner parts.
-        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 30);
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
         
         if (Result > 0)
         {
-            // handle tokens
             if (tokens[0].type == JSMN_OBJECT)
             {
-                // we have a json object!
-                char valueBuff[255] = {};
+                char valueBuff[256] = {};
                 uint32 valueInt = 0;
                 
                 for (int Index = 1, Size = Result; Index < Size; Index+=2)
@@ -352,7 +425,77 @@ handleGMCP()
                     OutputDebugStringA("\n");
                     
                     // clear the value
-                    memset(valueBuff, 0, 255);
+                    memset(valueBuff, 0, 256);
+                    valueInt = 0;
+                }
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
+    }
+    else if (strcmp("xpupdate", command) == 0)
+    {
+        
+        jsmn_init(&parser);
+        
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                char valueBuff[256] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    if (jsoneq(jsonObject, &tokens[Index], "exp") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.ExpTNL = valueInt;
+                        // use the value
+                        OutputDebugStringA("ExpTNL:    ");
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 256);
                     valueInt = 0;
                 }
             }

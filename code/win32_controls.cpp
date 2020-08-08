@@ -1,3 +1,16 @@
+internal void
+win32_UpdateClientTitle()
+{
+    char newTitle[256] = {};
+    if (GameState.User.Account.LoggedIn)
+    {
+        strcat_s(newTitle, 256, "Olmran Client - ");
+        strcat_s(newTitle, 256, GameState.User.Player.Name);
+    }
+    else
+        strcat_s(newTitle, 256, "Olmran Client");
+    SetWindowTextA(GameState.Window, newTitle);
+}
 
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)
