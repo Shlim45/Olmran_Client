@@ -150,6 +150,7 @@ handleGMCP()
         memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
         GameState.User.Account.LoggedIn = false;
         win32_UpdateClientTitle();
+        win32_StopMIDIPlayback(GameState.MIDIDevice);
     }
     else if (strcmp("accountdata", command) == 0)
     {
@@ -372,6 +373,11 @@ handleGMCP()
             OutputDebugStringA("Failed to parse JSON\n");
         }
         
+        // TODO(jon):  Start this elsewhere?  Need on player logon
+        if (win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid"))
+        {
+            OutputDebugStringA("Error starting MIDI file.");
+        }
     }
     else if (strcmp("char.status", command) == 0)
     {

@@ -96,6 +96,12 @@ struct user
     user_player Player;
 };
 
+struct midi_device
+{
+    uint32 DeviceID;
+    bool32 IsPlaying;
+};
+
 struct game_state
 {
     HWND Window;
@@ -108,6 +114,7 @@ struct game_state
     COLORREF CurrentColor;
     bool32 AutoSneak;
     user User;
+    midi_device *MIDIDevice;
 };
 
 struct telnet_negotiation_buffer
@@ -151,4 +158,9 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void
 win32_UpdateClientTitle();
 
+internal DWORD 
+win32_PlayMIDIFile(midi_device *MIDIDevice, HWND hWndNotify, LPSTR MIDIFileName);
+
+internal DWORD
+win32_StopMIDIPlayback(midi_device *MIDIDevice);
 #endif //WIN32_OLMRAN_H
