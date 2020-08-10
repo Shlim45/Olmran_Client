@@ -158,9 +158,4 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void
 win32_UpdateClientTitle();
 
-internal DWORD 
-win32_PlayMIDIFile(midi_device *MIDIDevice, HWND hWndNotify, LPSTR MIDIFileName);
-
-internal DWORD
-win32_StopMIDIPlayback(midi_device *MIDIDevice);
 #endif //WIN32_OLMRAN_H
