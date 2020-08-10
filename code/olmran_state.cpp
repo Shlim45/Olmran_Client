@@ -92,12 +92,14 @@ UpdateCommandHistory()
         memset(GameState.CommandHistory.Commands + (BufferSize * Slot),
                0, BufferSize);
         
-        // copy previous slot to this slot
-        strcpy_s(GameState.CommandHistory.Commands + (BufferSize * Slot),
-                 BufferSize,
-                 GameState.CommandHistory.Commands + (BufferSize * (Slot-1)));
-        
-        if (Slot == 0)
+        if (Slot)
+        {
+            // copy previous slot to this slot
+            strcpy_s(GameState.CommandHistory.Commands + (BufferSize * Slot),
+                     BufferSize,
+                     GameState.CommandHistory.Commands + (BufferSize * (Slot-1)));
+        }
+        else
         {
             // This copies the CurrentCommand buffer into the Commands[0] buffer.
             strcpy_s(GameState.CommandHistory.Commands, BufferSize,

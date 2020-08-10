@@ -24,18 +24,21 @@
 internal DWORD
 win32_StopMIDIPlayback(midi_device *MIDIDevice)
 {
-    MCI_GENERIC_PARMS mciGenericParms = {};
     DWORD Return = 0L;
-    
-    Return = mciSendCommand(MIDIDevice->DeviceID, MCI_STOP, MCI_NOTIFY, (DWORD_PTR) &mciGenericParms);
-    if (Return)
-        OutputDebugStringA("MIDI:  Error STOPPING MIDI playback.\n");
-    
-    Return = mciSendCommandA(MIDIDevice->DeviceID, MCI_CLOSE, 0, (DWORD_PTR) &mciGenericParms);
-    if (Return)
-        OutputDebugStringA("MIDI:  Error closing MIDI device.\n");
-    
-    MIDIDevice->DeviceID = 0;
+    if (MIDIDevice->DeviceID)
+    {
+        MCI_GENERIC_PARMS mciGenericParms = {};
+        
+        Return = mciSendCommand(MIDIDevice->DeviceID, MCI_STOP, MCI_NOTIFY, (DWORD_PTR) &mciGenericParms);
+        if (Return)
+            OutputDebugStringA("MIDI:  Error STOPPING MIDI playback.\n");
+        
+        Return = mciSendCommandA(MIDIDevice->DeviceID, MCI_CLOSE, 0, (DWORD_PTR) &mciGenericParms);
+        if (Return)
+            OutputDebugStringA("MIDI:  Error closing MIDI device.\n");
+        
+        MIDIDevice->DeviceID = 0;
+    }
     MIDIDevice->IsPlaying = false;
     
     return Return;
@@ -231,25 +234,21 @@ WinMain(
             GameState.Window = WindowHandle;
             GameState.isInitialized = true;
             
-            local_persist char sendbuf[512];
-            GameState.GameInput.Buffer = sendbuf;
+            // TODO(jon):  Pool these VirtualAllocs together.
             GameState.GameInput.BufferLength = 512;
+            GameState.GameInput.Buffer = (char *)VirtualAlloc(0, GameState.GameInput.BufferLength, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
             
-            local_persist char lastCommands[5120];
-            GameState.CommandHistory.Commands = lastCommands;
             GameState.CommandHistory.BufferSize = 512;
             GameState.CommandHistory.NumberOfCommands = 10;
             GameState.CommandHistory.CurrentPosition = -1;
+            GameState.CommandHistory.Commands = (char *)VirtualAlloc(0, GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
             
-            local_persist char currentCommand[512];
-            GameState.CommandHistory.CurrentCommand = currentCommand;
             GameState.CommandHistory.CurrentSize = 512;
+            GameState.CommandHistory.CurrentCommand = (char *)VirtualAlloc(0, GameState.CommandHistory.CurrentSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
             
-            local_persist char GMCPBufferOut[1024];
-            local_persist char GMCPBufferIn[1024];
-            GameState.GMCP.BufferOut = GMCPBufferOut;
-            GameState.GMCP.BufferIn = GMCPBufferIn;
             GameState.GMCP.BufferSize = 1024;
+            GameState.GMCP.BufferOut = (char *)VirtualAlloc(0, GameState.GMCP.BufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+            GameState.GMCP.BufferIn = (char *)VirtualAlloc(0, GameState.GMCP.BufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
             
             GameState.User.Account = {};
             GameState.User.Player = {};
