@@ -133,13 +133,13 @@ SocketListenThreadProc(LPVOID lpParameter)
     {
         int iResult;
         
-        //local_persist char recvbuf[4096];
-        //game_buffer OutputBuffer = {};
-        //OutputBuffer.Window = GameState.GameOutput.Window;
-        //OutputBuffer.BufferLength = 4096;
-        //OutputBuffer.Buffer = recvbuf;
+        local_persist char recvbuf[4096];
+        game_buffer OutputBuffer = {};
+        OutputBuffer.Window = GameState.GameOutput.Window;
+        OutputBuffer.BufferLength = 4096;
+        OutputBuffer.Buffer = recvbuf;
         
-        //GameState.GameOutput = OutputBuffer;
+        GameState.GameOutput = OutputBuffer;
         
         // Receive until the peer closes the connection
         do {

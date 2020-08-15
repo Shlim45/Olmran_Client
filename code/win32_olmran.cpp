@@ -174,7 +174,7 @@ WinMain(
                 if (!GameMemory.IsInitialized)
                 {
                     GameState.GameInput.BufferLength = 512;
-                    GameState.GameOutput.BufferLength = 4096;
+                    //GameState.GameOutput.BufferLength = 4096;
                     
                     GameState.CommandHistory.BufferSize = 512;
                     GameState.CommandHistory.NumberOfCommands = 10;
@@ -191,10 +191,10 @@ WinMain(
                     
                     GameState.GameInput.Buffer = (char *) GameMemory.TransientStorage;
                     accum += GameState.GameInput.BufferLength;
-                    
+                    /*
                     GameState.GameOutput.Buffer = (char *) (&GameMemory.TransientStorage + accum);
                     accum += GameState.GameOutput.BufferLength;
-                    
+                    */
                     GameState.CommandHistory.Commands = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
                     accum += (GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
                     
