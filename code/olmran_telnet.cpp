@@ -30,6 +30,7 @@ TelnetInit(telnet_state State)
 internal int64
 TelnetNegotiation(telnet_state Tel, char *outBuffer, char *inData, uint32 inDataSize)
 {
+    // TODO(jon):  Tie this into GameMemory
     local_persist char outResponse[3];
     local_persist char subNegBuf[Kilobytes(4)];
     memset(outResponse, 0, 3);

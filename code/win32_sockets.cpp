@@ -110,6 +110,7 @@ ProcessInputFromSocket(char *recvBuf)
     if (strlen(recvBuf) == 0)
         return;
     
+    // TODO(jon):  Tie this into GameMemory
     const int tmpBufSize = Kilobytes(4);
     local_persist TCHAR tmpBuf[tmpBufSize];
     memset(tmpBuf,0,tmpBufSize);
@@ -132,24 +133,24 @@ SocketListenThreadProc(LPVOID lpParameter)
     {
         int iResult;
         
-        local_persist char recvbuf[4096];
-        game_buffer OutputBuffer = {};
-        OutputBuffer.Window = GameState.GameOutput.Window;
-        OutputBuffer.BufferLength = 4096;
-        OutputBuffer.Buffer = recvbuf;
+        //local_persist char recvbuf[4096];
+        //game_buffer OutputBuffer = {};
+        //OutputBuffer.Window = GameState.GameOutput.Window;
+        //OutputBuffer.BufferLength = 4096;
+        //OutputBuffer.Buffer = recvbuf;
         
-        GameState.GameOutput = OutputBuffer;
+        //GameState.GameOutput = OutputBuffer;
         
         // Receive until the peer closes the connection
         do {
-            iResult = recv(Socket.sock, OutputBuffer.Buffer, OutputBuffer.BufferLength, 0);
+            iResult = recv(Socket.sock, GameState.GameOutput.Buffer, GameState.GameOutput.BufferLength, 0);
             if ( iResult > 0 )
             {
-                if (strlen(OutputBuffer.Buffer) > 0)
+                if (strlen(GameState.GameOutput.Buffer) > 0)
                 {
-                    ProcessInputFromSocket(OutputBuffer.Buffer);
+                    ProcessInputFromSocket(GameState.GameOutput.Buffer);
 #if 0
-                    win32_StreamToGameOutput(OutputBuffer.Buffer, OutputBuffer.BufferLength);
+                    win32_StreamToGameOutput(GameState.GameOutput.Buffer, GameState.GameOutput.BufferLength);
 #endif
                 }
             }

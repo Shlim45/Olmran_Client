@@ -116,6 +116,8 @@ WinMain(
         LPSTR       CommandLine,
         int         ShowCode)
 {
+	win32_state Win32State = {};
+    
     WNDCLASSA WindowClass = {};
     // TODO(jon):  Check if any of this is needed.
     WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
@@ -149,66 +151,111 @@ WinMain(
             GameState.Window = WindowHandle;
             GameState.isInitialized = true;
             
-            // TODO(jon):  Pool these VirtualAllocs together.
-            GameState.GameInput.BufferLength = 512;
-            GameState.GameInput.Buffer = (char *)VirtualAlloc(0, GameState.GameInput.BufferLength, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            
-            GameState.CommandHistory.BufferSize = 512;
-            GameState.CommandHistory.NumberOfCommands = 10;
-            GameState.CommandHistory.CurrentPosition = -1;
-            GameState.CommandHistory.Commands = (char *)VirtualAlloc(0, GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            
-            GameState.CommandHistory.CurrentSize = 512;
-            GameState.CommandHistory.CurrentCommand = (char *)VirtualAlloc(0, GameState.CommandHistory.CurrentSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            
-            GameState.GMCP.BufferSize = 1024;
-            GameState.GMCP.BufferOut = (char *)VirtualAlloc(0, GameState.GMCP.BufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            GameState.GMCP.BufferIn = (char *)VirtualAlloc(0, GameState.GMCP.BufferSize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            
-            GameState.User.Account = {};
-            GameState.User.Player = {};
-            
-            GameState.MIDIDevice = (midi_device *)VirtualAlloc(0, sizeof(midi_device), MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-            
-            DWORD ThreadID;
-            HANDLE SocketListenThreadHandle;
-            if (win32_InitAndConnectSocket()==0)
-            {
-                OutputDebugStringA("Socket Connected\r\n");
+#if OLMRAN_INTERNAL
+			LPVOID BaseAddress = ((LPVOID)Terabytes(2));
+#else
+			LPVOID BaseAddress = 0;
+#endif
+			game_memory GameMemory = {};
+			GameMemory.PermanentStorageSize = Megabytes(64);
+			GameMemory.TransientStorageSize = Gigabytes(1);
+			//GameMemory.DEBUGPlatformFreeFileMemory = DEBUGPlatformFreeFileMemory;
+			//GameMemory.DEBUGPlatformReadEntireFile = DEBUGPlatformReadEntireFile;
+			//GameMemory.DEBUGPlatformWriteEntireFile = DEBUGPlatformWriteEntireFile;
+			
+			Win32State.TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
+			Win32State.GameMemoryBlock = VirtualAlloc(BaseAddress, (size_t)Win32State.TotalSize,
+													  MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+			GameMemory.PermanentStorage = Win32State.GameMemoryBlock;
+			GameMemory.TransientStorage = ((uint8 *)GameMemory.PermanentStorage + 
+										   GameMemory.PermanentStorageSize);
+            if (GameMemory.PermanentStorage && GameMemory.TransientStorage)
+			{
+                if (!GameMemory.IsInitialized)
+                {
+                    GameState.GameInput.BufferLength = 512;
+                    GameState.GameOutput.BufferLength = 4096;
+                    
+                    GameState.CommandHistory.BufferSize = 512;
+                    GameState.CommandHistory.NumberOfCommands = 10;
+                    GameState.CommandHistory.CurrentPosition = -1;
+                    
+                    GameState.CommandHistory.CurrentSize = 512;
+                    
+                    GameState.GMCP.BufferSize = 1024;
+                    
+                    GameState.User.Account = {};
+                    GameState.User.Player = {};
+                    
+                    uint32 accum = 0;
+                    
+                    GameState.GameInput.Buffer = (char *) GameMemory.TransientStorage;
+                    accum += GameState.GameInput.BufferLength;
+                    
+                    GameState.GameOutput.Buffer = (char *) (&GameMemory.TransientStorage + accum);
+                    accum += GameState.GameOutput.BufferLength;
+                    
+                    GameState.CommandHistory.Commands = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += (GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
+                    
+                    GameState.CommandHistory.CurrentCommand = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += GameState.CommandHistory.BufferSize;
+                    
+                    GameState.GMCP.BufferIn = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += GameState.GMCP.BufferSize;
+                    
+                    GameState.GMCP.BufferOut = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += GameState.GMCP.BufferSize;
+                    
+                    GameState.MIDIDevice = (midi_device *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += sizeof(midi_device);
+                    
+                    GameMemory.IsInitialized = true;
+                }
+                DWORD ThreadID;
+                HANDLE SocketListenThreadHandle;
+                if (win32_InitAndConnectSocket()==0)
+                {
+                    OutputDebugStringA("Socket Connected\r\n");
+                    
+                    TelnetInit(Telnet);
+                    
+                    char *Param = "Socket listening.\r\n";
+                    
+                    SocketListenThreadHandle = CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
+                }
+                else
+                {
+                    win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\r\n"));
+                    OutputDebugStringA("Error in win32_InitAndConnectSocket()");
+                    SocketListenThreadHandle = 0;
+                }
                 
-                TelnetInit(Telnet);
-                
-                char *Param = "Socket listening.\r\n";
-                
-                SocketListenThreadHandle = CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
+                GlobalRunning = true;
+                while (GlobalRunning)
+                {
+                    MSG Message;
+                    BOOL MessageResult = GetMessageA(&Message, 0, 0, 0);
+                    if(MessageResult > 0)
+                    {
+                        TranslateMessage(&Message);
+                        DispatchMessage(&Message);
+                    }
+                    else
+                        break;
+                }
+                // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
+                win32_CloseSocket();
+                if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }
             }
             else
             {
-                win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\r\n"));
-                OutputDebugStringA("Error in win32_InitAndConnectSocket()");
-                SocketListenThreadHandle = 0;
+                // TODO(jon): Logging (failed)
             }
-            
-            GlobalRunning = true;
-            while (GlobalRunning)
-            {
-                MSG Message;
-                BOOL MessageResult = GetMessageA(&Message, 0, 0, 0);
-                if(MessageResult > 0)
-                {
-                    TranslateMessage(&Message);
-                    DispatchMessage(&Message);
-                }
-                else
-                    break;
-            }
-            // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
-            win32_CloseSocket();
-            if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }
         }
         else
         {
-            // TODO(jon): Logging (failed)
+            // TODO(jon): Logging (failed to init memory)
         }
     }
     else
