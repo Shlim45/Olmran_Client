@@ -102,6 +102,12 @@ struct midi_device
     bool32 IsPlaying;
 };
 
+struct game_display_controls
+{
+    HWND Control;
+    HBITMAP Bitmap;
+};
+
 struct game_state
 {
     HWND Window;
@@ -115,6 +121,7 @@ struct game_state
     bool32 AutoSneak;
     user User;
     midi_device *MIDIDevice;
+    game_display_controls Display;
 };
 
 struct telnet_negotiation_buffer

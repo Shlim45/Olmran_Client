@@ -31,6 +31,7 @@ win32_MainWindowCallback(HWND   Window,
     LRESULT Result = 0;
     HWND GameOutput;
     HWND GameInput;
+    HWND GameControl;
     
     switch(Message)
     {
@@ -47,12 +48,21 @@ win32_MainWindowCallback(HWND   Window,
             GameState.GameInput = {};
             GameState.GameInput.Window = GameInput;
             
-            // Set starting Text Color
-            GameState.CurrentColor = C_RESET;
+            // Create Static Control for Health Bars / Portrait / Player Info Background Image
+            GameControl = CreateWindowExA(0, TEXT("STATIC"), NULL,
+                                          WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                                          0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
+            GameState.Display = {};
+            GameState.Display.Control = GameControl;
             
-            // Set autosneak
-            GameState.AutoSneak = false;
             
+            // load image and display it
+            // TODO(jon):  Do i need to persist this??
+            GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
+                                                            0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+            
+            if (GameState.Display.Bitmap)
+                SendDlgItemMessage(Window, ID_CONTROLBACKGROUND, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)GameState.Display.Bitmap);
         } break; 
         
         case WM_SETFOCUS:
@@ -66,14 +76,20 @@ win32_MainWindowCallback(HWND   Window,
             MoveWindow(GameState.GameOutput.Window, 
                        5, 5,                  // starting x- and y-coordinates 
                        LOWORD(LParam)-10,     // width of client area 
-                       HIWORD(LParam)-40,     // height of client area 
+                       HIWORD(LParam)-190,     // height of client area 
                        TRUE);                 // repaint window 
             
             MoveWindow(GameState.GameInput.Window, 
-                       5, HIWORD(LParam)-30,  // starting x- and y-coordinates 
+                       5, HIWORD(LParam)-180,  // starting x- and y-coordinates 
                        LOWORD(LParam)-10,     // width of client area 
                        20,                    // height of client area 
                        TRUE);                 // repaint window 
+            
+            MoveWindow(GameState.Display.Control,
+                       5, HIWORD(LParam)-150,  // starting x- and y-coordinates 
+                       450,                    // width of client area 
+                       143,                    // height of client area 
+                       TRUE);                  // repaint window 
             
             SetFocus(GameState.GameInput.Window);
         } break;
@@ -100,6 +116,7 @@ win32_MainWindowCallback(HWND   Window,
             OutputDebugStringA("MM_MCINOTIFY:  MIDI Playback stopped.");
             GameState.MIDIDevice->IsPlaying = false;
         } break;
+        
         default:
         {
             Result = DefWindowProc(Window, Message, WParam, LParam);
@@ -149,6 +166,13 @@ WinMain(
         if(WindowHandle)
         {
             GameState.Window = WindowHandle;
+            
+            // Set starting Text Color
+            GameState.CurrentColor = C_RESET;
+            
+            // Set autosneak
+            GameState.AutoSneak = false;
+            
             GameState.isInitialized = true;
             
 #if OLMRAN_INTERNAL

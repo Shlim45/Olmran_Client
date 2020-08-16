@@ -80,6 +80,10 @@ extern "C" {
     
 #define ID_EDITCHILD 100
 #define ID_INPUTCHILD 101
+#define ID_CONTROLBACKGROUND 102
+    
+#define CONTROL_BITMAP "images/control.BMP"
+    
 #if 1
     // Connect to local server
 #define HOST_ADDRESS "192.168.1.208"
