@@ -74,7 +74,7 @@ win32_InitAndConnectSocket()
     
     if (WSResult != 0)
     {
-        OutputDebugStringA("Can't start WinSock, Err #");
+        OutputDebugStringA("Can't start WinSock, Err #\n");
         return WSResult;
     }
     
@@ -82,7 +82,7 @@ win32_InitAndConnectSocket()
     Socket.sock = socket(AF_INET, SOCK_STREAM, 0);
     if (Socket.sock == INVALID_SOCKET)
     {
-        OutputDebugStringA("Can't create socket, Err #");
+        OutputDebugStringA("Can't create socket, Err #\n");
         return INVALID_SOCKET;
     }
     
@@ -94,7 +94,7 @@ win32_InitAndConnectSocket()
     // Connect to server
     if (connect(Socket.sock, (sockaddr*) &Socket.addr, sizeof(Socket.addr)) == SOCKET_ERROR)
     {
-        OutputDebugStringA("Can't connect to server, Err #");
+        OutputDebugStringA("Can't connect to server, Err #\n");
         
         win32_CloseSocket();
         return SOCKET_ERROR;

@@ -257,6 +257,7 @@ handleGMCP()
                         
                         GameState.User.Account.LoggedIn = true;
                         win32_UpdateClientTitle();
+                        win32_UpdateClient();
                         
                         // use the value
                         OutputDebugStringA("Name:      ");

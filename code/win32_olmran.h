@@ -105,7 +105,13 @@ struct midi_device
 struct game_display_controls
 {
     HWND Control;
+    HWND Health;
+    HWND Portrait;
+    HWND PlayerInfo;
     HBITMAP Bitmap;
+    HBITMAP HealthBitmap;
+    HBITMAP PortraitBitmap;
+    HBITMAP PlayerInfoBitmap;
 };
 
 struct game_state
@@ -164,5 +170,8 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 
 internal void
 win32_UpdateClientTitle();
+
+internal void
+win32_UpdateClient();
 
 #endif //WIN32_OLMRAN_H

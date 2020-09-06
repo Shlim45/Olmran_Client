@@ -81,6 +81,9 @@ extern "C" {
 #define ID_EDITCHILD 100
 #define ID_INPUTCHILD 101
 #define ID_CONTROLBACKGROUND 102
+#define ID_CONTROLHEALTH 103
+#define ID_CONTROLPORTRAIT 104
+#define ID_CONTROLPLAYER 105
     
 #define CONTROL_BITMAP "images/control.BMP"
     
