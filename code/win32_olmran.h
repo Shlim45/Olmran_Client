@@ -90,6 +90,12 @@ struct user_player
     uint8 Realm;
 };
 
+struct room_info
+{
+    uint16 Exits;
+    // something for shop/bank popups
+};
+
 struct user
 {
     user_account Account;
@@ -128,6 +134,7 @@ struct game_state
     user User;
     midi_device *MIDIDevice;
     game_display_controls Display;
+    room_info Room;
 };
 
 struct telnet_negotiation_buffer

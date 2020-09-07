@@ -128,7 +128,6 @@ handleGMCP()
     
     if (strcmp("charinfo", command) == 0)
     {
-        //memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
         strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
                   "char_status", 11);
         sendGMCP();
@@ -139,6 +138,10 @@ handleGMCP()
         
         strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
                   "char_vitals", 11);
+        sendGMCP();
+        
+        strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
+                  "room_info", 9);
         sendGMCP();
     }
     else if (strcmp("loggedin", command) == 0)
@@ -424,7 +427,7 @@ handleGMCP()
                     }
                     else
                     {
-                        OutputDebugStringA("Unknown key.\n");
+                        OutputDebugStringA("Unhandled key.\n");
                     }
                     
                     // print the value for now
@@ -527,6 +530,118 @@ handleGMCP()
         else
         {
             OutputDebugStringA("Failed to parse JSON\n");
+        }
+    }
+    else if (strcmp("roominfo", command) == 0)
+    {
+        const int SOUTHWEST = 1;
+        const int SOUTH = 2;
+        const int SOUTHEAST = 4;
+        const int WEST = 8;
+        const int EAST = 16;
+        const int NORTHWEST = 32;
+        const int NORTH = 64;
+        const int NORTHEAST = 128;
+        const int UP = 256;
+        const int DOWN = 512;
+        
+        jsmn_init(&parser);
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            // handle tokens
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                bool32 parsingExits = false;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index++)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    if (jsoneq(jsonObject, &tokens[Index], "exits") == 0) 
+                    {
+                        OutputDebugStringA("Exits: ");
+                        ++Index; // skip the object token
+                        
+                        GameState.Room.Exits = 0;
+                        parsingExits = true;
+                    }
+                    else if (parsingExits)
+                    {
+                        if (jsoneq(jsonObject, &tokens[Index], "E") == 0) 
+                        {
+                            OutputDebugStringA("East ");
+                            GameState.Room.Exits |= EAST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "W") == 0) 
+                        {
+                            OutputDebugStringA("West ");
+                            GameState.Room.Exits |= WEST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "N") == 0) 
+                        {
+                            OutputDebugStringA("North ");
+                            GameState.Room.Exits |= NORTH;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "S") == 0) 
+                        {
+                            OutputDebugStringA("South ");
+                            GameState.Room.Exits |= SOUTH;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "NW") == 0) 
+                        {
+                            OutputDebugStringA("Northwest ");
+                            GameState.Room.Exits |= NORTHWEST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "NE") == 0) 
+                        {
+                            OutputDebugStringA("Northeast ");
+                            GameState.Room.Exits |= NORTHEAST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "SW") == 0) 
+                        {
+                            OutputDebugStringA("Southwest ");
+                            GameState.Room.Exits |= SOUTHWEST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "SE") == 0) 
+                        {
+                            OutputDebugStringA("Southeast ");
+                            GameState.Room.Exits |= SOUTHEAST;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "U") == 0) 
+                        {
+                            OutputDebugStringA("Up ");
+                            GameState.Room.Exits |= UP;
+                            Index++; // skip the useless value
+                        }
+                        else if (jsoneq(jsonObject, &tokens[Index], "D") == 0) 
+                        {
+                            OutputDebugStringA("Down ");
+                            GameState.Room.Exits |= DOWN;
+                            Index++; // skip the useless value
+                        }
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Skipping unused key.\n");
+                        Index++;
+                    }
+                }
+                OutputDebugStringA("\n");
+            }
         }
     }
 }
