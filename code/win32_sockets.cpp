@@ -25,11 +25,13 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
     SetWindowTextA(gState.GameInput.Window, "");
     
     if (inputLength < gState.GameInput.BufferLength - 1)
+    {
         gState.GameInput.Buffer[inputLength] = '\n';
-    inputLength = (int) strlen(gState.GameInput.Buffer);
+        ++inputLength;
+    }
     
     uint32 iResult;
-    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, (int)strlen(gState.GameInput.Buffer), 0 );
+    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, inputLength, 0 );
     
     memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
     
@@ -39,17 +41,18 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
 internal uint32
 win32_WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
 {
-    uint16 inputLength;
-    inputLength = (uint16)strlen(str);
+    uint32 iResult;
+    uint16 inputLength = (uint16) strlen(str);
     
     strcpy_s(GameInput.Buffer, GameInput.BufferLength, str);
     
     if (inputLength < GameInput.BufferLength - 1)
+    {
         GameInput.Buffer[inputLength] = '\n';
-    inputLength = (uint16) strlen(GameInput.Buffer);
+        ++inputLength;
+    }
     
-    uint32 iResult;
-    iResult = win32_WriteToSocket( s, GameInput.Buffer, (int)strlen(GameInput.Buffer), 0 );
+    iResult = win32_WriteToSocket( s, GameInput.Buffer, inputLength, 0 );
     
     memset(GameInput.Buffer, 0, GameInput.BufferLength);
     
@@ -107,6 +110,7 @@ win32_InitAndConnectSocket()
 internal void
 ProcessInputFromSocket(char *recvBuf)
 {
+    // TODO(jon):  Too many strlen calls.
     if (strlen(recvBuf) == 0)
         return;
     
@@ -116,13 +120,11 @@ ProcessInputFromSocket(char *recvBuf)
     memset(tmpBuf,0,tmpBufSize);
     
     TelnetNegotiation(Telnet, tmpBuf, recvBuf, (uint32) strlen(recvBuf));
-    // clear recvBuf and fill it with 
     memset(recvBuf, 0, tmpBufSize);
-    // TODO(jon):  Remove this when streamin is fixed.
+    
     if( strlen(tmpBuf)>0 )
     {
         ParseBufferForANSI(tmpBuf);
-        //win32_AppendText( GameState.GameOutput, recvBuf );
     }
 }
 
@@ -149,9 +151,6 @@ SocketListenThreadProc(LPVOID lpParameter)
                 if (strlen(GameState.GameOutput.Buffer) > 0)
                 {
                     ProcessInputFromSocket(GameState.GameOutput.Buffer);
-#if 0
-                    win32_StreamToGameOutput(GameState.GameOutput.Buffer, GameState.GameOutput.BufferLength);
-#endif
                 }
             }
             else if ( iResult == 0 )
@@ -171,5 +170,6 @@ SocketListenThreadProc(LPVOID lpParameter)
         // NOTE(jon):  This will close the window when socket disconnects
         GlobalRunning = false;
     }
+    
     return 0;
 }

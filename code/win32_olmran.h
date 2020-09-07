@@ -178,7 +178,6 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void
 win32_UpdateClientTitle();
 
-internal void
-win32_UpdateClient();
+//internal void win32_UpdateClient();
 
 #endif //WIN32_OLMRAN_H

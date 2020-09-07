@@ -106,71 +106,19 @@ win32_MainWindowCallback(HWND   Window,
             // TODO(jon):  Do i need to persist this??
             GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-#if 0
-            if (GameState.Display.Bitmap)
-                SendDlgItemMessage(Window, ID_CONTROLBACKGROUND, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)GameState.Display.Bitmap);
-#endif
             
+#if 0
+            // NOTE(jon):  No need to use this, just draw text over the background.
             GameState.Display.PlayerInfoBitmap = (HBITMAP) LoadImageA(NULL, "images/player_info.BMP", IMAGE_BITMAP,
                                                                       0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-#if 0
-            if (GameState.Display.PlayerInfoBitmap)
-                SendDlgItemMessage(GameControl, ID_CONTROLPLAYER, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)GameState.Display.PlayerInfoBitmap);
 #endif
+            
         } break;
         
         case WM_PAINT:
         {
-            
-#if 0
-            GetUpdateRect(Window, &rToPaint, FALSE);
-            RECT rToPaint;
-            if (!GetUpdateRect(Window, &rToPaint, FALSE))
-                break;    //No regions to update, leave procedure
-            if (GameState.User.Player.Name)
-                win32_UpdateClient();
-            
-#endif
-            // NOTE(jon):  Draw the background of the control
-            BITMAP bm;
-            PAINTSTRUCT ps;
-            
-            HDC hdc = BeginPaint(GameState.Display.Control, &ps);
-            
-            HDC hdcMem = CreateCompatibleDC(hdc);
-            HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.Bitmap);
-            
-            GetObject(GameState.Display.Bitmap, sizeof(bm), &bm);
-            
-            BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
-            
-            SelectObject(hdcMem, hbmOld);
-            DeleteDC(hdcMem);
-            
-            EndPaint(GameState.Display.Control, &ps);
-            
-            // NOTE(jon):  Draw the playinfo
-            if (strlen(GameState.User.Player.Name) != 0)
-            {
-                hdc = BeginPaint(GameState.Display.PlayerInfo, &ps);
-                
-                hdcMem = CreateCompatibleDC(hdc);
-                hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.PlayerInfoBitmap);
-                
-                GetObject(GameState.Display.PlayerInfoBitmap, sizeof(bm), &bm);
-                
-                BitBlt(hdc, 186, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
-                
-                SelectObject(hdcMem, hbmOld);
-                DeleteDC(hdcMem);
-                
-                EndPaint(GameState.Display.PlayerInfo, &ps);
-                
-                // TODO(jon):  Redo this to just DrawText over the background.
-                //OnPaint(GameState.Display.PlayerInfo);
-            }
-            
-            Result = DefWindowProc(Window, Message, WParam, LParam);
+            Win32HandlePaint(GameState.Window, 0);
+            Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
         } break;
         
         case WM_SETFOCUS:
@@ -248,8 +196,12 @@ Win32HandleKeyboardInput(MSG *Message)
     uint32 VKCode = (uint32)Message->wParam;
     bool32 WasDown = ((Message->lParam & (1 << 30)) != 0);
     bool32 IsDown = ((Message->lParam & (1 << 31)) == 0);
+    bool32 Numlock = (GetKeyState(VK_NUMLOCK) & 1)!=0;
     
-    if (VKCode == VK_BACK || VKCode == VK_DELETE)
+    // TODO(jon):  Numlock should not be the toggle for handling keyboards
+    // without a numpad.  Should be a config option, but is a bandaid for now.
+    
+    if (VKCode == VK_BACK || (Numlock && VKCode == VK_DELETE))
     {
         TranslateMessage(Message);
         DispatchMessageA(Message);
@@ -266,27 +218,27 @@ Win32HandleKeyboardInput(MSG *Message)
         if (Message->message == WM_KEYDOWN)
         {
             // TODO(jon):  no numpad/numlock option
-            if (VKCode == VK_NUMPAD0)
+            if (VKCode == VK_NUMPAD0 || (!Numlock && VKCode == VK_INSERT))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "look");
             }
-            else if (VKCode == VK_NUMPAD1)
+            else if (VKCode == VK_NUMPAD1 || (!Numlock && VKCode == VK_END))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southwest" : "southwest");
             }
-            else if (VKCode == VK_NUMPAD2)
+            else if (VKCode == VK_NUMPAD2 || (!Numlock && VKCode == VK_DOWN))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak south" : "south");
             }
-            else if (VKCode == VK_NUMPAD3)
+            else if (VKCode == VK_NUMPAD3 || (!Numlock && VKCode == VK_NEXT))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southeast" : "southeast");
             }
-            else if (VKCode == VK_NUMPAD4)
+            else if (VKCode == VK_NUMPAD4 || (!Numlock && VKCode == VK_LEFT))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak west" : "west");
             }
-            else if (VKCode == VK_NUMPAD5 || VKCode == VK_CLEAR)
+            else if (VKCode == VK_NUMPAD5 || (!Numlock && VKCode == VK_CLEAR))
             {
                 GameState.AutoSneak = !GameState.AutoSneak;
                 win32_EchoCommand(GameState.GameOutput.Window, 
@@ -294,19 +246,19 @@ Win32HandleKeyboardInput(MSG *Message)
                                   ? "Autosneak toggled ON.\n" 
                                   : "Autosneak toggled OFF.\n");
             }
-            else if (VKCode == VK_NUMPAD6)
+            else if (VKCode == VK_NUMPAD6 || (!Numlock && VKCode == VK_RIGHT))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak east" : "east");
             }
-            else if (VKCode == VK_NUMPAD7)
+            else if (VKCode == VK_NUMPAD7 || (!Numlock && VKCode == VK_HOME))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northwest" : "northwest");
             }
-            else if (VKCode == VK_NUMPAD8)
+            else if (VKCode == VK_NUMPAD8 || (!Numlock && VKCode == VK_UP))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak north" : "north");
             }
-            else if (VKCode == VK_NUMPAD9)
+            else if (VKCode == VK_NUMPAD9 || (!Numlock && VKCode == VK_PRIOR))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northeast" : "northeast");
             }
@@ -326,7 +278,7 @@ Win32HandleKeyboardInput(MSG *Message)
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "open genportal");
             }
-            else if (VKCode == VK_DECIMAL)
+            else if (VKCode == VK_DECIMAL || (!Numlock && VKCode == VK_DELETE))
             {
                 win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "hide");
             }
@@ -516,18 +468,18 @@ WinMain(
                 HANDLE SocketListenThreadHandle;
                 if (win32_InitAndConnectSocket()==0)
                 {
-                    OutputDebugStringA("Socket Connected\r\n");
+                    OutputDebugStringA("Socket Connected\n");
                     
                     TelnetInit(Telnet);
                     
-                    char *Param = "Socket listening.\r\n";
+                    char *Param = "Socket listening.\n";
                     
                     SocketListenThreadHandle = CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
                 }
                 else
                 {
-                    win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\r\n"));
-                    OutputDebugStringA("Error in win32_InitAndConnectSocket()");
+                    win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\n"));
+                    OutputDebugStringA("Error in win32_InitAndConnectSocket()\n");
                     SocketListenThreadHandle = 0;
                 }
                 

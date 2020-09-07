@@ -260,7 +260,7 @@ handleGMCP()
                         
                         GameState.User.Account.LoggedIn = true;
                         win32_UpdateClientTitle();
-                        win32_UpdateClient();
+                        //win32_UpdateClient();
                         
                         // use the value
                         OutputDebugStringA("Name:      ");
@@ -544,6 +544,23 @@ handleGMCP()
         const int NORTHEAST = 128;
         const int UP = 256;
         const int DOWN = 512;
+        
+        /* TODO(jon):
+
+GMCP In: room.info 
+{
+  "num":-788242509,
+"id":"Stonefist Temple#2",
+"name":"Stonefist Temple",
+"zone":"Stonefist Temple",
+"desc":"You`re in a large circular room at the center of the several clan headquarters. Each archway is adorned with symbols attributed to each clan, marks made to honor particular members, murals to remember great battles, and the occasional lewd message taunting rival clans, most likely left by overly enthusiastic initiates.",
+"terrain":"plains",
+"details":"",
+"exits":{"N":1334286014,"S":-788242505,"E":-788242507,"W":-788242503,"U":1334286020,"NE":-788242508,"NW":-788242502,"SE":-788242506,"SW":-788242504},
+"coord":{"id":0,"x":-1,"y":-1,"cont":0}
+}
+
+*/
         
         jsmn_init(&parser);
         int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);

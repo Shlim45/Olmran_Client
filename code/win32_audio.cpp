@@ -36,15 +36,11 @@ win32_StopMIDIPlayback(midi_device *MIDIDevice)
 internal DWORD 
 win32_PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
 {
-    if (MIDIDevice->IsPlaying)
+    if (MIDIDevice->IsPlaying || MIDIDevice->DeviceID)
         win32_StopMIDIPlayback(MIDIDevice);
     
     DWORD dwReturn;
     MCI_PLAY_PARMS mciPlayParms = {};
-    
-    if (MIDIDevice->DeviceID)
-        win32_StopMIDIPlayback(MIDIDevice);
-    
     MCI_OPEN_PARMS mciOpenParms = {};
     MCI_STATUS_PARMS mciStatusParms = {};
     
@@ -59,7 +55,7 @@ win32_PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
     if (dwReturn)
     {
         // Failed to open device. Don't close it; just return error.
-        return (dwReturn);
+        return dwReturn;
     }
     
     // The device opened successfully; get the device ID.
@@ -73,8 +69,9 @@ win32_PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
     if (dwReturn)
     {
         mciSendCommandA(MIDIDevice->DeviceID, MCI_CLOSE, 0, NULL);
-        return (dwReturn);
+        return dwReturn;
     }
+    
     // Begin playback. The window procedure function for the parent 
     // window will be notified with an MM_MCINOTIFY message when 
     // playback is complete. At this time, the window procedure closes 
@@ -85,9 +82,9 @@ win32_PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
     if (dwReturn)
     {
         mciSendCommandA(MIDIDevice->DeviceID, MCI_CLOSE, 0, NULL);
-        return (dwReturn);
+        return dwReturn;
     }
     
     MIDIDevice->IsPlaying = true;
-    return (0L);
+    return 0L;
 }
