@@ -22,6 +22,42 @@
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 
+#if 0
+internal void 
+OnPaint(HWND hWnd)
+{
+    char pInfo[256];
+    HFONT hf;
+    HDC hdc;
+    long lfHeight;
+    
+    hdc = GetDC(NULL);
+    lfHeight = -MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+    ReleaseDC(NULL, hdc);
+    
+    hf = CreateFont(lfHeight, 0, 0, 0, 0, TRUE, 0, 0, 0, 0, 0, 0, 0, "Times New Roman");
+    
+    RECT  rect;
+    PAINTSTRUCT ps;
+    hdc = BeginPaint(hWnd, &ps);
+    
+    HFONT hfOld = (HFONT) SelectObject(hdc, hf);
+    
+    GetClientRect(hWnd, &rect);
+    SetTextColor(hdc, RGB(0x00, 0x00, 0x00));
+    SetBkMode(hdc, TRANSPARENT);
+    //rect.left = 40;
+    //rect.top = 10;
+    wsprintf(pInfo, "%s, lvl %d %s", GameState.User.Player.Name, GameState.User.Player.Level, GameState.User.Player.Class);
+    
+    DrawTextA(hdc, pInfo, -1, &rect, DT_WORDBREAK);
+    //SelectObject(hdc, oldPen);
+    //DeleteObject(hPen);
+    SelectObject(hdc, hfOld);
+    EndPaint(hWnd, &ps);
+}
+#endif
+
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
                          UINT   Message,
@@ -70,15 +106,17 @@ win32_MainWindowCallback(HWND   Window,
             // TODO(jon):  Do i need to persist this??
             GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-            
+#if 0
             if (GameState.Display.Bitmap)
                 SendDlgItemMessage(Window, ID_CONTROLBACKGROUND, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)GameState.Display.Bitmap);
+#endif
             
             GameState.Display.PlayerInfoBitmap = (HBITMAP) LoadImageA(NULL, "images/player_info.BMP", IMAGE_BITMAP,
                                                                       0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-            
+#if 0
             if (GameState.Display.PlayerInfoBitmap)
                 SendDlgItemMessage(GameControl, ID_CONTROLPLAYER, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)GameState.Display.PlayerInfoBitmap);
+#endif
         } break;
         
         case WM_PAINT:
@@ -89,9 +127,48 @@ win32_MainWindowCallback(HWND   Window,
             RECT rToPaint;
             if (!GetUpdateRect(Window, &rToPaint, FALSE))
                 break;    //No regions to update, leave procedure
-#endif
             if (GameState.User.Player.Name)
                 win32_UpdateClient();
+            
+#endif
+            // NOTE(jon):  Draw the background of the control
+            BITMAP bm;
+            PAINTSTRUCT ps;
+            
+            HDC hdc = BeginPaint(GameState.Display.Control, &ps);
+            
+            HDC hdcMem = CreateCompatibleDC(hdc);
+            HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.Bitmap);
+            
+            GetObject(GameState.Display.Bitmap, sizeof(bm), &bm);
+            
+            BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+            
+            SelectObject(hdcMem, hbmOld);
+            DeleteDC(hdcMem);
+            
+            EndPaint(GameState.Display.Control, &ps);
+            
+            // NOTE(jon):  Draw the playinfo
+            if (strlen(GameState.User.Player.Name) != 0)
+            {
+                hdc = BeginPaint(GameState.Display.PlayerInfo, &ps);
+                
+                hdcMem = CreateCompatibleDC(hdc);
+                hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.PlayerInfoBitmap);
+                
+                GetObject(GameState.Display.PlayerInfoBitmap, sizeof(bm), &bm);
+                
+                BitBlt(hdc, 186, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+                
+                SelectObject(hdcMem, hbmOld);
+                DeleteDC(hdcMem);
+                
+                EndPaint(GameState.Display.PlayerInfo, &ps);
+                
+                // TODO(jon):  Redo this to just DrawText over the background.
+                //OnPaint(GameState.Display.PlayerInfo);
+            }
             
             Result = DefWindowProc(Window, Message, WParam, LParam);
         } break;
@@ -134,6 +211,8 @@ win32_MainWindowCallback(HWND   Window,
         case WM_DESTROY:
         {
             // TODO(jon):  Handle this as an error, recreate window?
+            DeleteObject(GameState.Display.Bitmap);
+            DeleteObject(GameState.Display.PlayerInfo);
             GlobalRunning = false;
         } break;
         
