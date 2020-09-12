@@ -13,9 +13,12 @@ Win32UpdatePortrait(HWND Window)
         
         GetObject(GameState.Display.PortraitBitmap, sizeof(bm), &bm);
         
-        BitBlt(hdc, 0, 0, 111, 126, hdcMem, 
-               (111 * GameState.User.Player.PortraitCoords.X), (126 * GameState.User.Player.PortraitCoords.Y), 
-               SRCCOPY);
+        if (GameState.User.Player.LoggedIn)
+            BitBlt(hdc, 0, 0, 111, 126, hdcMem, 
+                   (111 * GameState.User.Player.PortraitCoords.X), (126 * GameState.User.Player.PortraitCoords.Y), 
+                   SRCCOPY);
+        else // force the blank copy
+            BitBlt(hdc, 0, 0, 111, 126, hdcMem, (111 * 3), (126 * 10), SRCCOPY);
         
         SelectObject(hdcMem, hbmOld);
         DeleteDC(hdcMem);
@@ -45,6 +48,7 @@ Win32UpdatePlayerInfo(HWND Window)
     SetBkColor(hDC, RGB(0, 0, 0));   // black
     
     char pInfo[256] = "";
+    memset(pInfo, 0, 256);
     if (GameState.User.Player.LoggedIn)
         wsprintf(pInfo, "%s\nLvl %d %s\n%s of\n%s\n%d\nexp for Lvl %d", 
                  GameState.User.Player.Name, 
@@ -90,28 +94,40 @@ Win32HandlePaint(HWND Window, HBITMAP Bitmap)
 }
 
 internal void
-win32_UpdateClientTitle()
+Win32UpdateClientTitle()
 {
     char newTitle[256] = {};
+    
     if (GameState.User.Player.LoggedIn)
-    {
-        strcat_s(newTitle, 256, "Olmran Client - ");
-        strcat_s(newTitle, 256, GameState.User.Player.Name);
-    }
+        wsprintf(newTitle, "Olmran Client - %s", GameState.User.Player.Name);
     else
         strcat_s(newTitle, 256, "Olmran Client");
+    
     SetWindowTextA(GameState.Window, newTitle);
 }
 
 internal void
-Win32UpdateClientOnPlayerLogin()
+Win32HandlePlayerLogin()
 {
-    win32_UpdateClientTitle();
-    Win32UpdatePortrait(GameState.Display.Portrait);
-    Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
+    GameState.User.Player.LoggedIn = true;
+    // TODO(jon):  Start this elsewhere?  Need on player logon
+    Win32UpdateClientTitle();
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+    win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
 }
+
+internal void
+Win32HandlePlayerLogoff()
+{
+    memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
+    
+    Win32UpdateClientTitle();
+    
+    RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+    win32_StopMIDIPlayback(GameState.MIDIDevice);
+}
+
 
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)
@@ -154,16 +170,12 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
                  HMENU controlId,       // Control ID.
                  HINSTANCE hinst)       // Application or DLL instance.
 {
-    LoadLibrary(TEXT("Riched32.dll"));
+    LoadLibraryA("Riched32.dll");
     
     HWND hwndOutput = CreateWindowExA(0, RICHEDIT_CLASS, NULL,
                                       ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
                                       x, y, width, height, 
                                       hwndOwner, controlId, hinst, NULL);
-    
-    // Listen for hot keys
-    //OldOutputEditProc = (WNDPROC)SetWindowLongPtr(hwndOutput, GWLP_WNDPROC, (LONG_PTR)OutputEditProc);
-    
     
     // Set Background Color
     SendMessageA( hwndOutput, EM_SETBKGNDCOLOR, 0, RGB(50,50,50) );
@@ -190,8 +202,6 @@ CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
                                      controlId,   // edit control ID 
                                      hinst, 
                                      NULL);        // pointer not needed 
-    
-    //OldInputEditProc = (WNDPROC)SetWindowLongPtr(hwndInput, GWLP_WNDPROC, (LONG_PTR)InputEditProc);
     
     return hwndInput;
 }

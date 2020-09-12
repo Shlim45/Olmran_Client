@@ -179,6 +179,7 @@ global_variable telnet_state Telnet;
 internal void win32_AppendText(const HWND GameOutput, const char *newText);
 internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void Win32UpdatePlayerInfo(HWND Window);
-internal void Win32UpdateClientOnPlayerLogin();
+internal void Win32HandlePlayerLogin();
+internal void Win32HandlePlayerLogoff();
 
 #endif //WIN32_OLMRAN_H

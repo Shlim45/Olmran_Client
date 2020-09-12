@@ -26,7 +26,7 @@ const char SupportedGMCPMessages[TOTAL_SUPPORTED_GMCP_MESSAGES][25] =
     "accountprompt",
     "passwordprompt",
     "loggedin",
-    "logout",
+    "logoff",
     "accountnotfound",
     "maximumplayers",
     "banned",
@@ -508,13 +508,9 @@ handleGMCP()
     {
         GameState.User.Account.LoggedIn = true;
     }
-    else if (strcmp("logout", command) == 0)
+    else if (strcmp("logoff", command) == 0)
     {
-        memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
-        GameState.User.Player.LoggedIn = false;
-        //win32_UpdateClientTitle();
-        Win32UpdateClientOnPlayerLogin();
-        win32_StopMIDIPlayback(GameState.MIDIDevice);
+        Win32HandlePlayerLogoff();
     }
     else if (strcmp("accountdata", command) == 0)
     {
@@ -724,8 +720,7 @@ handleGMCP()
                     memset(valueBuff, 0, 256);
                     valueInt = 0;
                 }
-                GameState.User.Player.LoggedIn = true;
-                Win32UpdateClientOnPlayerLogin();
+                Win32HandlePlayerLogin();
             }
         }
         else if (Result == JSMN_ERROR_INVAL)
@@ -748,16 +743,6 @@ handleGMCP()
         else
         {
             OutputDebugStringA("Failed to parse JSON\n");
-        }
-        
-        // Update player info window
-        //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
-        //RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_UPDATENOW);
-        
-        // TODO(jon):  Start this elsewhere?  Need on player logon
-        if (win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid"))
-        {
-            OutputDebugStringA("Error starting MIDI file.");
         }
     }
     else if (strcmp("char.status", command) == 0)
@@ -912,8 +897,8 @@ handleGMCP()
             OutputDebugStringA("Failed to parse JSON\n");
         }
         
-        //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
-        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_UPDATENOW);
+        // TODO(jon):  I shouldn't have to redraw the entire window...
+        RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
     }
     else if (strcmp("roominfo", command) == 0)
     {
