@@ -132,6 +132,7 @@ struct game_display_controls
     HBITMAP Bitmap;
     HBITMAP PortraitBitmap;
     HBITMAP ControlSpritesBitmap;
+    HICON OlmranIcon;
 };
 
 struct game_state

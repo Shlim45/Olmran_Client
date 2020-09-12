@@ -389,7 +389,8 @@ WinMain(
     WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
     WindowClass.lpfnWndProc = win32_MainWindowCallback;
     WindowClass.hInstance = Instance;
-    //    WindowClass.hIcon = ;
+    WindowClass.hIcon = (HICON) LoadImageA(NULL, "images/olmran.ico", IMAGE_ICON,
+                                           0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
     //    WindowClass.hCursor = ;
     WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     //    WindowClass.lpszMenuName = ;

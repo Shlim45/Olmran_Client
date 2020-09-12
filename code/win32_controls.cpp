@@ -10,6 +10,9 @@ Win32LoadAssets()
     GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites.BMP", IMAGE_BITMAP, 
                                                                   0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     
+    //GameState.Display.OlmranIcon = (HICON) LoadImageA(NULL, "images/olmran.ico", IMAGE_ICON,
+    //0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    
     return (GameState.Display.Bitmap && 
             GameState.Display.PortraitBitmap && 
             GameState.Display.ControlSpritesBitmap);
