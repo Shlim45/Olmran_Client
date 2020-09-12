@@ -329,7 +329,7 @@ handleGMCP()
                         memcpy( GameState.User.Player.Title, valueBuff, size );
                         
                         // use the value
-                        OutputDebugStringA("Pretitle:  ");
+                        OutputDebugStringA("Title:     ");
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "clan") == 0) 
                     {
@@ -337,7 +337,7 @@ handleGMCP()
                         memcpy( GameState.User.Player.Guild, valueBuff, size );
                         
                         // use the value
-                        OutputDebugStringA("Clan:      ");
+                        OutputDebugStringA("Guild:     ");
                         
                     }
                     else
@@ -376,6 +376,10 @@ handleGMCP()
         {
             OutputDebugStringA("Failed to parse JSON\n");
         }
+        
+        // Update player info window
+        //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
+        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_INVALIDATE);
         
         // TODO(jon):  Start this elsewhere?  Need on player logon
         if (win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid"))
@@ -531,6 +535,9 @@ handleGMCP()
         {
             OutputDebugStringA("Failed to parse JSON\n");
         }
+        
+        //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
+        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_INVALIDATE);
     }
     else if (strcmp("roominfo", command) == 0)
     {
