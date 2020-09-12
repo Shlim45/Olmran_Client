@@ -89,6 +89,11 @@ extern "C" {
     
 #define ID_ACTIONTIMER       255
     
+#define IDM_FILE_QUIT 1
+    
+#define IDM_EDIT_ECHO    10
+#define IDM_EDIT_PERSIST 11
+    
 #define CONTROL_BITMAP "images/control.BMP"
     
 #define DIR_SW  1

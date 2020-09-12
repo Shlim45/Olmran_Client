@@ -99,7 +99,7 @@ ParseBufferForANSI(char *strbuf)
                 int advanceAmount = mIndex == 0 ? aIndex : (aIndex-(mIndex+1));
                 memset(tmpbuf, 0, tmpBufSize);
                 strncpy_s(tmpbuf,head,advanceAmount);
-                win32_AppendText(GameState.GameOutput.Window, tmpbuf);
+                Win32AppendText(GameState.GameOutput.Window, tmpbuf);
                 head += advanceAmount; // do after
                 processing = true;
             }
@@ -135,7 +135,7 @@ ParseBufferForANSI(char *strbuf)
         
         if (aIndex == 0)
         {
-            win32_AppendText(GameState.GameOutput.Window, strbuf);
+            Win32AppendText(GameState.GameOutput.Window, strbuf);
             return;
         }
         
@@ -146,7 +146,7 @@ ParseBufferForANSI(char *strbuf)
             {
                 memset(tmpbuf, 0, tmpBufSize);
                 strncpy_s(tmpbuf,head,copySize);
-                win32_AppendText(GameState.GameOutput.Window, tmpbuf);
+                Win32AppendText(GameState.GameOutput.Window, tmpbuf);
             }
         }
         else if (processing)

@@ -37,11 +37,15 @@ win32_MainWindowCallback(HWND   Window,
     HWND PlayerInfo = {};
     HWND Compass = {};
     HWND ActionTimer = {};
+    local_persist HMENU hMenu;         // handle to main menu 
     
     switch(Message)
     {
         case WM_CREATE:
         {
+            Win32AddMenus(Window);
+            hMenu = GetMenu(Window);
+            
             // Create Edit Control
             GameOutput = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
                                           (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
@@ -92,7 +96,7 @@ win32_MainWindowCallback(HWND   Window,
             }
             
             if (!Win32LoadAssets())
-                win32_AppendText(GameState.GameOutput.Window, "Failed to load asset(s).\n");
+                Win32AppendText(GameState.GameOutput.Window, "Failed to load asset(s).\n");
             
         } break;
         
@@ -166,6 +170,48 @@ win32_MainWindowCallback(HWND   Window,
             SetFocus(GameState.GameInput.Window);
         } break;
         
+        case WM_COMMAND:
+        {
+            switch(LOWORD(WParam)) 
+            {
+                case IDM_FILE_QUIT:
+                {
+                    SendMessageA(Window, WM_CLOSE, 0, 0);
+                } break;
+                
+                case IDM_EDIT_ECHO:
+                {
+                    UINT state = GetMenuState(hMenu, IDM_EDIT_ECHO, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        GameState.User.Account.LocalEcho = 0;
+                        CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_UNCHECKED);  
+                    } else 
+                    {
+                        GameState.User.Account.LocalEcho = 1;
+                        CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_CHECKED);  
+                    }
+                } break;
+                
+                case IDM_EDIT_PERSIST:
+                {
+                    UINT state = GetMenuState(hMenu, IDM_EDIT_PERSIST, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        GameState.User.Account.PersistCommand = 0;
+                        CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_UNCHECKED);  
+                    } else 
+                    {
+                        GameState.User.Account.PersistCommand = 1;
+                        CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_CHECKED);  
+                    }
+                } break;
+            }
+            
+        } break;
+        
         case WM_DESTROY:
         {
             // TODO(jon):  Handle this as an error, recreate window?
@@ -176,7 +222,7 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_CLOSE:
         {
-            // TODO(jon):  Handle this with a message to the user?
+            // TODO(jon):  Send quit&y&
             GlobalRunning = false;
         } break;
         
@@ -221,7 +267,8 @@ Win32HandleKeyboardInput(MSG *Message)
         bool32 AltKeyWasDown = ((Message->lParam & (1 << 29)) != 0);
         if ((VKCode == VK_F4) && AltKeyWasDown)
         {
-            GlobalRunning = false;
+            SendMessageA(GameState.Window, WM_CLOSE, 0, 0);
+            //GlobalRunning = false;
             return;
         }
         
@@ -255,10 +302,10 @@ Win32HandleKeyboardInput(MSG *Message)
             else if (VKCode == VK_NUMPAD5 || (!Numlock && VKCode == VK_CLEAR))
             {
                 GameState.AutoSneak = !GameState.AutoSneak;
-                win32_EchoCommand(GameState.GameOutput.Window, 
-                                  GameState.AutoSneak 
-                                  ? "Autosneak toggled ON.\n" 
-                                  : "Autosneak toggled OFF.\n");
+                Win32EchoCommand(GameState.GameOutput.Window, 
+                                 GameState.AutoSneak 
+                                 ? "Autosneak toggled ON.\n" 
+                                 : "Autosneak toggled OFF.\n");
             }
             else if (VKCode == VK_NUMPAD6 || (!Numlock && VKCode == VK_RIGHT))
             {
@@ -501,7 +548,7 @@ WinMain(
                 }
                 else
                 {
-                    win32_AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\n"));
+                    Win32AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\n"));
                     OutputDebugStringA("Error in win32_InitAndConnectSocket()\n");
                     SocketListenThreadHandle = 0;
                 }

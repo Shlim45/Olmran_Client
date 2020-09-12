@@ -68,6 +68,8 @@ struct user_account
     uint8 CharCount;
     char LastPlayed[256];
     bool32 LoggedIn;
+    bool32 LocalEcho;
+    bool32 PersistCommand;
 };
 
 struct portrait_coords
@@ -183,7 +185,7 @@ global_variable win32_socket Socket;
 global_variable game_state GameState;
 global_variable telnet_state Telnet;
 
-internal void win32_AppendText(const HWND GameOutput, const char *newText);
+internal void Win32AppendText(const HWND GameOutput, const char *newText);
 internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void Win32UpdateVitals(HWND Window);
 internal void Win32UpdatePlayerInfo(HWND Window);
@@ -191,5 +193,6 @@ internal void Win32UpdateCompass(HWND Window);
 internal void Win32StartActionTimer();
 internal void Win32HandlePlayerLogin();
 internal void Win32HandlePlayerLogoff();
+internal void Win32EchoCommand(const HWND GameOutput, const char *Command);
 
 #endif //WIN32_OLMRAN_H

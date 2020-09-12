@@ -1,4 +1,29 @@
 
+internal void 
+Win32AddMenus(HWND Window) {
+    
+    HMENU hMenubar;
+    HMENU hMenuFile;
+    HMENU hMenuEdit;
+    
+    hMenubar = CreateMenu();
+    hMenuFile = CreateMenu();
+    
+    //AppendMenuA(hMenuFile, MF_SEPARATOR, 0, NULL);
+    AppendMenuA(hMenuFile, MF_STRING, IDM_FILE_QUIT, "&Quit");
+    
+    AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuFile, "&File");
+    
+    hMenuEdit = CreateMenu();
+    
+    AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_ECHO, "&Local Echo");
+    AppendMenuA(hMenuEdit, MF_SEPARATOR, 0, NULL);
+    AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_PERSIST, "&Persist Command");
+    
+    AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuEdit, "&Edit");
+    SetMenu(Window, hMenubar);
+}
+
 internal bool32
 Win32LoadAssets()
 {
@@ -439,7 +464,7 @@ Win32HandlePlayerLogoff()
 }
 
 internal void 
-win32_AppendText(const HWND GameOutput, const char *newText)
+Win32AppendText(const HWND GameOutput, const char *newText)
 {
     if (strlen(newText) == 0)
         return;
@@ -465,10 +490,11 @@ win32_AppendText(const HWND GameOutput, const char *newText)
 }
 
 internal void
-win32_EchoCommand(const HWND GameOutput, const char *Command)
+Win32EchoCommand(const HWND GameOutput, const char *Command)
 {
     GameState.CurrentColor = D_WHITE;
-    win32_AppendText(GameState.GameOutput.Window, Command);
+    Win32AppendText(GameState.GameOutput.Window, Command);
+    Win32AppendText(GameState.GameOutput.Window, "\n");
     GameState.CurrentColor = C_RESET;
 }
 
