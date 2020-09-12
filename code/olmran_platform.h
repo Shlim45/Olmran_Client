@@ -87,6 +87,8 @@ extern "C" {
 #define ID_CONTROLCOMPASS    106
 #define ID_CONTROLTIMER      107
     
+#define ID_ACTIONTIMER       255
+    
 #define CONTROL_BITMAP "images/control.BMP"
     
 #define DIR_SW  1

@@ -1,4 +1,20 @@
 
+internal bool32
+Win32LoadAssets()
+{
+    // TODO(jon):  Do i need to persist this??
+    GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
+                                                    0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    GameState.Display.PortraitBitmap = (HBITMAP) LoadImageA(NULL, "images/portraits.BMP", IMAGE_BITMAP, 
+                                                            0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites_2.BMP", IMAGE_BITMAP, 
+                                                                  0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    
+    return (GameState.Display.Bitmap && 
+            GameState.Display.PortraitBitmap && 
+            GameState.Display.ControlSpritesBitmap);
+}
+
 internal void
 Win32UpdateVitals(HWND Window)
 {
@@ -127,6 +143,7 @@ Win32UpdateActionTimer(HWND Window)
             else
             {
                 // draw with height of 0?
+                KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER); 
             }
         }
         
@@ -135,6 +152,41 @@ Win32UpdateActionTimer(HWND Window)
     }
     
     EndPaint(Window, &ps);
+}
+
+internal VOID CALLBACK 
+ActionTimerProc( 
+                HWND hwnd,        // handle to window for timer messages 
+                UINT message,     // WM_TIMER message 
+                UINT idTimer,     // timer identifier 
+                DWORD dwTime)     // current system time 
+{
+    Win32UpdateActionTimer(GameState.Display.ActionTimer);
+    RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+    
+    if (GameState.User.Player.ActionTimer <= 0)
+        KillTimer(hwnd, idTimer);
+    else if (GameState.User.Player.ActionTimer > 100)
+        GameState.User.Player.ActionTimer -= 100;
+    else
+        GameState.User.Player.ActionTimer = 0;
+    
+}
+
+internal void
+Win32StartActionTimer()
+{
+    KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER); 
+    
+    UINT_PTR uResult;         // SetTimer's return value 
+    
+    uResult = SetTimer(GameState.Display.ActionTimer, // handle to main window 
+                       ID_ACTIONTIMER,                // timer identifier 
+                       100,                           // ms interval 
+                       (TIMERPROC) ActionTimerProc);  // timer callback 
+    
+    if (uResult == 0) 
+        OutputDebugStringA("ERROR: No timer is available.\n"); 
 }
 
 internal void
@@ -375,7 +427,6 @@ Win32HandlePlayerLogoff()
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     win32_StopMIDIPlayback(GameState.MIDIDevice);
 }
-
 
 internal void 
 win32_AppendText(const HWND GameOutput, const char *newText)

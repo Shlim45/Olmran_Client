@@ -34,13 +34,6 @@ struct game_buffer
     char *Buffer;
 };
 
-#if 0
-struct client_bitmaps
-{
-    HBITMAP gameAssets;
-};
-#endif
-
 struct user_input_history
 {
     uint8 NumberOfCommands;
@@ -147,7 +140,6 @@ struct game_state
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
-    //client_bitmaps Bitmaps;
     user_input_history CommandHistory;
     gmcp_buffer GMCP;
     COLORREF CurrentColor;
@@ -195,7 +187,7 @@ internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void Win32UpdateVitals(HWND Window);
 internal void Win32UpdatePlayerInfo(HWND Window);
 internal void Win32UpdateCompass(HWND Window);
-internal void Win32UpdateActionTimer(HWND Window);
+internal void Win32StartActionTimer();
 internal void Win32HandlePlayerLogin();
 internal void Win32HandlePlayerLogoff();
 

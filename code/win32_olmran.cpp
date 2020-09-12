@@ -22,22 +22,6 @@
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 
-internal bool32
-Win32LoadAssets()
-{
-    // TODO(jon):  Do i need to persist this??
-    GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
-                                                    0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-    GameState.Display.PortraitBitmap = (HBITMAP) LoadImageA(NULL, "images/portraits.BMP", IMAGE_BITMAP, 
-                                                            0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-    GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites_2.BMP", IMAGE_BITMAP, 
-                                                                  0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-    
-    return (GameState.Display.Bitmap && 
-            GameState.Display.PortraitBitmap && 
-            GameState.Display.ControlSpritesBitmap);
-}
-
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
                          UINT   Message,
@@ -519,6 +503,7 @@ WinMain(
                 // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
                 win32_CloseSocket();
                 if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }
+                KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER);
             }
             else
             {

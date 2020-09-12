@@ -503,6 +503,8 @@ handleGMCP()
         strncpy_s(GameState.GMCP.BufferOut, GameState.GMCP.BufferSize,
                   "room_info", 9);
         sendGMCP();
+        
+        // TODO(jon):  "allIdols", "idolUpdate"
     }
     else if (strcmp("loggedin", command) == 0)
     {
@@ -969,9 +971,7 @@ handleGMCP()
             OutputDebugStringA("Failed to parse JSON\n");
         }
         
-        Win32UpdateActionTimer(GameState.Display.ActionTimer);
-        // TODO(jon):  I shouldn't have to redraw the entire window...
-        RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
+        Win32StartActionTimer();
     }
     else if (strcmp("charvitals", command) == 0 ||
              strcmp("char.vitals", command) == 0)
@@ -1243,8 +1243,6 @@ handle_gmcp(char *subData, int dataSize)
         
         handleGMCP();
     }
-    // zero out Telnet.negBuffers.subNegotiation
-    memset(Telnet.negBuffers.subNegotiation, 0, Telnet.negBuffers.subNegSize);
     
-    // call GMCPHandlers.handleGMCP(data) - this will update the client etc.
+    memset(Telnet.negBuffers.subNegotiation, 0, Telnet.negBuffers.subNegSize);
 }
