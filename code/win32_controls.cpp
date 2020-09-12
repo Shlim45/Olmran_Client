@@ -7,7 +7,7 @@ Win32LoadAssets()
                                                     0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     GameState.Display.PortraitBitmap = (HBITMAP) LoadImageA(NULL, "images/portraits.BMP", IMAGE_BITMAP, 
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-    GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites_2.BMP", IMAGE_BITMAP, 
+    GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites.BMP", IMAGE_BITMAP, 
                                                                   0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     
     return (GameState.Display.Bitmap && 
@@ -31,9 +31,12 @@ Win32UpdateVitals(HWND Window)
         
         if (GameState.User.Player.LoggedIn)
         {
-            float healthPct = (GameState.User.Player.Vitals.Health / (GameState.User.Player.Vitals.MaxHealth * 1.0f));
-            float fatPct = (GameState.User.Player.Vitals.Fat / (GameState.User.Player.Vitals.MaxFat * 1.0f));
-            float powerPct = (GameState.User.Player.Vitals.Power / (GameState.User.Player.Vitals.MaxPower * 1.0f));
+            float healthPct = (GameState.User.Player.Vitals.Health / 
+                               (GameState.User.Player.Vitals.MaxHealth * 1.0f));
+            float fatPct = (GameState.User.Player.Vitals.Fat / 
+                            (GameState.User.Player.Vitals.MaxFat * 1.0f));
+            float powerPct = (GameState.User.Player.Vitals.Power / 
+                              (GameState.User.Player.Vitals.MaxPower * 1.0f));
             
             int Height, Shift;
             
@@ -97,7 +100,8 @@ Win32UpdatePortrait(HWND Window)
         
         if (GameState.User.Player.LoggedIn)
             BitBlt(hdc, 0, 0, 111, 126, hdcMem, 
-                   (111 * GameState.User.Player.PortraitCoords.X), (126 * GameState.User.Player.PortraitCoords.Y), 
+                   (111 * GameState.User.Player.PortraitCoords.X),
+                   (126 * GameState.User.Player.PortraitCoords.Y), 
                    SRCCOPY);
         else // force the blank copy
             BitBlt(hdc, 0, 0, 111, 126, hdcMem, (111 * 3), (126 * 10), SRCCOPY);
@@ -119,7 +123,8 @@ Win32UpdateActionTimer(HWND Window)
     if (GameState.Display.ControlSpritesBitmap)
     {
         HDC hdcMem = CreateCompatibleDC(hdc);
-        HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.ControlSpritesBitmap);
+        HBITMAP hbmOld = 
+            (HBITMAP) SelectObject(hdcMem, GameState.Display.ControlSpritesBitmap);
         
         GetObject(GameState.Display.ControlSpritesBitmap, sizeof(bm), &bm);
         
@@ -329,7 +334,8 @@ Win32UpdatePlayerInfo(HWND Window)
     
     // Create font
     long lfHeight = -MulDiv(10, GetDeviceCaps(hDC, LOGPIXELSY), 72);
-    HFONT hf = CreateFontA(lfHeight, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
+    HFONT hf = 
+        CreateFontA(lfHeight, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
     HFONT hfOld = (HFONT) SelectObject(hDC, hf);
     
     // Calculate the dimensions of the 4 equal rectangles.
@@ -352,7 +358,8 @@ Win32UpdatePlayerInfo(HWND Window)
                  GameState.User.Player.ExpTNL, 
                  GameState.User.Player.Level + 1);
     
-    DrawTextA(hDC, pInfo, -1, &rcWindow, DT_EDITCONTROL | DT_CENTER | DT_TOP | DT_NOCLIP | DT_WORDBREAK);
+    DrawTextA(hDC, pInfo, -1, &rcWindow, 
+              DT_EDITCONTROL | DT_CENTER | DT_TOP | DT_NOCLIP | DT_WORDBREAK);
     
     // Cleanup
     SelectObject(hDC, hfOld);
@@ -472,7 +479,8 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
     LoadLibraryA("Riched32.dll");
     
     HWND hwndOutput = CreateWindowExA(0, RICHEDIT_CLASS, NULL,
-                                      ES_MULTILINE | ES_READONLY | WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 
+                                      ES_MULTILINE | ES_READONLY | WS_VISIBLE | 
+                                      WS_CHILD | WS_BORDER | WS_VSCROLL, 
                                       x, y, width, height, 
                                       hwndOwner, controlId, hinst, NULL);
     

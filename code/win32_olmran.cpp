@@ -49,40 +49,38 @@ win32_MainWindowCallback(HWND   Window,
             GameState.GameOutput.Window = GameOutput;
             
             // Create Input Control
-            GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, 
+                                        (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameInput = {};
             GameState.GameInput.Window = GameInput;
             
             // Create Static Control for Health Bars / Portrait / Player Info Background Image
             GameControl = CreateWindowExA(0, TEXT("STATIC"), NULL,
                                           WS_VISIBLE | WS_CHILD | SS_EDITCONTROL | SS_CENTER,
-                                          0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
+                                          0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, 
+                                          (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
             
             if (GameControl)
             {
-                // vital window starts at (10, 8) and is 61 x 112
-                // a vital bar is 13 x 112
-                // 11px in between bars
-                Vitals = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                         WS_CHILD | SS_BITMAP,
-                                         10, 8, 61, 112, GameControl, (HMENU)ID_CONTROLVITALS, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                Vitals = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                                         10, 8, 61, 112, GameControl, (HMENU)ID_CONTROLVITALS, 
+                                         (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                // a portrait is 111 x 126 (93 x 121)
-                Portrait = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                           WS_VISIBLE | WS_CHILD | SS_BITMAP,
-                                           89, 9, 111, 126, GameControl, (HMENU)ID_CONTROLPORTRAIT, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                Portrait = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                                           89, 9, 111, 126, GameControl, (HMENU)ID_CONTROLPORTRAIT, 
+                                           (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                PlayerInfo = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                             WS_VISIBLE | WS_CHILD | SS_BITMAP,
-                                             174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                PlayerInfo = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                                             174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, 
+                                             (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                Compass = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                          WS_CHILD | SS_BITMAP,
-                                          108, 115, 330, 21, GameControl, (HMENU)ID_CONTROLCOMPASS, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                Compass = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                                          108, 115, 330, 21, GameControl, (HMENU)ID_CONTROLCOMPASS, 
+                                          (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                ActionTimer = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                              WS_CHILD | SS_BITMAP,
-                                              305, 91, 9, 46, GameControl, (HMENU)ID_CONTROLTIMER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                ActionTimer = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                                              305, 91, 9, 46, GameControl, (HMENU)ID_CONTROLTIMER, 
+                                              (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
                 GameState.Display = {};
                 GameState.Display.Control = GameControl;
@@ -236,19 +234,23 @@ Win32HandleKeyboardInput(MSG *Message)
             }
             else if (VKCode == VK_NUMPAD1 || (!Numlock && VKCode == VK_END))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southwest" : "southwest");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak southwest" : "southwest");
             }
             else if (VKCode == VK_NUMPAD2 || (!Numlock && VKCode == VK_DOWN))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak south" : "south");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak south" : "south");
             }
             else if (VKCode == VK_NUMPAD3 || (!Numlock && VKCode == VK_NEXT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak southeast" : "southeast");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak southeast" : "southeast");
             }
             else if (VKCode == VK_NUMPAD4 || (!Numlock && VKCode == VK_LEFT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak west" : "west");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak west" : "west");
             }
             else if (VKCode == VK_NUMPAD5 || (!Numlock && VKCode == VK_CLEAR))
             {
@@ -260,31 +262,38 @@ Win32HandleKeyboardInput(MSG *Message)
             }
             else if (VKCode == VK_NUMPAD6 || (!Numlock && VKCode == VK_RIGHT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak east" : "east");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak east" : "east");
             }
             else if (VKCode == VK_NUMPAD7 || (!Numlock && VKCode == VK_HOME))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northwest" : "northwest");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak northwest" : "northwest");
             }
             else if (VKCode == VK_NUMPAD8 || (!Numlock && VKCode == VK_UP))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak north" : "north");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak north" : "north");
             }
             else if (VKCode == VK_NUMPAD9 || (!Numlock && VKCode == VK_PRIOR))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak northeast" : "northeast");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak northeast" : "northeast");
             }
             else if (VKCode == VK_ADD)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak down" : "down");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak down" : "down");
             }
             else if (VKCode == VK_SUBTRACT)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak up" : "up");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak up" : "up");
             }
             else if (VKCode == VK_MULTIPLY)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, GameState.AutoSneak ? "sneak genportal" : "go genportal");
+                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                          GameState.AutoSneak ? "sneak genportal" : "go genportal");
             }
             else if (VKCode == VK_DIVIDE)
             {
@@ -486,7 +495,8 @@ WinMain(
                     
                     char *Param = "Socket listening.\n";
                     
-                    SocketListenThreadHandle = CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
+                    SocketListenThreadHandle = 
+                        CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
                 }
                 else
                 {
