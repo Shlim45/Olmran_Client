@@ -48,9 +48,11 @@ win32_MainWindowCallback(HWND   Window,
     HWND GameOutput = {};
     HWND GameInput = {};
     HWND GameControl = {};
+    HWND Vitals = {};
     HWND Portrait = {};
     HWND PlayerInfo = {};
     HWND Compass = {};
+    HWND ActionTimer = {};
     
     switch(Message)
     {
@@ -74,6 +76,13 @@ win32_MainWindowCallback(HWND   Window,
             
             if (GameControl)
             {
+                // vital window starts at (10, 8) and is 61 x 112
+                // a vital bar is 13 x 112
+                // 11px in between bars
+                Vitals = CreateWindowExA(0, TEXT("STATIC"), NULL,
+                                         WS_CHILD | SS_BITMAP,
+                                         10, 8, 61, 112, GameControl, (HMENU)ID_CONTROLVITALS, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                
                 // a portrait is 111 x 126 (93 x 121)
                 Portrait = CreateWindowExA(0, TEXT("STATIC"), NULL,
                                            WS_VISIBLE | WS_CHILD | SS_BITMAP,
@@ -84,14 +93,20 @@ win32_MainWindowCallback(HWND   Window,
                                              174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
                 Compass = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                          WS_CHILD | SS_BITMAP, // WS_VISIBLE
+                                          WS_CHILD | SS_BITMAP,
                                           108, 115, 330, 21, GameControl, (HMENU)ID_CONTROLCOMPASS, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                
+                ActionTimer = CreateWindowExA(0, TEXT("STATIC"), NULL,
+                                              WS_CHILD | SS_BITMAP,
+                                              305, 91, 9, 46, GameControl, (HMENU)ID_CONTROLTIMER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                
                 GameState.Display = {};
-                //HWND Health;
                 GameState.Display.Control = GameControl;
+                GameState.Display.Vitals = Vitals;
                 GameState.Display.Portrait = Portrait;
                 GameState.Display.PlayerInfo = PlayerInfo;
                 GameState.Display.Compass = Compass;
+                GameState.Display.ActionTimer = ActionTimer;
             }
             
             if (!Win32LoadAssets())
@@ -103,9 +118,11 @@ win32_MainWindowCallback(HWND   Window,
         {
             Win32HandlePaint(GameState.Window, 0);
             Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
+            Win32UpdateVitals(GameState.Display.Vitals);
             Win32UpdatePortrait(GameState.Display.Portrait);
             Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
             Win32UpdateCompass(GameState.Display.Compass);
+            Win32UpdateActionTimer(GameState.Display.ActionTimer);
         } break;
         
         case WM_SETFOCUS:
@@ -134,22 +151,34 @@ win32_MainWindowCallback(HWND   Window,
                        143,                    // height of client area 
                        TRUE);                  // repaint window 
             
+            MoveWindow(GameState.Display.Vitals,
+                       10, 8,                  // starting x- and y-coordinates 
+                       61,                     // width of client area 
+                       112,                    // height of client area 
+                       TRUE);                  // repaint window 
+            
             MoveWindow(GameState.Display.Portrait,
-                       89, 9,                // starting x- and y-coordinates 
-                       111,                     // width of client area 
+                       89, 9,                  // starting x- and y-coordinates 
+                       111,                    // width of client area 
                        126,                    // height of client area 
                        TRUE);                  // repaint window 
             
             MoveWindow(GameState.Display.PlayerInfo,
                        174, 14,                // starting x- and y-coordinates 
-                       106,                     // width of client area 
+                       106,                    // width of client area 
                        126,                    // height of client area 
                        TRUE);                  // repaint window 
             
             MoveWindow(GameState.Display.Compass,
                        330, 21,                // starting x- and y-coordinates 
-                       108,                     // width of client area 
+                       108,                    // width of client area 
                        115,                    // height of client area 
+                       TRUE);                  // repaint window 
+            
+            MoveWindow(GameState.Display.ActionTimer,
+                       305, 91,                // starting x- and y-coordinates 
+                       9,                      // width of client area 
+                       46,                     // height of client area 
                        TRUE);                  // repaint window 
             
             SetFocus(GameState.GameInput.Window);

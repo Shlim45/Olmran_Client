@@ -83,6 +83,16 @@ struct portrait_coords
     int Y;
 };
 
+struct player_vitals
+{
+    uint32 Health;
+    uint32 Fat;
+    uint32 Power;
+    uint32 MaxHealth;
+    uint32 MaxFat;
+    uint32 MaxPower;
+};
+
 struct user_player
 {
     char Name[256];
@@ -95,6 +105,8 @@ struct user_player
     uint16 Level;
     uint8 Realm;
     portrait_coords PortraitCoords;
+    player_vitals Vitals;
+    uint32 ActionTimer;
     bool32 LoggedIn;
 };
 
@@ -119,12 +131,12 @@ struct midi_device
 struct game_display_controls
 {
     HWND Control;
-    HWND Health;
+    HWND Vitals;
     HWND Portrait;
     HWND PlayerInfo;
     HWND Compass;
+    HWND ActionTimer;
     HBITMAP Bitmap;
-    HBITMAP HealthBitmap;
     HBITMAP PortraitBitmap;
     HBITMAP ControlSpritesBitmap;
 };
@@ -180,8 +192,10 @@ global_variable telnet_state Telnet;
 
 internal void win32_AppendText(const HWND GameOutput, const char *newText);
 internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
+internal void Win32UpdateVitals(HWND Window);
 internal void Win32UpdatePlayerInfo(HWND Window);
 internal void Win32UpdateCompass(HWND Window);
+internal void Win32UpdateActionTimer(HWND Window);
 internal void Win32HandlePlayerLogin();
 internal void Win32HandlePlayerLogoff();
 

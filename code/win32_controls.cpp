@@ -1,5 +1,71 @@
 
 internal void
+Win32UpdateVitals(HWND Window)
+{
+    BITMAP bm;
+    PAINTSTRUCT ps;
+    
+    HDC hdc = BeginPaint(Window, &ps);
+    if (GameState.Display.ControlSpritesBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.ControlSpritesBitmap);
+        
+        GetObject(GameState.Display.ControlSpritesBitmap, sizeof(bm), &bm);
+        
+        if (GameState.User.Player.LoggedIn)
+        {
+            float healthPct = (GameState.User.Player.Vitals.Health / (GameState.User.Player.Vitals.MaxHealth * 1.0f));
+            float fatPct = (GameState.User.Player.Vitals.Fat / (GameState.User.Player.Vitals.MaxFat * 1.0f));
+            float powerPct = (GameState.User.Player.Vitals.Power / (GameState.User.Player.Vitals.MaxPower * 1.0f));
+            
+            int Height, Shift;
+            
+            // health
+            Height = (int) (112 * healthPct);
+            if (Height > 112) Height = 112;
+            Shift = 112 - Height;
+            
+            BitBlt(hdc,       // device context to draw to
+                   0, Shift,      // destination (x, y)
+                   13, Height,   // width, height to draw
+                   hdcMem,    // source bitmap
+                   1, (91+Shift),     // source (x, y)
+                   SRCCOPY);  // raster-operation code
+            
+            // fat
+            Height = (int) (112 * fatPct);
+            if (Height > 112) Height = 112;
+            Shift = 112 - Height;
+            
+            BitBlt(hdc,       // device context to draw to
+                   24, Shift,      // destination (x, y)
+                   13, Height,   // width, height to draw
+                   hdcMem,    // source bitmap
+                   15, (91+Shift),     // source (x, y)
+                   SRCCOPY);  // raster-operation code
+            
+            // power
+            Height = (int) (112 * powerPct);
+            if (Height > 112) Height = 112;
+            Shift = 112 - Height;
+            
+            BitBlt(hdc,       // device context to draw to
+                   48, Shift,      // destination (x, y)
+                   13, Height,   // width, height to draw
+                   hdcMem,    // source bitmap
+                   29, (91+Shift),     // source (x, y)
+                   SRCCOPY);  // raster-operation code
+        }
+        
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
+    }
+    
+    EndPaint(Window, &ps);
+}
+
+internal void
 Win32UpdatePortrait(HWND Window)
 {
     BITMAP bm;
@@ -19,6 +85,50 @@ Win32UpdatePortrait(HWND Window)
                    SRCCOPY);
         else // force the blank copy
             BitBlt(hdc, 0, 0, 111, 126, hdcMem, (111 * 3), (126 * 10), SRCCOPY);
+        
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
+    }
+    
+    EndPaint(Window, &ps);
+}
+
+internal void
+Win32UpdateActionTimer(HWND Window)
+{
+    BITMAP bm;
+    PAINTSTRUCT ps;
+    
+    HDC hdc = BeginPaint(Window, &ps);
+    if (GameState.Display.ControlSpritesBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.ControlSpritesBitmap);
+        
+        GetObject(GameState.Display.ControlSpritesBitmap, sizeof(bm), &bm);
+        
+        if (GameState.User.Player.LoggedIn)
+        {
+            float timerPct = (GameState.User.Player.ActionTimer / 5000.0f);
+            
+            if (timerPct > 0)
+            {
+                int Height = (int) (46 * timerPct);
+                if (Height > 46) Height = 46;
+                int Shift = 46 - Height;
+                
+                BitBlt(hdc,       // device context to draw to
+                       0, Shift,      // destination (x, y)
+                       9, Height,   // width, height to draw
+                       hdcMem,    // source bitmap
+                       43, (157+Shift),     // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            else
+            {
+                // draw with height of 0?
+            }
+        }
         
         SelectObject(hdcMem, hbmOld);
         DeleteDC(hdcMem);
@@ -243,7 +353,9 @@ Win32HandlePlayerLogin()
     GameState.User.Player.LoggedIn = true;
     // TODO(jon):  Start this elsewhere?  Need on player logon
     Win32UpdateClientTitle();
+    ShowWindow(GameState.Display.Vitals, SW_SHOW);
     ShowWindow(GameState.Display.Compass, SW_SHOW);
+    ShowWindow(GameState.Display.ActionTimer, SW_SHOW);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     // TODO(jon):  MIDI playback may need it's own thread - laggy
@@ -256,7 +368,9 @@ Win32HandlePlayerLogoff()
     memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
     
     Win32UpdateClientTitle();
+    ShowWindow(GameState.Display.Vitals, SW_HIDE);
     ShowWindow(GameState.Display.Compass, SW_HIDE);
+    ShowWindow(GameState.Display.ActionTimer, SW_HIDE);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     win32_StopMIDIPlayback(GameState.MIDIDevice);

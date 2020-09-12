@@ -900,6 +900,200 @@ handleGMCP()
         // TODO(jon):  I shouldn't have to redraw the entire window...
         RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
     }
+    else if (strcmp("chartimer", command) == 0)
+    {
+        jsmn_init(&parser);
+        
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                char valueBuff[256] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    if (jsoneq(jsonObject, &tokens[Index], "timer") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.ActionTimer = valueInt;
+                        // use the value
+                        OutputDebugStringA("Timer:    ");
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 256);
+                    valueInt = 0;
+                }
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
+        
+        Win32UpdateActionTimer(GameState.Display.ActionTimer);
+        // TODO(jon):  I shouldn't have to redraw the entire window...
+        RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
+    }
+    else if (strcmp("charvitals", command) == 0 ||
+             strcmp("char.vitals", command) == 0)
+    {
+        jsmn_init(&parser);
+        
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                char valueBuff[256] = {};
+                uint32 valueInt = 0;
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    
+                    if (jsoneq(jsonObject, &tokens[Index], "hp") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.Health = valueInt;
+                        // use the value
+                        OutputDebugStringA("Health:    ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "maxhp") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.MaxHealth = valueInt;
+                        // use the value
+                        OutputDebugStringA("MaxHealth: ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "mana") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.Power = valueInt;
+                        // use the value
+                        OutputDebugStringA("Power:     ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "maxmana") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.MaxPower = valueInt;
+                        // use the value
+                        OutputDebugStringA("MaxPower:  ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "moves") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.Fat = valueInt;
+                        // use the value
+                        OutputDebugStringA("Fat:       ");
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "maxmoves") == 0) 
+                    {
+                        memcpy( valueBuff, &jsonObject[start], size );
+                        
+                        valueInt = atoi(valueBuff);
+                        GameState.User.Player.Vitals.MaxFat = valueInt;
+                        // use the value
+                        OutputDebugStringA("MaxFat:    ");
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unknown key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA(valueBuff);
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    memset(valueBuff, 0, 256);
+                    valueInt = 0;
+                }
+                Win32UpdateVitals(GameState.Display.Vitals);
+                RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
+        
+        // TODO(jon):  I shouldn't have to redraw the entire window...
+        RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
+    }
     else if (strcmp("roominfo", command) == 0 ||
              strcmp("room.info", command) == 0)
     {
@@ -940,7 +1134,6 @@ GMCP In: room.info
                     
                     if (jsoneq(jsonObject, &tokens[Index], "exits") == 0) 
                     {
-                        OutputDebugStringA("Exits: ");
                         ++Index; // skip the object token
                         
                         GameState.Room.Exits = 0;
@@ -950,61 +1143,51 @@ GMCP In: room.info
                     {
                         if (jsoneq(jsonObject, &tokens[Index], "E") == 0) 
                         {
-                            OutputDebugStringA("East ");
                             GameState.Room.Exits |= DIR_E;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "W") == 0) 
                         {
-                            OutputDebugStringA("West ");
                             GameState.Room.Exits |= DIR_W;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "N") == 0) 
                         {
-                            OutputDebugStringA("North ");
                             GameState.Room.Exits |= DIR_N;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "S") == 0) 
                         {
-                            OutputDebugStringA("South ");
                             GameState.Room.Exits |= DIR_S;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "NW") == 0) 
                         {
-                            OutputDebugStringA("Northwest ");
                             GameState.Room.Exits |= DIR_NW;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "NE") == 0) 
                         {
-                            OutputDebugStringA("Northeast ");
                             GameState.Room.Exits |= DIR_NE;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "SW") == 0) 
                         {
-                            OutputDebugStringA("Southwest ");
                             GameState.Room.Exits |= DIR_SW;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "SE") == 0) 
                         {
-                            OutputDebugStringA("Southeast ");
                             GameState.Room.Exits |= DIR_SE;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "U") == 0) 
                         {
-                            OutputDebugStringA("Up ");
                             GameState.Room.Exits |= DIR_U;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "D") == 0) 
                         {
-                            OutputDebugStringA("Down ");
                             GameState.Room.Exits |= DIR_D;
                             Index++; // skip the useless value
                         }
@@ -1015,7 +1198,6 @@ GMCP In: room.info
                         Index++;
                     }
                 }
-                OutputDebugStringA("\n");
                 Win32UpdateCompass(GameState.Display.Compass);
                 RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
             }
