@@ -22,6 +22,18 @@
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 
+internal bool32
+Win32LoadAssets()
+{
+    // TODO(jon):  Do i need to persist this??
+    GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
+                                                    0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    GameState.Display.PortraitBitmap = (HBITMAP) LoadImageA(NULL, "images/portraits.BMP", IMAGE_BITMAP, 
+                                                            0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    
+    return (GameState.Display.Bitmap && GameState.Display.PortraitBitmap);
+}
+
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
                          UINT   Message,
@@ -32,6 +44,7 @@ win32_MainWindowCallback(HWND   Window,
     HWND GameOutput = {};
     HWND GameInput = {};
     HWND GameControl = {};
+    HWND Portrait = {};
     HWND PlayerInfo = {};
     
     switch(Message)
@@ -55,29 +68,33 @@ win32_MainWindowCallback(HWND   Window,
                                           0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
             
             if (GameControl)
+            {
+                // a portrait is 111 x 126 (93 x 121)
+                Portrait = CreateWindowExA(0, TEXT("STATIC"), NULL,
+                                           WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                                           89, 9, 111, 126, GameControl, (HMENU)ID_CONTROLPORTRAIT, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                
                 PlayerInfo = CreateWindowExA(0, TEXT("STATIC"), NULL,
                                              WS_VISIBLE | WS_CHILD | SS_BITMAP,
                                              174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                
+                GameState.Display = {};
+                //HWND Health;
+                GameState.Display.Control = GameControl;
+                GameState.Display.Portrait = Portrait;
+                GameState.Display.PlayerInfo = PlayerInfo;
+            }
             
-            // a portrait is 93 x 121
+            if (!Win32LoadAssets())
+                win32_AppendText(GameState.GameOutput.Window, "Failed to load asset(s).\n");
             
-            GameState.Display = {};
-            //HWND Health;
-            //HWND Portrait;
-            GameState.Display.Control = GameControl;
-            GameState.Display.PlayerInfo = PlayerInfo;
-            
-            
-            // load image and display it
-            // TODO(jon):  Do i need to persist this??
-            GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
-                                                            0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
         } break;
         
         case WM_PAINT:
         {
             Win32HandlePaint(GameState.Window, 0);
             Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
+            Win32UpdatePortrait(GameState.Display.Portrait);
             Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
         } break;
         
@@ -107,6 +124,11 @@ win32_MainWindowCallback(HWND   Window,
                        143,                    // height of client area 
                        TRUE);                  // repaint window 
             
+            MoveWindow(GameState.Display.Portrait,
+                       89, 9,                // starting x- and y-coordinates 
+                       111,                     // width of client area 
+                       126,                    // height of client area 
+                       TRUE);                  // repaint window 
             
             MoveWindow(GameState.Display.PlayerInfo,
                        174, 14,                // starting x- and y-coordinates 

@@ -77,6 +77,12 @@ struct user_account
     bool32 LoggedIn;
 };
 
+struct portrait_coords
+{
+    int X;
+    int Y;
+};
+
 struct user_player
 {
     char Name[256];
@@ -88,6 +94,8 @@ struct user_player
     uint32 ExpTNL;
     uint16 Level;
     uint8 Realm;
+    portrait_coords PortraitCoords;
+    bool32 LoggedIn;
 };
 
 struct room_info
@@ -117,7 +125,6 @@ struct game_display_controls
     HBITMAP Bitmap;
     HBITMAP HealthBitmap;
     HBITMAP PortraitBitmap;
-    //HBITMAP PlayerInfoBitmap;
 };
 
 struct game_state
@@ -169,15 +176,9 @@ global_variable win32_socket Socket;
 global_variable game_state GameState;
 global_variable telnet_state Telnet;
 
-internal void
-win32_AppendText(const HWND GameOutput, const char *newText);
-
-internal uint32
-win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
-
-internal void
-win32_UpdateClientTitle();
-
-//internal void win32_UpdateClient();
+internal void win32_AppendText(const HWND GameOutput, const char *newText);
+internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
+internal void Win32UpdatePlayerInfo(HWND Window);
+internal void Win32UpdateClientOnPlayerLogin();
 
 #endif //WIN32_OLMRAN_H

@@ -110,6 +110,366 @@ jsoneq(const char *json, jsmntok_t *tok, const char *s)
 }
 
 internal void
+UpdatePortraitCoords()
+{
+    if (strcmp("Archon", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+    }
+    
+    // Evil
+    else if (strcmp("Skeleton", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 4;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 4;
+        }
+    }
+    
+    else if (strcmp("Imp", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 9;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 9;
+        }
+    } 
+    
+    else if (strcmp("Coven", GameState.User.Player.Class) == 0 ||
+             strcmp("Vampire", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 7;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 7;
+        }
+    }
+    
+    else if (strcmp("Demon", GameState.User.Player.Class) == 0 ||
+             strcmp("Xionakis", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 8;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 8;
+        }
+    }
+    
+    else if (strcmp("Necromancer", GameState.User.Player.Class) == 0 ||
+             strcmp("Sin", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+    }
+    
+    else if (strcmp("Zombie", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 5;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 5;
+        }
+    }
+    
+    else if (strcmp("Werewolf", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 6;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 6;
+        }
+    }
+    
+    // Chaos
+    else if (strcmp("Lizardman", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 6;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 6;
+        }
+    }
+    
+    else if (strcmp("Kobold", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 3;
+        }
+    }
+    
+    else if (strcmp("Goblin", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 2;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 2;
+        }
+    }
+    
+    else if (strcmp("Gnoll", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 5;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 5;
+        }
+    }
+    
+    else if (strcmp("Troll", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 0;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 0;
+        }
+    }
+    
+    else if (strcmp("Orc", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 4;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 4;
+        }
+    }
+    
+    else if (strcmp("Ogre", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 1;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 1;
+        }
+    }
+    
+    else if (strcmp("Hydromancer", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+    }
+    
+    // Good
+    else if (strcmp("Paladin", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 8;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 8;
+        }
+    }
+    
+    else if (strcmp("Rogue", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 9;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 9;
+        }
+    }
+    
+    else if (strcmp("Craftsman", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 2;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 2;
+        }
+    }
+    
+    else if (strcmp("Ranger", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 0;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 0;
+        }
+    }
+    
+    else if (strcmp("Priest", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 7;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 7;
+        }
+    }
+    
+    else if (strcmp("Wizard", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 0;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 1;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+    }
+    
+    else if (strcmp("Monk", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 1;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 1;
+        }
+    }
+    
+    else if (strcmp("Bard", GameState.User.Player.Class) == 0)
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+    }
+    
+    else
+    {
+        if (strcmp("male", GameState.User.Player.Class))
+        {
+            GameState.User.Player.PortraitCoords.X = 2;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+        else
+        {
+            GameState.User.Player.PortraitCoords.X = 3;
+            GameState.User.Player.PortraitCoords.Y = 10;
+        }
+    }
+}
+
+internal void
 handleGMCP()
 {
     if (GameState.GMCP.BufferIn[0] == 0)
@@ -151,8 +511,9 @@ handleGMCP()
     else if (strcmp("logout", command) == 0)
     {
         memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
-        GameState.User.Account.LoggedIn = false;
-        win32_UpdateClientTitle();
+        GameState.User.Player.LoggedIn = false;
+        //win32_UpdateClientTitle();
+        Win32UpdateClientOnPlayerLogin();
         win32_StopMIDIPlayback(GameState.MIDIDevice);
     }
     else if (strcmp("accountdata", command) == 0)
@@ -182,6 +543,7 @@ handleGMCP()
                     
                     if (jsoneq(jsonObject, &tokens[Index], "characters") == 0) 
                     {
+                        memset(GameState.User.Account.Characters, 0, sizeof(GameState.User.Account.Characters));
                         memcpy( arrayBuff, &jsonObject[start], size );
                         
                         // use the value
@@ -202,6 +564,7 @@ handleGMCP()
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "lastCharacter") == 0) 
                     {
+                        memset(GameState.User.Account.LastPlayed, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Account.LastPlayed, valueBuff, size );
                         
@@ -255,11 +618,12 @@ handleGMCP()
                     
                     if (jsoneq(jsonObject, &tokens[Index], "name") == 0) 
                     {
+                        memset(GameState.User.Player.Name, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Name, valueBuff, size );
                         
                         GameState.User.Account.LoggedIn = true;
-                        win32_UpdateClientTitle();
+                        //win32_UpdateClientTitle();
                         //win32_UpdateClient();
                         
                         // use the value
@@ -267,6 +631,7 @@ handleGMCP()
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "gender") == 0) 
                     {
+                        memset(GameState.User.Player.Gender, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Gender, valueBuff, size );
                         
@@ -286,14 +651,18 @@ handleGMCP()
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "subclass") == 0) 
                     {
+                        memset(GameState.User.Player.Class, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Class, valueBuff, size );
                         
+                        UpdatePortraitCoords();
+                        
                         // use the value
-                        OutputDebugStringA("Subclass:  ");
+                        OutputDebugStringA("Class:     ");
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "race") == 0) 
                     {
+                        memset(GameState.User.Player.Race, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Race, valueBuff, size );
                         
@@ -324,6 +693,7 @@ handleGMCP()
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "pretitle") == 0) 
                     {
+                        memset(GameState.User.Player.Title, 0, 256);
                         // add 3 to skip the "*, "
                         memcpy( valueBuff, &jsonObject[start+3], size-3 );
                         memcpy( GameState.User.Player.Title, valueBuff, size );
@@ -333,6 +703,7 @@ handleGMCP()
                     }
                     else if (jsoneq(jsonObject, &tokens[Index], "clan") == 0) 
                     {
+                        memset(GameState.User.Player.Guild, 0, 256);
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Guild, valueBuff, size );
                         
@@ -353,6 +724,8 @@ handleGMCP()
                     memset(valueBuff, 0, 256);
                     valueInt = 0;
                 }
+                GameState.User.Player.LoggedIn = true;
+                Win32UpdateClientOnPlayerLogin();
             }
         }
         else if (Result == JSMN_ERROR_INVAL)
@@ -379,7 +752,7 @@ handleGMCP()
         
         // Update player info window
         //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
-        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_INVALIDATE);
+        //RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_UPDATENOW);
         
         // TODO(jon):  Start this elsewhere?  Need on player logon
         if (win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid"))
@@ -442,6 +815,9 @@ handleGMCP()
                     memset(valueBuff, 0, 256);
                     valueInt = 0;
                 }
+                
+                Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
+                RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
             }
         }
         else if (Result == JSMN_ERROR_INVAL)
@@ -537,7 +913,7 @@ handleGMCP()
         }
         
         //InvalidateRect(GameState.Display.PlayerInfo, 0, TRUE);
-        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_INVALIDATE);
+        RedrawWindow(GameState.Display.PlayerInfo, 0, 0, RDW_UPDATENOW);
     }
     else if (strcmp("roominfo", command) == 0)
     {

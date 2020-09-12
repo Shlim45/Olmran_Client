@@ -1,10 +1,35 @@
 
+internal void
+Win32UpdatePortrait(HWND Window)
+{
+    BITMAP bm;
+    PAINTSTRUCT ps;
+    
+    HDC hdc = BeginPaint(Window, &ps);
+    if (GameState.Display.PortraitBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.PortraitBitmap);
+        
+        GetObject(GameState.Display.PortraitBitmap, sizeof(bm), &bm);
+        
+        BitBlt(hdc, 0, 0, 111, 126, hdcMem, 
+               (111 * GameState.User.Player.PortraitCoords.X), (126 * GameState.User.Player.PortraitCoords.Y), 
+               SRCCOPY);
+        
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
+    }
+    
+    EndPaint(Window, &ps);
+}
+
 internal void 
-Win32UpdatePlayerInfo(HWND hWnd)
+Win32UpdatePlayerInfo(HWND Window)
 {
     // Set up the device context for drawing.
     PAINTSTRUCT ps;
-    HDC hDC = BeginPaint(hWnd, &ps);
+    HDC hDC = BeginPaint(Window, &ps);
     
     // Create font
     long lfHeight = -MulDiv(10, GetDeviceCaps(hDC, LOGPIXELSY), 72);
@@ -13,14 +38,14 @@ Win32UpdatePlayerInfo(HWND hWnd)
     
     // Calculate the dimensions of the 4 equal rectangles.
     RECT rcWindow;
-    GetClientRect(hWnd, &rcWindow);
+    GetClientRect(Window, &rcWindow);
     
     // Draw the text into the center of each of the rectangles.
     SetBkMode(hDC, TRANSPARENT);
     SetBkColor(hDC, RGB(0, 0, 0));   // black
     
     char pInfo[256] = "";
-    if (GameState.User.Account.LoggedIn)
+    if (GameState.User.Player.LoggedIn)
         wsprintf(pInfo, "%s\nLvl %d %s\n%s of\n%s\n%d\nexp for Lvl %d", 
                  GameState.User.Player.Name, 
                  GameState.User.Player.Level, 
@@ -37,7 +62,7 @@ Win32UpdatePlayerInfo(HWND hWnd)
     DeleteObject(hf);
     DeleteObject(hfOld);
     
-    EndPaint(hWnd, &ps);
+    EndPaint(Window, &ps);
 }
 
 internal void
@@ -68,7 +93,7 @@ internal void
 win32_UpdateClientTitle()
 {
     char newTitle[256] = {};
-    if (GameState.User.Account.LoggedIn)
+    if (GameState.User.Player.LoggedIn)
     {
         strcat_s(newTitle, 256, "Olmran Client - ");
         strcat_s(newTitle, 256, GameState.User.Player.Name);
@@ -76,6 +101,16 @@ win32_UpdateClientTitle()
     else
         strcat_s(newTitle, 256, "Olmran Client");
     SetWindowTextA(GameState.Window, newTitle);
+}
+
+internal void
+Win32UpdateClientOnPlayerLogin()
+{
+    win32_UpdateClientTitle();
+    Win32UpdatePortrait(GameState.Display.Portrait);
+    Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
+    
+    RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
 }
 
 internal void 
