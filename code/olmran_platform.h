@@ -84,8 +84,20 @@ extern "C" {
 #define ID_CONTROLHEALTH 103
 #define ID_CONTROLPORTRAIT 104
 #define ID_CONTROLPLAYER 105
+#define ID_CONTROLCOMPASS 106
     
 #define CONTROL_BITMAP "images/control.BMP"
+    
+#define DIR_SW 1;
+#define DIR_S 2;
+#define DIR_SE 4;
+#define DIR_W 8;
+#define DIR_E 16;
+#define DIR_NW 32;
+#define DIR_N 64;
+#define DIR_NE 128;
+#define DIR_U 256;
+#define DIR_D 512;
     
 #if 1
     // Connect to local server

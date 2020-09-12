@@ -30,8 +30,12 @@ Win32LoadAssets()
                                                     0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     GameState.Display.PortraitBitmap = (HBITMAP) LoadImageA(NULL, "images/portraits.BMP", IMAGE_BITMAP, 
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
+    GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites_2.BMP", IMAGE_BITMAP, 
+                                                                  0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     
-    return (GameState.Display.Bitmap && GameState.Display.PortraitBitmap);
+    return (GameState.Display.Bitmap && 
+            GameState.Display.PortraitBitmap && 
+            GameState.Display.ControlSpritesBitmap);
 }
 
 LRESULT CALLBACK
@@ -46,6 +50,7 @@ win32_MainWindowCallback(HWND   Window,
     HWND GameControl = {};
     HWND Portrait = {};
     HWND PlayerInfo = {};
+    HWND Compass = {};
     
     switch(Message)
     {
@@ -78,11 +83,15 @@ win32_MainWindowCallback(HWND   Window,
                                              WS_VISIBLE | WS_CHILD | SS_BITMAP,
                                              174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
+                Compass = CreateWindowExA(0, TEXT("STATIC"), NULL,
+                                          WS_CHILD | SS_BITMAP, // WS_VISIBLE
+                                          108, 115, 330, 21, GameControl, (HMENU)ID_CONTROLCOMPASS, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 GameState.Display = {};
                 //HWND Health;
                 GameState.Display.Control = GameControl;
                 GameState.Display.Portrait = Portrait;
                 GameState.Display.PlayerInfo = PlayerInfo;
+                GameState.Display.Compass = Compass;
             }
             
             if (!Win32LoadAssets())
@@ -96,6 +105,7 @@ win32_MainWindowCallback(HWND   Window,
             Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
             Win32UpdatePortrait(GameState.Display.Portrait);
             Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
+            Win32UpdateCompass(GameState.Display.Compass);
         } break;
         
         case WM_SETFOCUS:
@@ -134,6 +144,12 @@ win32_MainWindowCallback(HWND   Window,
                        174, 14,                // starting x- and y-coordinates 
                        106,                     // width of client area 
                        126,                    // height of client area 
+                       TRUE);                  // repaint window 
+            
+            MoveWindow(GameState.Display.Compass,
+                       330, 21,                // starting x- and y-coordinates 
+                       108,                     // width of client area 
+                       115,                    // height of client area 
                        TRUE);                  // repaint window 
             
             SetFocus(GameState.GameInput.Window);

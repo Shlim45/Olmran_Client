@@ -900,19 +900,9 @@ handleGMCP()
         // TODO(jon):  I shouldn't have to redraw the entire window...
         RedrawWindow(GameState.Window, NULL, NULL, RDW_INVALIDATE);
     }
-    else if (strcmp("roominfo", command) == 0)
+    else if (strcmp("roominfo", command) == 0 ||
+             strcmp("room.info", command) == 0)
     {
-        const int SOUTHWEST = 1;
-        const int SOUTH = 2;
-        const int SOUTHEAST = 4;
-        const int WEST = 8;
-        const int EAST = 16;
-        const int NORTHWEST = 32;
-        const int NORTH = 64;
-        const int NORTHEAST = 128;
-        const int UP = 256;
-        const int DOWN = 512;
-        
         /* TODO(jon):
 
 GMCP In: room.info 
@@ -961,61 +951,61 @@ GMCP In: room.info
                         if (jsoneq(jsonObject, &tokens[Index], "E") == 0) 
                         {
                             OutputDebugStringA("East ");
-                            GameState.Room.Exits |= EAST;
+                            GameState.Room.Exits |= DIR_E;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "W") == 0) 
                         {
                             OutputDebugStringA("West ");
-                            GameState.Room.Exits |= WEST;
+                            GameState.Room.Exits |= DIR_W;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "N") == 0) 
                         {
                             OutputDebugStringA("North ");
-                            GameState.Room.Exits |= NORTH;
+                            GameState.Room.Exits |= DIR_N;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "S") == 0) 
                         {
                             OutputDebugStringA("South ");
-                            GameState.Room.Exits |= SOUTH;
+                            GameState.Room.Exits |= DIR_S;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "NW") == 0) 
                         {
                             OutputDebugStringA("Northwest ");
-                            GameState.Room.Exits |= NORTHWEST;
+                            GameState.Room.Exits |= DIR_NW;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "NE") == 0) 
                         {
                             OutputDebugStringA("Northeast ");
-                            GameState.Room.Exits |= NORTHEAST;
+                            GameState.Room.Exits |= DIR_NE;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "SW") == 0) 
                         {
                             OutputDebugStringA("Southwest ");
-                            GameState.Room.Exits |= SOUTHWEST;
+                            GameState.Room.Exits |= DIR_SW;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "SE") == 0) 
                         {
                             OutputDebugStringA("Southeast ");
-                            GameState.Room.Exits |= SOUTHEAST;
+                            GameState.Room.Exits |= DIR_SE;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "U") == 0) 
                         {
                             OutputDebugStringA("Up ");
-                            GameState.Room.Exits |= UP;
+                            GameState.Room.Exits |= DIR_U;
                             Index++; // skip the useless value
                         }
                         else if (jsoneq(jsonObject, &tokens[Index], "D") == 0) 
                         {
                             OutputDebugStringA("Down ");
-                            GameState.Room.Exits |= DOWN;
+                            GameState.Room.Exits |= DIR_D;
                             Index++; // skip the useless value
                         }
                     }
@@ -1026,6 +1016,8 @@ GMCP In: room.info
                     }
                 }
                 OutputDebugStringA("\n");
+                Win32UpdateCompass(GameState.Display.Compass);
+                RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
             }
         }
     }

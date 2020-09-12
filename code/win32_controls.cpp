@@ -27,6 +27,137 @@ Win32UpdatePortrait(HWND Window)
     EndPaint(Window, &ps);
 }
 
+internal void
+Win32UpdateCompass(HWND Window)
+{
+    BITMAP bm;
+    PAINTSTRUCT ps;
+    
+    HDC hdc = BeginPaint(Window, &ps);
+    if (GameState.Display.ControlSpritesBitmap)
+    {
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        HBITMAP hbmOld = (HBITMAP) SelectObject(hdcMem, GameState.Display.ControlSpritesBitmap);
+        
+        GetObject(GameState.Display.ControlSpritesBitmap, sizeof(bm), &bm);
+        
+        /* NOTE(jon):
+- EVERYTHING has 1px (alpha) padding
+   - NWSE is 29x29, starts at (1, 31) on spritesheet
+- NW, NE, SE, SW start at (43, 108) and are 16x16
+- Up, Out, Down start at (1, 204) and are 10x10
+*/
+        
+        if (GameState.User.Player.LoggedIn)
+        {
+            if (GameState.Room.Exits & 1) // SW
+            {
+                BitBlt(hdc,       // device context to draw to
+                       10, 57,    // destination (x, y)
+                       16, 16,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       94, 108,   // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 1)) // S
+            {
+                BitBlt(hdc,       // device context to draw to
+                       27, 53,    // destination (x, y)
+                       29, 29,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       61, 31,    // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 2)) // SE
+            {
+                BitBlt(hdc,       // device context to draw to
+                       57, 57,    // destination (x, y)
+                       16, 16,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       77, 108,   // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 3)) // W
+            {
+                BitBlt(hdc,       // device context to draw to
+                       1, 27,     // destination (x, y)
+                       29, 29,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       31, 31,    // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 4)) // E
+            {
+                BitBlt(hdc,       // device context to draw to
+                       54, 27,    // destination (x, y)
+                       29, 29,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       91, 31,    // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 5)) // NW
+            {
+                BitBlt(hdc,       // device context to draw to
+                       10, 10,    // destination (x, y)
+                       16, 16,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       43, 108,   // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 6)) // N
+            {
+                BitBlt(hdc,       // device context to draw to
+                       27, 0,     // destination (x, y)
+                       29, 29,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       1, 31,     // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 7)) // NE
+            {
+                BitBlt(hdc,       // device context to draw to
+                       57, 10,    // destination (x, y)
+                       16, 16,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       60, 108,    // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 8)) // UP
+            {
+                BitBlt(hdc,       // device context to draw to
+                       97, 70,    // destination (x, y)
+                       10, 10,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       12, 204,   // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+            
+            if (GameState.Room.Exits & (1 << 9)) // DOWN
+            {
+                BitBlt(hdc,       // device context to draw to
+                       97, 105,   // destination (x, y)
+                       10, 10,    // width, height to draw
+                       hdcMem,    // source bitmap
+                       12, 226,   // source (x, y)
+                       SRCCOPY);  // raster-operation code
+            }
+        }
+        
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
+    }
+    
+    EndPaint(Window, &ps);
+}
+
 internal void 
 Win32UpdatePlayerInfo(HWND Window)
 {
@@ -112,8 +243,10 @@ Win32HandlePlayerLogin()
     GameState.User.Player.LoggedIn = true;
     // TODO(jon):  Start this elsewhere?  Need on player logon
     Win32UpdateClientTitle();
+    ShowWindow(GameState.Display.Compass, SW_SHOW);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+    // TODO(jon):  MIDI playback may need it's own thread - laggy
     win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
 }
 
@@ -123,6 +256,7 @@ Win32HandlePlayerLogoff()
     memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
     
     Win32UpdateClientTitle();
+    ShowWindow(GameState.Display.Compass, SW_HIDE);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     win32_StopMIDIPlayback(GameState.MIDIDevice);
