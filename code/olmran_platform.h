@@ -78,26 +78,26 @@ extern "C" {
 #define local_persist static
 #define global_variable static
     
-#define ID_EDITCHILD 100
-#define ID_INPUTCHILD 101
+#define ID_EDITCHILD         100
+#define ID_INPUTCHILD        101
 #define ID_CONTROLBACKGROUND 102
-#define ID_CONTROLHEALTH 103
-#define ID_CONTROLPORTRAIT 104
-#define ID_CONTROLPLAYER 105
-#define ID_CONTROLCOMPASS 106
+#define ID_CONTROLHEALTH     103
+#define ID_CONTROLPORTRAIT   104
+#define ID_CONTROLPLAYER     105
+#define ID_CONTROLCOMPASS    106
     
 #define CONTROL_BITMAP "images/control.BMP"
     
-#define DIR_SW 1;
-#define DIR_S 2;
-#define DIR_SE 4;
-#define DIR_W 8;
-#define DIR_E 16;
-#define DIR_NW 32;
-#define DIR_N 64;
-#define DIR_NE 128;
-#define DIR_U 256;
-#define DIR_D 512;
+#define DIR_SW  1
+#define DIR_S  (1 << 1)
+#define DIR_SE (1 << 2)
+#define DIR_W  (1 << 3)
+#define DIR_E  (1 << 4)
+#define DIR_NW (1 << 5)
+#define DIR_N  (1 << 6)
+#define DIR_NE (1 << 7)
+#define DIR_U  (1 << 8)
+#define DIR_D  (1 << 9)
     
 #if 1
     // Connect to local server

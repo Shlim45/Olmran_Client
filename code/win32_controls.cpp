@@ -50,7 +50,7 @@ Win32UpdateCompass(HWND Window)
         
         if (GameState.User.Player.LoggedIn)
         {
-            if (GameState.Room.Exits & 1) // SW
+            if (GameState.Room.Exits & DIR_SW)
             {
                 BitBlt(hdc,       // device context to draw to
                        10, 57,    // destination (x, y)
@@ -60,7 +60,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 1)) // S
+            if (GameState.Room.Exits & DIR_S)
             {
                 BitBlt(hdc,       // device context to draw to
                        27, 53,    // destination (x, y)
@@ -70,7 +70,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 2)) // SE
+            if (GameState.Room.Exits & DIR_SE)
             {
                 BitBlt(hdc,       // device context to draw to
                        57, 57,    // destination (x, y)
@@ -80,7 +80,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 3)) // W
+            if (GameState.Room.Exits & DIR_W)
             {
                 BitBlt(hdc,       // device context to draw to
                        1, 27,     // destination (x, y)
@@ -90,7 +90,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 4)) // E
+            if (GameState.Room.Exits & DIR_E)
             {
                 BitBlt(hdc,       // device context to draw to
                        54, 27,    // destination (x, y)
@@ -100,7 +100,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 5)) // NW
+            if (GameState.Room.Exits & DIR_NW)
             {
                 BitBlt(hdc,       // device context to draw to
                        10, 10,    // destination (x, y)
@@ -110,7 +110,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 6)) // N
+            if (GameState.Room.Exits & DIR_N)
             {
                 BitBlt(hdc,       // device context to draw to
                        27, 0,     // destination (x, y)
@@ -120,7 +120,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 7)) // NE
+            if (GameState.Room.Exits & DIR_NE)
             {
                 BitBlt(hdc,       // device context to draw to
                        57, 10,    // destination (x, y)
@@ -130,7 +130,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 8)) // UP
+            if (GameState.Room.Exits & DIR_U)
             {
                 BitBlt(hdc,       // device context to draw to
                        97, 70,    // destination (x, y)
@@ -140,7 +140,7 @@ Win32UpdateCompass(HWND Window)
                        SRCCOPY);  // raster-operation code
             }
             
-            if (GameState.Room.Exits & (1 << 9)) // DOWN
+            if (GameState.Room.Exits & DIR_D)
             {
                 BitBlt(hdc,       // device context to draw to
                        97, 105,   // destination (x, y)
