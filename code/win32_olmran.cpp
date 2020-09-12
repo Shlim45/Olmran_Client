@@ -22,42 +22,6 @@
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 
-#if 0
-internal void 
-OnPaint(HWND hWnd)
-{
-    char pInfo[256];
-    HFONT hf;
-    HDC hdc;
-    long lfHeight;
-    
-    hdc = GetDC(NULL);
-    lfHeight = -MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-    ReleaseDC(NULL, hdc);
-    
-    hf = CreateFont(lfHeight, 0, 0, 0, 0, TRUE, 0, 0, 0, 0, 0, 0, 0, "Times New Roman");
-    
-    RECT  rect;
-    PAINTSTRUCT ps;
-    hdc = BeginPaint(hWnd, &ps);
-    
-    HFONT hfOld = (HFONT) SelectObject(hdc, hf);
-    
-    GetClientRect(hWnd, &rect);
-    SetTextColor(hdc, RGB(0x00, 0x00, 0x00));
-    SetBkMode(hdc, TRANSPARENT);
-    //rect.left = 40;
-    //rect.top = 10;
-    wsprintf(pInfo, "%s, lvl %d %s", GameState.User.Player.Name, GameState.User.Player.Level, GameState.User.Player.Class);
-    
-    DrawTextA(hdc, pInfo, -1, &rect, DT_WORDBREAK);
-    //SelectObject(hdc, oldPen);
-    //DeleteObject(hPen);
-    SelectObject(hdc, hfOld);
-    EndPaint(hWnd, &ps);
-}
-#endif
-
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
                          UINT   Message,
@@ -87,13 +51,15 @@ win32_MainWindowCallback(HWND   Window,
             
             // Create Static Control for Health Bars / Portrait / Player Info Background Image
             GameControl = CreateWindowExA(0, TEXT("STATIC"), NULL,
-                                          WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                                          WS_VISIBLE | WS_CHILD | SS_EDITCONTROL | SS_CENTER,
                                           0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
             
             if (GameControl)
                 PlayerInfo = CreateWindowExA(0, TEXT("STATIC"), NULL,
                                              WS_VISIBLE | WS_CHILD | SS_BITMAP,
-                                             10, 14, 89, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+                                             174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
+            
+            // a portrait is 93 x 121
             
             GameState.Display = {};
             //HWND Health;
@@ -106,19 +72,13 @@ win32_MainWindowCallback(HWND   Window,
             // TODO(jon):  Do i need to persist this??
             GameState.Display.Bitmap = (HBITMAP) LoadImageA(NULL, "images/control.BMP", IMAGE_BITMAP,
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-            
-#if 0
-            // NOTE(jon):  No need to use this, just draw text over the background.
-            GameState.Display.PlayerInfoBitmap = (HBITMAP) LoadImageA(NULL, "images/player_info.BMP", IMAGE_BITMAP,
-                                                                      0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-#endif
-            
         } break;
         
         case WM_PAINT:
         {
             Win32HandlePaint(GameState.Window, 0);
             Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
+            Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
         } break;
         
         case WM_SETFOCUS:
@@ -146,13 +106,14 @@ win32_MainWindowCallback(HWND   Window,
                        450,                    // width of client area 
                        143,                    // height of client area 
                        TRUE);                  // repaint window 
-            /*
+            
+            
             MoveWindow(GameState.Display.PlayerInfo,
-                       116, HIWORD(LParam)-164,// starting x- and y-coordinates 
-                       89,                     // width of client area 
+                       174, 14,                // starting x- and y-coordinates 
+                       106,                     // width of client area 
                        126,                    // height of client area 
                        TRUE);                  // repaint window 
-            */
+            
             SetFocus(GameState.GameInput.Window);
         } break;
         

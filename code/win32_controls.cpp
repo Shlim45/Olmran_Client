@@ -1,4 +1,45 @@
 
+internal void 
+Win32UpdatePlayerInfo(HWND hWnd)
+{
+    // Set up the device context for drawing.
+    PAINTSTRUCT ps;
+    HDC hDC = BeginPaint(hWnd, &ps);
+    
+    // Create font
+    long lfHeight = -MulDiv(10, GetDeviceCaps(hDC, LOGPIXELSY), 72);
+    HFONT hf = CreateFontA(lfHeight, 0, 0, 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, "Arial");
+    HFONT hfOld = (HFONT) SelectObject(hDC, hf);
+    
+    // Calculate the dimensions of the 4 equal rectangles.
+    RECT rcWindow;
+    GetClientRect(hWnd, &rcWindow);
+    
+    // Draw the text into the center of each of the rectangles.
+    SetBkMode(hDC, TRANSPARENT);
+    SetBkColor(hDC, RGB(0, 0, 0));   // black
+    
+    char pInfo[256] = "";
+    if (GameState.User.Account.LoggedIn)
+        wsprintf(pInfo, "%s\nLvl %d %s\n%s of\n%s\n%d\nexp for Lvl %d", 
+                 GameState.User.Player.Name, 
+                 GameState.User.Player.Level, 
+                 GameState.User.Player.Class, 
+                 GameState.User.Player.Title, 
+                 GameState.User.Player.Guild, 
+                 GameState.User.Player.ExpTNL, 
+                 GameState.User.Player.Level + 1);
+    
+    DrawTextA(hDC, pInfo, -1, &rcWindow, DT_EDITCONTROL | DT_CENTER | DT_TOP | DT_NOCLIP | DT_WORDBREAK);
+    
+    // Cleanup
+    SelectObject(hDC, hfOld);
+    DeleteObject(hf);
+    DeleteObject(hfOld);
+    
+    EndPaint(hWnd, &ps);
+}
+
 internal void
 Win32HandlePaint(HWND Window, HBITMAP Bitmap)
 {

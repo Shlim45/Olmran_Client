@@ -117,7 +117,7 @@ struct game_display_controls
     HBITMAP Bitmap;
     HBITMAP HealthBitmap;
     HBITMAP PortraitBitmap;
-    HBITMAP PlayerInfoBitmap;
+    //HBITMAP PlayerInfoBitmap;
 };
 
 struct game_state
