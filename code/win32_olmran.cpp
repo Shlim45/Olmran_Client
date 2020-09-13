@@ -328,6 +328,12 @@ win32_MainWindowCallback(HWND   Window,
                         win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
                     
                 } break;
+                
+                case IDM_MACRO_PLAYER:
+                { } break;
+                
+                case IDM_MACRO_GLOBAL:
+                { } break;
             }
             
         } break;

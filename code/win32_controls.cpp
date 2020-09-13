@@ -6,6 +6,7 @@ Win32AddMenus(HWND Window) {
     HMENU hMenuFile;
     HMENU hMenuEdit;
     HMENU hSubMenuMusic;
+    HMENU hSubMenuMacros;
     
     hMenubar = CreateMenu();
     
@@ -17,8 +18,9 @@ Win32AddMenus(HWND Window) {
     AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuFile, "&File");
     
     // Edit
-    hMenuEdit = CreateMenu();
-    hSubMenuMusic = CreatePopupMenu();
+    hMenuEdit      = CreateMenu();
+    hSubMenuMusic  = CreatePopupMenu();
+    hSubMenuMacros = CreatePopupMenu();
     
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_ECHO, "&Local Echo");
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_PERSIST, "&Persist Command");
@@ -36,6 +38,11 @@ Win32AddMenus(HWND Window) {
     
     CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
                        IDM_MUSIC_DARK2, MF_BYCOMMAND);
+    
+    // Edit->Macros
+    AppendMenuA(hMenuEdit, MF_STRING | MF_POPUP, (UINT_PTR) hSubMenuMacros, "M&acros");
+    AppendMenuA(hSubMenuMacros, MF_STRING, IDM_MACRO_PLAYER, "&Player");
+    AppendMenuA(hSubMenuMacros, MF_STRING, IDM_MACRO_GLOBAL, "&Global");
     
     AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuEdit, "&Edit");
     

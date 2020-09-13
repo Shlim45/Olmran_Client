@@ -103,6 +103,9 @@ extern "C" {
 #define IDM_MUSIC_DARK3   27
 #define IDM_MUSIC_DARK4   28
     
+#define IDM_MACRO_PLAYER 30
+#define IDM_MACRO_GLOBAL 31
+    
 #define CONTROL_BITMAP "images/control.BMP"
     
 #define DIR_SW  1
