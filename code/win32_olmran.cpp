@@ -21,6 +21,7 @@
 #include "olmran_state.cpp"
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
+#include "olmran_client_features.cpp"
 
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
@@ -128,16 +129,16 @@ win32_MainWindowCallback(HWND   Window,
                        TRUE);                 // repaint window 
             
             MoveWindow(GameState.GameInput.Window, 
-                       5, HIWORD(LParam)-180,  // starting x- and y-coordinates 
-                       LOWORD(LParam)-10,     // width of client area 
-                       20,                    // height of client area 
-                       TRUE);                 // repaint window 
+                       5, HIWORD(LParam)-180,
+                       LOWORD(LParam)-10,
+                       20,
+                       TRUE);
             
             MoveWindow(GameState.Display.Control,
-                       5, HIWORD(LParam)-150,  // starting x- and y-coordinates 
-                       450,                    // width of client area 
-                       143,                    // height of client area 
-                       TRUE);                  // repaint window 
+                       5, HIWORD(LParam)-150,
+                       450,
+                       143,
+                       TRUE);
             
             MoveWindow(GameState.Display.Vitals,
                        10, 8,                  // starting x- and y-coordinates 
@@ -168,6 +169,7 @@ win32_MainWindowCallback(HWND   Window,
                        9,                      // width of client area 
                        46,                     // height of client area 
                        TRUE);                  // repaint window 
+            
             
             SetFocus(GameState.GameInput.Window);
         } break;
@@ -503,6 +505,10 @@ Win32HandleKeyboardInput(MSG *Message)
             {
                 SetWindowTextA(GameState.GameInput.Window, "");
                 GameState.CommandHistory.CurrentPosition = -1;
+            }
+            else if (VKCode >= VK_F1 && VKCode <= VK_F24)
+            {
+                HandleFunctionKey(VKCode);
             }
             else
             {
