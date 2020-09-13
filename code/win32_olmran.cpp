@@ -289,32 +289,44 @@ win32_MainWindowCallback(HWND   Window,
                 {
                     CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
                                        IDM_MUSIC_DARK1, MF_BYCOMMAND);
-                    // Check play if not checked
-                    // start playing
+                    
+                    UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
+                    if (Play == MF_CHECKED)
+                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
+                    
                 } break;
                 
                 case IDM_MUSIC_DARK2:
                 {
                     CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
                                        IDM_MUSIC_DARK2, MF_BYCOMMAND);
-                    // Check play if not checked
-                    // start playing
+                    
+                    UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
+                    if (Play == MF_CHECKED)
+                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
+                    
                 } break;
                 
                 case IDM_MUSIC_DARK3:
                 {
                     CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
                                        IDM_MUSIC_DARK3, MF_BYCOMMAND);
-                    // Check play if not checked
-                    // start playing
+                    
+                    UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
+                    if (Play == MF_CHECKED)
+                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
+                    
                 } break;
                 
                 case IDM_MUSIC_DARK4:
                 {
                     CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
                                        IDM_MUSIC_DARK4, MF_BYCOMMAND);
-                    // Check play if not checked
-                    // start playing
+                    
+                    UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
+                    if (Play == MF_CHECKED)
+                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
+                    
                 } break;
             }
             
