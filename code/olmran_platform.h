@@ -94,6 +94,15 @@ extern "C" {
 #define IDM_EDIT_ECHO    10
 #define IDM_EDIT_PERSIST 11
     
+#define IDM_MUSIC_ENABLED 20  
+#define IDM_MUSIC_LOOP    21
+#define IDM_MUSIC_SHUFFLE 22
+    
+#define IDM_MUSIC_DARK1   25
+#define IDM_MUSIC_DARK2   26
+#define IDM_MUSIC_DARK3   27
+#define IDM_MUSIC_DARK4   28
+    
 #define CONTROL_BITMAP "images/control.BMP"
     
 #define DIR_SW  1
@@ -106,6 +115,13 @@ extern "C" {
 #define DIR_NE (1 << 7)
 #define DIR_U  (1 << 8)
 #define DIR_D  (1 << 9)
+    
+#define FLAG_LOGGEDIN 1
+#define FLAG_ECHO    (1 << 1)
+#define FLAG_PERSIST (1 << 2)
+#define FLAG_MUSIC   (1 << 3)
+#define FLAG_LOOP    (1 << 4)
+#define FLAG_SHUFFLE (1 << 5)
     
 #if 1
     // Connect to local server

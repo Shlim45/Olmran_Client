@@ -508,7 +508,7 @@ handleGMCP()
     }
     else if (strcmp("loggedin", command) == 0)
     {
-        GameState.User.Account.LoggedIn = true;
+        GameState.User.Account.Flags |= FLAG_LOGGEDIN;
     }
     else if (strcmp("logoff", command) == 0)
     {
@@ -620,9 +620,7 @@ handleGMCP()
                         memcpy( valueBuff, &jsonObject[start], size );
                         memcpy( GameState.User.Player.Name, valueBuff, size );
                         
-                        GameState.User.Account.LoggedIn = true;
-                        //win32_UpdateClientTitle();
-                        //win32_UpdateClient();
+                        GameState.User.Account.Flags |= FLAG_LOGGEDIN;
                         
                         // use the value
                         OutputDebugStringA("Name:      ");

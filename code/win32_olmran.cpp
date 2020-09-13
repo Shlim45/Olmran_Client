@@ -38,6 +38,7 @@ win32_MainWindowCallback(HWND   Window,
     HWND Compass = {};
     HWND ActionTimer = {};
     local_persist HMENU hMenu;         // handle to main menu 
+    local_persist HMENU hSubMenuMusic;
     
     switch(Message)
     {
@@ -45,6 +46,7 @@ win32_MainWindowCallback(HWND   Window,
         {
             Win32AddMenus(Window);
             hMenu = GetMenu(Window);
+            hSubMenuMusic = GetSubMenu(hMenu, 1);
             
             // Create Edit Control
             GameOutput = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_EDITCHILD,
@@ -185,11 +187,11 @@ win32_MainWindowCallback(HWND   Window,
                     
                     if (state == MF_CHECKED) 
                     {
-                        GameState.User.Account.LocalEcho = 0;
+                        GameState.User.Account.Flags &= ~FLAG_ECHO;
                         CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_UNCHECKED);  
                     } else 
                     {
-                        GameState.User.Account.LocalEcho = 1;
+                        GameState.User.Account.Flags |= FLAG_ECHO;
                         CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_CHECKED);  
                     }
                 } break;
@@ -200,13 +202,119 @@ win32_MainWindowCallback(HWND   Window,
                     
                     if (state == MF_CHECKED) 
                     {
-                        GameState.User.Account.PersistCommand = 0;
+                        GameState.User.Account.Flags &= ~FLAG_PERSIST;
                         CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_UNCHECKED);  
                     } else 
                     {
-                        GameState.User.Account.PersistCommand = 1;
+                        GameState.User.Account.Flags |= FLAG_PERSIST;
                         CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_CHECKED);  
                     }
+                } break;
+                
+                case IDM_MUSIC_ENABLED:
+                {
+                    UINT state = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        GameState.User.Account.Flags &= ~FLAG_MUSIC;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_UNCHECKED); 
+                        
+                        win32_StopMIDIPlayback(GameState.MIDIDevice);
+                    } else 
+                    {
+                        GameState.User.Account.Flags |= FLAG_MUSIC;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_CHECKED);
+                        
+                        UINT MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK1, MF_BYCOMMAND);
+                        if (MusicFile & MF_CHECKED)
+                        {
+                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
+                            break;
+                        }
+                        
+                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK2, MF_BYCOMMAND);
+                        if (MusicFile & MF_CHECKED)
+                        {
+                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
+                            break;
+                        }
+                        
+                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK3, MF_BYCOMMAND);
+                        if (MusicFile & MF_CHECKED)
+                        {
+                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
+                            break;
+                        }
+                        
+                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK4, MF_BYCOMMAND);
+                        if (MusicFile & MF_CHECKED)
+                        {
+                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
+                        }
+                    }
+                } break;
+                
+                case IDM_MUSIC_LOOP:
+                {
+                    UINT state = GetMenuState(hSubMenuMusic, IDM_MUSIC_LOOP, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        GameState.User.Account.Flags &= ~FLAG_LOOP;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_LOOP, MF_UNCHECKED);  
+                    } else 
+                    {
+                        GameState.User.Account.Flags |= FLAG_LOOP;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_LOOP, MF_CHECKED);  
+                    }
+                } break;
+                
+                case IDM_MUSIC_SHUFFLE:
+                {
+                    UINT state = GetMenuState(hSubMenuMusic, IDM_MUSIC_SHUFFLE, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        GameState.User.Account.Flags &= ~FLAG_SHUFFLE;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_SHUFFLE, MF_UNCHECKED);  
+                    } else 
+                    {
+                        GameState.User.Account.Flags |= FLAG_SHUFFLE;
+                        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_SHUFFLE, MF_CHECKED);  
+                    }
+                } break;
+                
+                case IDM_MUSIC_DARK1:
+                {
+                    CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
+                                       IDM_MUSIC_DARK1, MF_BYCOMMAND);
+                    // Check play if not checked
+                    // start playing
+                } break;
+                
+                case IDM_MUSIC_DARK2:
+                {
+                    CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
+                                       IDM_MUSIC_DARK2, MF_BYCOMMAND);
+                    // Check play if not checked
+                    // start playing
+                } break;
+                
+                case IDM_MUSIC_DARK3:
+                {
+                    CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
+                                       IDM_MUSIC_DARK3, MF_BYCOMMAND);
+                    // Check play if not checked
+                    // start playing
+                } break;
+                
+                case IDM_MUSIC_DARK4:
+                {
+                    CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
+                                       IDM_MUSIC_DARK4, MF_BYCOMMAND);
+                    // Check play if not checked
+                    // start playing
                 } break;
             }
             

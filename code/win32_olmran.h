@@ -67,9 +67,10 @@ struct user_account
     thin_player Characters[10];
     uint8 CharCount;
     char LastPlayed[256];
-    bool32 LoggedIn;
-    bool32 LocalEcho;
-    bool32 PersistCommand;
+    uint16 Flags;
+    //bool32 LoggedIn;
+    //bool32 LocalEcho;
+    //bool32 PersistCommand;
 };
 
 struct portrait_coords

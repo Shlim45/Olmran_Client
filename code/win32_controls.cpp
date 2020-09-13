@@ -5,22 +5,40 @@ Win32AddMenus(HWND Window) {
     HMENU hMenubar;
     HMENU hMenuFile;
     HMENU hMenuEdit;
+    HMENU hSubMenuMusic;
     
     hMenubar = CreateMenu();
+    
+    // File
     hMenuFile = CreateMenu();
     
-    //AppendMenuA(hMenuFile, MF_SEPARATOR, 0, NULL);
     AppendMenuA(hMenuFile, MF_STRING, IDM_FILE_QUIT, "&Quit");
     
     AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuFile, "&File");
     
+    // Edit
     hMenuEdit = CreateMenu();
+    hSubMenuMusic = CreatePopupMenu();
     
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_ECHO, "&Local Echo");
-    AppendMenuA(hMenuEdit, MF_SEPARATOR, 0, NULL);
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_PERSIST, "&Persist Command");
+    AppendMenuA(hMenuEdit, MF_SEPARATOR, 0, NULL);
+    
+    // Edit->Music
+    AppendMenuA(hMenuEdit, MF_STRING | MF_POPUP, (UINT_PTR) hSubMenuMusic, "&Music");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_ENABLED, "Pla&y Music");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_LOOP, "L&oop");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_SHUFFLE, "&Shuffle");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_DARK1, "Dark&1");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_DARK2, "Dark&2");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_DARK3, "Dark&3");
+    AppendMenuA(hSubMenuMusic, MF_STRING, IDM_MUSIC_DARK4, "Dark&4");
+    
+    CheckMenuRadioItem(hSubMenuMusic, IDM_MUSIC_DARK1, IDM_MUSIC_DARK4, 
+                       IDM_MUSIC_DARK2, MF_BYCOMMAND);
     
     AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuEdit, "&Edit");
+    
     SetMenu(Window, hMenubar);
 }
 
@@ -445,8 +463,6 @@ Win32HandlePlayerLogin()
     ShowWindow(GameState.Display.ActionTimer, SW_SHOW);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
-    // TODO(jon):  MIDI playback may need it's own thread - laggy
-    win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
 }
 
 internal void
