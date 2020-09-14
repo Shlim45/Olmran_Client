@@ -14,13 +14,9 @@ HandleMacroString(char *MacroString)
     {
         if (MacroString[Index] == '&' || Index == 255)
         {
-            // send command thru socket
             win32_WriteStringToSocket(Socket.sock, GameState.GameInput, Command);
             
-            // clear Command buffer
             memset(Command, 0, 256);
-            
-            // reset CommandIndex
             CommandIndex = 0;
         }
         else

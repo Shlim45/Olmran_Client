@@ -22,6 +22,7 @@
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
 #include "olmran_client_features.cpp"
+#include "olmran_file_io.cpp"
 
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
@@ -684,6 +685,10 @@ WinMain(
                     OutputDebugStringA("Error in win32_InitAndConnectSocket()\n");
                     SocketListenThreadHandle = 0;
                 }
+                
+                // TEST
+                WriteToFile("olmran.cfg","This is some test data to write to the file.\r\nWindows NewLine\nLinux Newline\n");
+                ReadFromFile("olmran.cfg");
                 
                 GlobalRunning = true;
                 while (GlobalRunning)
