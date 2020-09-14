@@ -21,8 +21,8 @@
 #include "olmran_state.cpp"
 #include "win32_sockets.cpp"
 #include "win32_controls.cpp"
-#include "olmran_client_features.cpp"
 #include "olmran_file_io.cpp"
+#include "olmran_client_features.cpp"
 
 LRESULT CALLBACK
 win32_MainWindowCallback(HWND   Window,
@@ -229,32 +229,7 @@ win32_MainWindowCallback(HWND   Window,
                         GameState.User.Account.Flags |= FLAG_MUSIC;
                         CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_CHECKED);
                         
-                        UINT MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK1, MF_BYCOMMAND);
-                        if (MusicFile & MF_CHECKED)
-                        {
-                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
-                            break;
-                        }
-                        
-                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK2, MF_BYCOMMAND);
-                        if (MusicFile & MF_CHECKED)
-                        {
-                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
-                            break;
-                        }
-                        
-                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK3, MF_BYCOMMAND);
-                        if (MusicFile & MF_CHECKED)
-                        {
-                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
-                            break;
-                        }
-                        
-                        MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK4, MF_BYCOMMAND);
-                        if (MusicFile & MF_CHECKED)
-                        {
-                            win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
-                        }
+                        Win32HandlePlayMusic();
                     }
                 } break;
                 
@@ -686,15 +661,15 @@ WinMain(
                     SocketListenThreadHandle = 0;
                 }
                 
-                // TEST
-                WriteToFile("olmran.cfg","This is some test data to write to the file.\r\nWindows NewLine\nLinux Newline\n");
-                ReadFromFile("olmran.cfg");
+                LoadConfigSettings();
+                Win32UpdateMenus();
                 
                 GlobalRunning = true;
                 while (GlobalRunning)
                 {
                     Win32ProcessPendingMessages();
                 }
+                SaveConfigSettings();
                 // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
                 win32_CloseSocket();
                 if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }

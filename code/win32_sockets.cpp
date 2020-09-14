@@ -22,7 +22,8 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
                                      gState.GameInput.BufferLength       // max number of chars to copy, including the NULL terminator.
                                      );
     
-    if (GameState.User.Account.Flags & FLAG_ECHO)
+    if (GameState.User.Account.Flags & (FLAG_LOGGEDIN) &&
+        GameState.User.Account.Flags & (FLAG_ECHO))
         Win32EchoCommand(GameState.GameOutput.Window, gState.GameInput.Buffer);
     
     if (!(GameState.User.Account.Flags & FLAG_PERSIST))

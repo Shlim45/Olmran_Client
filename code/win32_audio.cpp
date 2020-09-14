@@ -22,9 +22,12 @@ win32_StopMIDIPlayback(midi_device *MIDIDevice)
         if (Return)
             OutputDebugStringA("MIDI:  Error closing MIDI device.\n");
         
-        MIDIDevice->DeviceID = 0;
+        if (!Return)
+        {
+            MIDIDevice->IsPlaying = false;
+            MIDIDevice->DeviceID = 0;
+        }
     }
-    MIDIDevice->IsPlaying = false;
     
     return Return;
 }

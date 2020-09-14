@@ -47,3 +47,151 @@ HandleFunctionKey(uint32 VKCode)
         } break;
     }
 }
+
+internal void
+SetConfigSetting(char *Setting, bool32 Value)
+{
+    uint16 Flag = 0;
+    if (strcmp("ECHO", Setting) == 0)
+        Flag = FLAG_ECHO;
+    else if (strcmp("PERSIST", Setting) == 0)
+        Flag = FLAG_PERSIST;
+    else if (strcmp("MUSIC", Setting) == 0)
+        Flag = FLAG_MUSIC;
+    else if (strcmp("LOOP", Setting) == 0)
+        Flag = FLAG_LOOP;
+    else if (strcmp("SHUFFLE", Setting) == 0)
+        Flag = FLAG_SHUFFLE;
+    else
+    {
+        OutputDebugStringA("ERROR:  Invalid config setting\n");
+        return;
+    }
+    
+    if (Value)
+        GameState.User.Account.Flags |= Flag;
+    else
+        GameState.User.Account.Flags &= ~(Flag);
+}
+
+internal void
+LoadConfigSettings()
+{
+    char ReadBuffer[Kilobytes(64)];
+    char Setting[16];
+    uint16 SettingIndex = 0;
+    uint16 ReadIndex   = 0;
+    bool32 Comment     = false;
+    
+    ReadFromFile("olmran.cfg", ReadBuffer);
+    
+    while (ReadBuffer[ReadIndex])
+    {
+        Comment = (ReadBuffer[ReadIndex] == '#');
+        if (Comment)
+        {
+            while ((ReadBuffer[ReadIndex])!='\n' && (ReadBuffer[ReadIndex])!='\0')
+            {
+                ReadIndex++;
+                continue;
+            }
+            Comment = false;
+            ReadIndex++;
+            continue;
+        }
+        
+        if (ReadBuffer[ReadIndex] == '\n')
+        {
+            // Skip blank lines
+            ++ReadIndex;
+            continue;
+        }
+        
+        if (ReadBuffer[ReadIndex] == '=')
+        {
+            SetConfigSetting(Setting, ((ReadBuffer[ReadIndex+1]) == 'Y'));
+            
+            memset(Setting, 0, 16);
+            SettingIndex = 0;
+            // Skip past Value and Newline
+            ReadIndex += 2;
+        }
+        else
+        {
+            Setting[SettingIndex] = ReadBuffer[ReadIndex];
+            ++SettingIndex;
+        }
+        ++ReadIndex;
+    }
+}
+
+internal void
+SaveConfigSettings()
+{
+    const char *HashLine = "##################################################\n";
+    const char *InnerHash = "##########";
+    // compile config file
+    char Buffer[Kilobytes(64)];
+    
+    memset(Buffer, 0, Kilobytes(64));
+    
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "Client Configuration Settings ");
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "ECHO=");
+    if (GameState.User.Account.Flags & FLAG_ECHO)
+        strcat_s(Buffer, Kilobytes(64), "Y\n");
+    else
+        strcat_s(Buffer, Kilobytes(64), "N\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "PERSIST=");
+    if (GameState.User.Account.Flags & FLAG_PERSIST)
+        strcat_s(Buffer, Kilobytes(64), "Y\n");
+    else
+        strcat_s(Buffer, Kilobytes(64), "N\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "MUSIC=");
+    if (GameState.User.Account.Flags & FLAG_MUSIC)
+        strcat_s(Buffer, Kilobytes(64), "Y\n");
+    else
+        strcat_s(Buffer, Kilobytes(64), "N\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "LOOP=");
+    if (GameState.User.Account.Flags & FLAG_LOOP)
+        strcat_s(Buffer, Kilobytes(64), "Y\n");
+    else
+        strcat_s(Buffer, Kilobytes(64), "N\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "SHUFFLE=");
+    if (GameState.User.Account.Flags & FLAG_SHUFFLE)
+        strcat_s(Buffer, Kilobytes(64), "Y\n");
+    else
+        strcat_s(Buffer, Kilobytes(64), "N\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "        Global Macros         ");
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "        Player Macros         ");
+    strcat_s(Buffer, Kilobytes(64), InnerHash);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    strcat_s(Buffer, Kilobytes(64), HashLine);
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    
+    strcat_s(Buffer, Kilobytes(64), "\n");
+    
+    WriteToFile("olmran.cfg", Buffer);
+}

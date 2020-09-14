@@ -2,8 +2,7 @@
 internal void
 WriteToFile(const char *FileName, char *DataBuffer)
 {
-    HANDLE hFile; 
-    //char DataBuffer[] = "This is some test data to write to the file.\r\nWindows NewLine\nLinux Newline";
+    HANDLE hFile = {}; 
     DWORD dwBytesToWrite = (DWORD)strlen(DataBuffer);
     DWORD dwBytesWritten = 0;
     BOOL bErrorFlag = FALSE;
@@ -12,7 +11,7 @@ WriteToFile(const char *FileName, char *DataBuffer)
                         GENERIC_WRITE,          // open for writing
                         0,                      // do not share
                         NULL,                   // default security
-                        OPEN_ALWAYS,            // open if exist, create otherwise
+                        CREATE_ALWAYS,          // always create new file
                         FILE_ATTRIBUTE_NORMAL,  // normal file
                         NULL);                  // no attr. template
     
@@ -65,14 +64,12 @@ FileIOCompletionRoutine(DWORD dwErrorCode,
 }
 
 internal void
-ReadFromFile(const char *FileName)
+ReadFromFile(const char *FileName, char *ReadBuffer)
 {
     HANDLE hFile; 
     DWORD  dwBytesRead = 0;
-    char   ReadBuffer[Kilobytes(64)] = {0};
+    //char   ReadBuffer[Kilobytes(64)] = {0};
     OVERLAPPED ol = {0};
-    
-    OutputDebugStringA("\n");
     
     hFile = CreateFile(FileName,              // file to open
                        GENERIC_READ,          // open for reading
@@ -99,27 +96,20 @@ ReadFromFile(const char *FileName)
     }
     SleepEx(5000, TRUE);
     dwBytesRead = g_BytesTransferred;
-    // This is the section of code that assumes the file is ANSI text. 
-    // Modify this block for other data types if needed.
     
     if (dwBytesRead > 0 && dwBytesRead <= Kilobytes(64)-1)
     {
-        ReadBuffer[dwBytesRead]='\0'; // NULL character
-        
-        OutputDebugStringA(ReadBuffer);
-        OutputDebugStringA("\n");
+        ReadBuffer[dwBytesRead]='\0'; // terminate string
+        // File loaded into ReadBuffer
     }
     else if (dwBytesRead == 0)
     {
-        OutputDebugStringA("No data read from file %s\n");
+        OutputDebugStringA("No data read from file\n");
     }
     else
     {
         OutputDebugStringA("\n ** Unexpected value for dwBytesRead ** \n");
     }
-    
-    // It is always good practice to close the open file handles even though
-    // the app will exit here and clean up open handles anyway.
     
     CloseHandle(hFile);
 }

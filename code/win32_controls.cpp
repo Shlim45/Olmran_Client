@@ -49,6 +49,59 @@ Win32AddMenus(HWND Window) {
     SetMenu(Window, hMenubar);
 }
 
+internal void
+Win32UpdateMenus()
+{
+    HMENU hMenu = GetMenu(GameState.Window);
+    HMENU hSubMenuMusic = GetSubMenu(hMenu, 1);
+    
+    // Update state from config settings
+    if (GameState.User.Account.Flags & FLAG_ECHO)
+        CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_CHECKED);  
+    if (GameState.User.Account.Flags & FLAG_PERSIST)
+        CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_CHECKED);
+    if (GameState.User.Account.Flags & FLAG_MUSIC)
+        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_CHECKED);
+    if (GameState.User.Account.Flags & FLAG_LOOP)
+        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_LOOP, MF_CHECKED);
+    if (GameState.User.Account.Flags & FLAG_SHUFFLE)
+        CheckMenuItem(hSubMenuMusic, IDM_MUSIC_SHUFFLE, MF_CHECKED);
+}
+
+internal void
+Win32HandlePlayMusic()
+{
+    HMENU hMenu = GetMenu(GameState.Window);
+    HMENU hSubMenuMusic = GetSubMenu(hMenu, 1);
+    
+    UINT MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK1, MF_BYCOMMAND);
+    if (MusicFile & MF_CHECKED)
+    {
+        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
+        return;
+    }
+    
+    MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK2, MF_BYCOMMAND);
+    if (MusicFile & MF_CHECKED)
+    {
+        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
+        return;
+    }
+    
+    MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK3, MF_BYCOMMAND);
+    if (MusicFile & MF_CHECKED)
+    {
+        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
+        return;
+    }
+    
+    MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK4, MF_BYCOMMAND);
+    if (MusicFile & MF_CHECKED)
+    {
+        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
+    }
+}
+
 internal bool32
 Win32LoadAssets()
 {
@@ -470,6 +523,9 @@ Win32HandlePlayerLogin()
     ShowWindow(GameState.Display.ActionTimer, SW_SHOW);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+    
+    if (GameState.User.Account.Flags & FLAG_MUSIC)
+        Win32HandlePlayMusic();
 }
 
 internal void
