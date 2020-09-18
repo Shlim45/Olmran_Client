@@ -1,4 +1,55 @@
 
+internal void
+Win32PopulateMacroWindow(HWND MacroWindow)
+{
+    // Fill each text control with macros from GameState
+    const int MACRO_SIZE = 256;
+    char Macro[MACRO_SIZE];
+    memset(Macro, 0, MACRO_SIZE);
+    
+    for (uint16 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        strcpy_s(Macro, MACRO_SIZE, GameState.GlobalMacros.Macros + (Index * MACRO_SIZE));
+        SetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro);
+    }
+}
+
+internal void
+Win32CreateMacroWindow(HWND Window)
+{
+    //char* szBuffer[]={"Ordinary Box","Box Of Junk","Beer Crate","Wine Box","Candy Box"};
+    DWORD dwStyle=WS_CHILD|WS_VISIBLE|WS_TABSTOP;
+    HWND hCtl;
+    
+    HINSTANCE hIns = (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE);
+    
+    uint8 LabelWidth  = 75;
+    uint8 LabelHeight = 25;
+    
+    uint8 EditWidth  = 255;
+    uint8 EditHeight = 25;
+    
+    uint8 LabelX = 10;
+    uint8 EditX  = 100;
+    uint16 PosY = 10;
+    
+    for (uint16 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        hCtl=CreateWindowA("static",MacroLabels[Index],WS_CHILD|WS_VISIBLE,
+                           LabelX,PosY,LabelWidth,LabelHeight,Window,(HMENU)-1,hIns,0);
+        hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle,
+                             EditX,PosY,EditWidth,EditHeight,Window,(HMENU)MacroIDs[Index],hIns,0);
+        SendMessageA(hCtl, EM_LIMITTEXT, (WPARAM)255, 0);
+        PosY += 40;
+    }
+    
+    hCtl=CreateWindowA("button","Save",dwStyle,245,PosY,120,30,Window,(HMENU)IDC_MACRO_SAVE,hIns,0);
+    hCtl=CreateWindowA("button","Cancel",dwStyle,380,PosY,120,30,Window,(HMENU)IDC_MACRO_CANCEL,hIns,0);
+    
+    SetWindowTextA(Window,"Global Macros");
+    SetFocus(GetDlgItem(Window,IDC_MACRO_F1));
+}
+
 internal void 
 Win32AddMenus(HWND Window) {
     

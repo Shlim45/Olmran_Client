@@ -24,57 +24,6 @@
 #include "olmran_file_io.cpp"
 #include "olmran_client_features.cpp"
 
-internal void
-Win32CreateMacroWindow(HWND Window)
-{
-    //char* szBuffer[]={"Ordinary Box","Box Of Junk","Beer Crate","Wine Box","Candy Box"};
-    DWORD dwStyle=WS_CHILD|WS_VISIBLE|WS_TABSTOP;
-    HWND hCtl;
-    
-    HINSTANCE hIns = (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE);
-    
-    uint8 LabelWidth  = 75;
-    uint8 LabelHeight = 25;
-    
-    uint8 EditWidth  = 255;
-    uint8 EditHeight = 25;
-    
-    uint8 LabelX = 10;
-    uint8 EditX  = 100;
-    uint16 PosY = 10;
-    
-    for (uint16 Index = 0; Index < MAX_MACROS; Index++)
-    {
-        hCtl=CreateWindowA("static",MacroLabels[Index],WS_CHILD|WS_VISIBLE,LabelX,PosY,LabelWidth,LabelHeight,Window,(HMENU)-1,hIns,0);
-        hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle,EditX,PosY,EditWidth,EditHeight,Window,(HMENU)MacroIDs[Index],hIns,0);
-        SendMessageA(hCtl, EM_LIMITTEXT, (WPARAM)255, 0);
-        PosY += 40;
-    }
-    
-    hCtl=CreateWindowA("button","Save",dwStyle,245,PosY,120,30,Window,(HMENU)IDC_MACRO_SAVE,hIns,0);
-    hCtl=CreateWindowA("button","Cancel",dwStyle,380,PosY,120,30,Window,(HMENU)IDC_MACRO_CANCEL,hIns,0);
-    
-    SetWindowTextA(Window,"Global Macros");
-    SetFocus(GetDlgItem(Window,IDC_MACRO_F1));
-}
-
-internal void
-UpdateGlobalMacros(HWND MacroWindow)
-{
-    const int MACRO_SIZE = 256;
-    char Macro[MACRO_SIZE];
-    memset(Macro, 0, MACRO_SIZE);
-    
-    memset(GameState.GlobalMacros.Macros, 0, GameState.GlobalMacros.BufferSize);
-    
-    // iterate over each MacroID and update GameState
-    for (int Index = 0; Index < MAX_MACROS; Index++)
-    {
-        GetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro, MACRO_SIZE);
-        strcpy_s(GameState.GlobalMacros.Macros + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
-    }
-}
-
 LRESULT CALLBACK
 Win32MacroWindowCallback(HWND   Window,
                          UINT   Message,
@@ -82,19 +31,20 @@ Win32MacroWindowCallback(HWND   Window,
                          LPARAM LParam)
 {
     LRESULT Result = 0;
-    HBRUSH hbrWhite = {}, hbrGray = {};
     
     switch(Message)
     {
         case WM_CREATE:
         {
-            hbrWhite = (HBRUSH) GetStockObject(WHITE_BRUSH); 
-            hbrGray  = (HBRUSH) GetStockObject(GRAY_BRUSH); 
-            
             Win32CreateMacroWindow(Window);
         } break;
         
         case WM_SHOWWINDOW:
+        {
+            Win32PopulateMacroWindow(Window);
+            BringWindowToTop(Window);
+        } break;
+        
         case WM_ACTIVATEAPP:
         {
             BringWindowToTop(Window);
@@ -110,6 +60,7 @@ Win32MacroWindowCallback(HWND   Window,
                 case IDC_MACRO_SAVE:
                 {
                     UpdateGlobalMacros(Window);
+                    SaveUserSettings();
                     ShowWindow(Window, SW_HIDE);
                 } break;
                 
@@ -122,31 +73,8 @@ Win32MacroWindowCallback(HWND   Window,
             
         } break;
         
-#if 0
-        case WM_ERASEBKGND: 
-        {
-            HDC hdc = (HDC) WParam; 
-            RECT rc;
-            GetClientRect(Window, &rc); 
-            SetMapMode(hdc, MM_ANISOTROPIC); 
-            SetWindowExtEx(hdc, 100, 100, NULL); 
-            SetViewportExtEx(hdc, rc.right, rc.bottom, NULL); 
-            FillRect(hdc, &rc, hbrWhite); 
-            
-            for (int i = 0; i < 13; i++) 
-            { 
-                int x = (i * 40) % 100; 
-                int y = ((i * 40) / 100) * 20; 
-                SetRect(&rc, x, y, x + 20, y + 20); 
-                FillRect(hdc, &rc, hbrGray); 
-            } 
-            return 1L; 
-        } break;
-#endif
-        
         case WM_PAINT:
         {
-            //Win32HandlePaint(GameState.Window, 0);
             Win32HandlePaint(Window, 0);
         } break;
         
