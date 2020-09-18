@@ -87,6 +87,22 @@ extern "C" {
 #define ID_CONTROLCOMPASS    106
 #define ID_CONTROLTIMER      107
     
+#define IDC_MACRO_F1         200
+#define IDC_MACRO_F2         201
+#define IDC_MACRO_F3         202
+#define IDC_MACRO_F4         203
+#define IDC_MACRO_F5         204
+#define IDC_MACRO_F6         205
+#define IDC_MACRO_F7         206
+#define IDC_MACRO_F8         207
+#define IDC_MACRO_F9         208
+#define IDC_MACRO_F10        209
+#define IDC_MACRO_F11        210
+#define IDC_MACRO_F12        211
+    
+#define IDC_MACRO_SAVE       220
+#define IDC_MACRO_CANCEL     221
+    
 #define ID_ACTIONTIMER       255
     
 #define IDM_FILE_QUIT 1
@@ -125,6 +141,42 @@ extern "C" {
 #define FLAG_MUSIC   (1 << 3)
 #define FLAG_LOOP    (1 << 4)
 #define FLAG_SHUFFLE (1 << 5)
+    
+    
+    const uint8 MAX_MACROS = 12;
+    
+    char *MacroLabels[] = 
+    {
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+    };
+    
+    uint16 MacroIDs[] = 
+    {
+        IDC_MACRO_F1,
+        IDC_MACRO_F2,
+        IDC_MACRO_F3,
+        IDC_MACRO_F4,
+        IDC_MACRO_F5,
+        IDC_MACRO_F6,
+        IDC_MACRO_F7,
+        IDC_MACRO_F8,
+        IDC_MACRO_F9,
+        IDC_MACRO_F10,
+        IDC_MACRO_F11,
+        IDC_MACRO_F12
+    };
+    
     
 #if 1
     // Connect to local server

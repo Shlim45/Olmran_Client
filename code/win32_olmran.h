@@ -44,6 +44,16 @@ struct user_input_history
     char *CurrentCommand;
 };
 
+struct user_macros
+{
+    uint8 NumberOfMacros;
+    //int16 CurrentPosition;
+    uint16 BufferSize;
+    char *Macros;
+    uint16 MacroSize;
+    //char *CurrentMacro;
+};
+
 struct gmcp_buffer
 {
     char *BufferIn;
@@ -68,9 +78,6 @@ struct user_account
     uint8 CharCount;
     char LastPlayed[256];
     uint16 Flags;
-    //bool32 LoggedIn;
-    //bool32 LocalEcho;
-    //bool32 PersistCommand;
 };
 
 struct portrait_coords
@@ -135,7 +142,11 @@ struct game_display_controls
     HBITMAP Bitmap;
     HBITMAP PortraitBitmap;
     HBITMAP ControlSpritesBitmap;
-    HICON OlmranIcon;
+};
+
+struct sub_windows
+{
+    HWND Macros;
 };
 
 struct game_state
@@ -145,12 +156,14 @@ struct game_state
     game_buffer GameOutput;
     game_buffer GameInput;
     user_input_history CommandHistory;
+    user_macros GlobalMacros;
     gmcp_buffer GMCP;
     COLORREF CurrentColor;
     bool32 AutoSneak;
     user User;
     midi_device *MIDIDevice;
     game_display_controls Display;
+    sub_windows SubWindows;
     room_info Room;
 };
 

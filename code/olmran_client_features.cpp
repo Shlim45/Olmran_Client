@@ -126,72 +126,96 @@ LoadConfigSettings()
 }
 
 internal void
-SaveConfigSettings()
+SaveConfigSettings(char *Buffer, uint32 BufferSize)
 {
     const char *HashLine = "##################################################\n";
     const char *InnerHash = "##########";
-    // compile config file
-    char Buffer[Kilobytes(64)];
     
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "Client Configuration Settings ");
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "\n");
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, "\n");
+    
+    strcat_s(Buffer, BufferSize, "ECHO=");
+    if (GameState.User.Account.Flags & FLAG_ECHO)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+    
+    strcat_s(Buffer, BufferSize, "PERSIST=");
+    if (GameState.User.Account.Flags & FLAG_PERSIST)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+    
+    strcat_s(Buffer, BufferSize, "MUSIC=");
+    if (GameState.User.Account.Flags & FLAG_MUSIC)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+    
+    strcat_s(Buffer, BufferSize, "LOOP=");
+    if (GameState.User.Account.Flags & FLAG_LOOP)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+    
+    strcat_s(Buffer, BufferSize, "SHUFFLE=");
+    if (GameState.User.Account.Flags & FLAG_SHUFFLE)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+}
+
+
+internal void
+SaveMacroSettings(char *Buffer, uint32 BufferSize)
+{
+    const char *HashLine = "##################################################\n";
+    const char *InnerHash = "##########";
+    
+    strcat_s(Buffer, BufferSize, "\n");
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "        Global Macros         ");
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "\n");
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, "\n");
+    
+    char Macro[256];
+    for (uint16 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        memset(Macro, 0, 256);
+        strcpy_s(Macro, 256,
+                 GameState.GlobalMacros.Macros + (Index * GameState.GlobalMacros.MacroSize));
+        strcat_s(Buffer, BufferSize, MacroLabels[Index]);
+        strcat_s(Buffer, BufferSize, "=");
+        strcat_s(Buffer, BufferSize, Macro);
+        strcat_s(Buffer, BufferSize, "\n");
+    }
+    
+    strcat_s(Buffer, BufferSize, "\n");
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "        Player Macros         ");
+    strcat_s(Buffer, BufferSize, InnerHash);
+    strcat_s(Buffer, BufferSize, "\n");
+    strcat_s(Buffer, BufferSize, HashLine);
+    strcat_s(Buffer, BufferSize, "\n");
+}
+
+internal void
+SaveUserSettings()
+{
+    char Buffer[Kilobytes(64)];
     memset(Buffer, 0, Kilobytes(64));
     
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "Client Configuration Settings ");
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "ECHO=");
-    if (GameState.User.Account.Flags & FLAG_ECHO)
-        strcat_s(Buffer, Kilobytes(64), "Y\n");
-    else
-        strcat_s(Buffer, Kilobytes(64), "N\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "PERSIST=");
-    if (GameState.User.Account.Flags & FLAG_PERSIST)
-        strcat_s(Buffer, Kilobytes(64), "Y\n");
-    else
-        strcat_s(Buffer, Kilobytes(64), "N\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "MUSIC=");
-    if (GameState.User.Account.Flags & FLAG_MUSIC)
-        strcat_s(Buffer, Kilobytes(64), "Y\n");
-    else
-        strcat_s(Buffer, Kilobytes(64), "N\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "LOOP=");
-    if (GameState.User.Account.Flags & FLAG_LOOP)
-        strcat_s(Buffer, Kilobytes(64), "Y\n");
-    else
-        strcat_s(Buffer, Kilobytes(64), "N\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "SHUFFLE=");
-    if (GameState.User.Account.Flags & FLAG_SHUFFLE)
-        strcat_s(Buffer, Kilobytes(64), "Y\n");
-    else
-        strcat_s(Buffer, Kilobytes(64), "N\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "        Global Macros         ");
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "        Player Macros         ");
-    strcat_s(Buffer, Kilobytes(64), InnerHash);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    strcat_s(Buffer, Kilobytes(64), HashLine);
-    strcat_s(Buffer, Kilobytes(64), "\n");
-    
-    strcat_s(Buffer, Kilobytes(64), "\n");
+    SaveConfigSettings(Buffer, Kilobytes(64));
+    SaveMacroSettings(Buffer, Kilobytes(64));
     
     WriteToFile("olmran.cfg", Buffer);
 }
