@@ -2,7 +2,6 @@
 internal void
 HandleMacroString(char *MacroString)
 {
-    // e&e&n&e&look 
     // Split into string array
     // Send all commands ending in &
     char Command[256];
@@ -36,16 +35,104 @@ HandleMacroString(char *MacroString)
     }
 }
 
+internal bool32
+GetMacroString(char *Macro, char *Buffer, uint16 BufferSize)
+{
+    uint8 MacroSlot = 0;
+    bool32 ValidMacro = false;
+    
+    for (uint8 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        if (strcmp(Macro, MacroLabels[Index]) == 0)
+        {
+            ValidMacro = true;
+            MacroSlot = Index;
+            break;
+        }
+    }
+    
+    if (ValidMacro)
+    {
+        // Copy macro slot to Buffer
+        strcpy_s(Buffer, BufferSize,
+                 GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot));
+    }
+    
+    return ValidMacro;
+}
+
 internal void
 HandleFunctionKey(uint32 VKCode)
 {
+    bool32 ValidMacro = false;
+    char Macro[256];
+    memset(Macro, 0, 256);
+    
     switch (VKCode)
     {
         case VK_F1:
         {
-            HandleMacroString("n&w&w&n&n&n&w&w&n&e&e&n&n&n&w&n&e&n&e&e&n&e&go tower&w&bandage&look me&wave ");
+            ValidMacro = GetMacroString("F1", Macro, 256);
+        } break;
+        
+        case VK_F2:
+        {
+            ValidMacro = GetMacroString("F2", Macro, 256);
+        } break;
+        
+        case VK_F3:
+        {
+            ValidMacro = GetMacroString("F3", Macro, 256);
+        } break;
+        
+        case VK_F4:
+        {
+            ValidMacro = GetMacroString("F4", Macro, 256);
+        } break;
+        
+        case VK_F5:
+        {
+            ValidMacro = GetMacroString("F5", Macro, 256);
+        } break;
+        
+        case VK_F6:
+        {
+            ValidMacro = GetMacroString("F6", Macro, 256);
+        } break;
+        
+        case VK_F7:
+        {
+            ValidMacro = GetMacroString("F7", Macro, 256);
+        } break;
+        
+        case VK_F8:
+        {
+            ValidMacro = GetMacroString("F8", Macro, 256);
+        } break;
+        
+        case VK_F9:
+        {
+            ValidMacro = GetMacroString("F9", Macro, 256);
+        } break;
+        
+        case VK_F10:
+        {
+            ValidMacro = GetMacroString("F10", Macro, 256);
+        } break;
+        
+        case VK_F11:
+        {
+            ValidMacro = GetMacroString("F11", Macro, 256);
+        } break;
+        
+        case VK_F12:
+        {
+            ValidMacro = GetMacroString("F12", Macro, 256);
         } break;
     }
+    
+    if (ValidMacro)
+        HandleMacroString(Macro);
 }
 
 internal bool32
@@ -178,18 +265,6 @@ LoadConfigSettings()
             // handle macro
             if (ReadBuffer[ReadIndex] == '=')
             {
-#if 0
-                for (uint8 Index = 0; Index < MAX_MACROS; Index++)
-                {
-                    if (strcmp(Setting, MacroLabels[Index]) == 0)
-                    {
-                        ProcessMacro = true;
-                        MacroSlot = Index;
-                        break;
-                    }
-                }
-                // TODO(jon):  Handle invalid macro label
-#endif
                 ProcessMacro = true;
             }
             else if (ProcessMacro)
@@ -201,17 +276,6 @@ LoadConfigSettings()
                 }
                 else
                 {
-#if 0
-                    // Clear this macro slot
-                    memset(
-                           GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
-                           0, GameState.GlobalMacros.MacroSize);
-                    
-                    // Copy to macro slot
-                    strcpy_s(
-                             GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
-                             GameState.GlobalMacros.MacroSize, Macro);
-#endif
                     SetMacroSetting(Setting, Macro);
                     
                     memset(Setting, 0, 16);

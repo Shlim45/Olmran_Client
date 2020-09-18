@@ -566,6 +566,10 @@ Win32HandleKeyboardInput(MSG *Message)
                 DispatchMessageA(Message);
             }
         }
+        else if (Message->message == WM_SYSKEYDOWN && !AltKeyWasDown && VKCode == VK_F10)
+        {
+            HandleFunctionKey(VKCode);
+        }
         else
         {
             TranslateMessage(Message);
