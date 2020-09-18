@@ -47,11 +47,9 @@ struct user_input_history
 struct user_macros
 {
     uint8 NumberOfMacros;
-    //int16 CurrentPosition;
     uint16 BufferSize;
     char *Macros;
     uint16 MacroSize;
-    //char *CurrentMacro;
 };
 
 struct gmcp_buffer

@@ -1,13 +1,3 @@
-#if 0
-internal void
-InitializeCommandHistory(game_state gState, char *buffer)
-{
-    gState.CommandHistory.Commands = buffer;
-    gState.CommandHistory.BufferSize = 512;
-    gState.CommandHistory.NumberOfCommands = 10;
-    gState.CommandHistory.CurrentPosition = -1;
-}
-#endif
 
 internal void
 SetCaretToEnd(HWND TextBoxHandle)
@@ -114,7 +104,7 @@ UpdateCommandHistory()
     }
 }
 
-// NOTE(jon):  This takes the text from the text controls on SubWindows.Macros 
+// NOTE(jon):  Takes the text from the text controls on SubWindows.Macros 
 //             and updates GameState.GlobalMacros.Macros
 internal void
 UpdateGlobalMacros(HWND MacroWindow)

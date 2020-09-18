@@ -177,7 +177,6 @@ win32_MainWindowCallback(HWND   Window,
         case WM_PAINT:
         {
             Win32HandlePaint(GameState.Window, 0);
-            //Win32HandlePaint(GameState.SubWindows.Macros, 0);
             Win32HandlePaint(GameState.Display.Control, GameState.Display.Bitmap);
             Win32UpdateVitals(GameState.Display.Vitals);
             Win32UpdatePortrait(GameState.Display.Portrait);
@@ -252,7 +251,7 @@ win32_MainWindowCallback(HWND   Window,
             {
                 case IDM_FILE_QUIT:
                 {
-                    SendMessageA(Window, WM_CLOSE, 0, 0);
+                    HandleMacroString("quit&yes&");
                 } break;
                 
                 case IDM_EDIT_ECHO:
@@ -391,7 +390,6 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_DESTROY:
         {
-            // TODO(jon):  Handle this as an error, recreate window?
             DeleteObject(GameState.Display.Bitmap);
             DeleteObject(GameState.Display.PortraitBitmap);
             DeleteObject(GameState.Display.ControlSpritesBitmap);
@@ -400,8 +398,7 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_CLOSE:
         {
-            // TODO(jon):  Send quit&y&
-            GlobalRunning = false;
+            HandleMacroString("quit&yes&");
         } break;
         
         case WM_ACTIVATEAPP:
