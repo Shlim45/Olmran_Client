@@ -48,7 +48,7 @@ HandleFunctionKey(uint32 VKCode)
     }
 }
 
-internal void
+internal bool32
 SetConfigSetting(char *Setting, bool32 Value)
 {
     uint16 Flag = 0;
@@ -65,25 +65,70 @@ SetConfigSetting(char *Setting, bool32 Value)
     else
     {
         OutputDebugStringA("ERROR:  Invalid config setting\n");
-        return;
+        return false;
     }
     
     if (Value)
         GameState.User.Account.Flags |= Flag;
     else
         GameState.User.Account.Flags &= ~(Flag);
+    
+    return true;
+}
+
+internal bool32
+SetMacroSetting(char *Macro, char *Value)
+{
+    uint8 MacroSlot = 0;
+    bool32 ValidMacro = false;
+    
+    for (uint8 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        if (strcmp(Macro, MacroLabels[Index]) == 0)
+        {
+            ValidMacro = true;
+            MacroSlot = Index;
+            break;
+        }
+    }
+    
+    if (ValidMacro)
+    {
+        // Clear this macro slot
+        memset(
+               GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
+               0, GameState.GlobalMacros.MacroSize);
+        
+        // Copy to macro slot, or leave cleared for empty values
+        if (Value)
+            strcpy_s(
+                     GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
+                     GameState.GlobalMacros.MacroSize, Value);
+        
+    }
+    
+    return ValidMacro;
 }
 
 internal void
 LoadConfigSettings()
 {
     char ReadBuffer[Kilobytes(64)];
+    uint16 ReadIndex     = 0;
     char Setting[16];
-    uint16 SettingIndex = 0;
-    uint16 ReadIndex   = 0;
-    bool32 Comment     = false;
+    uint16 SettingIndex  = 0;
+    char Macro[256];
+    uint16 MacroIndex    = 0;
+    bool32 Comment       = false;
+    bool32 ProcessMacro  = false;
+    uint8 MacroSlot = 0;
+    
+    uint8 ConfigSettingCount = 0;
     
     ReadFromFile("olmran.cfg", ReadBuffer);
+    
+    memset(Setting, 0, 16);
+    memset(Macro, 0, 256);
     
     while (ReadBuffer[ReadIndex])
     {
@@ -100,26 +145,88 @@ LoadConfigSettings()
             continue;
         }
         
-        if (ReadBuffer[ReadIndex] == '\n')
+        if (ReadBuffer[ReadIndex] == '\n' && !ProcessMacro)
         {
             // Skip blank lines
             ++ReadIndex;
             continue;
         }
         
-        if (ReadBuffer[ReadIndex] == '=')
+        if (ConfigSettingCount < SETTINGS_COUNT)
         {
-            SetConfigSetting(Setting, ((ReadBuffer[ReadIndex+1]) == 'Y'));
-            
-            memset(Setting, 0, 16);
-            SettingIndex = 0;
-            // Skip past Value and Newline
-            ReadIndex += 2;
+            // handle config setting
+            if (ReadBuffer[ReadIndex] == '=')
+            {
+                if (SetConfigSetting(Setting, ((ReadBuffer[ReadIndex+1]) == 'Y')))
+                {
+                    ++ConfigSettingCount;
+                }
+                
+                memset(Setting, 0, 16);
+                SettingIndex = 0;
+                // Skip past Value and Newline
+                ReadIndex += 2;
+            }
+            else
+            {
+                Setting[SettingIndex] = ReadBuffer[ReadIndex];
+                ++SettingIndex;
+            }
         }
         else
         {
-            Setting[SettingIndex] = ReadBuffer[ReadIndex];
-            ++SettingIndex;
+            // handle macro
+            if (ReadBuffer[ReadIndex] == '=')
+            {
+#if 0
+                for (uint8 Index = 0; Index < MAX_MACROS; Index++)
+                {
+                    if (strcmp(Setting, MacroLabels[Index]) == 0)
+                    {
+                        ProcessMacro = true;
+                        MacroSlot = Index;
+                        break;
+                    }
+                }
+                // TODO(jon):  Handle invalid macro label
+#endif
+                ProcessMacro = true;
+            }
+            else if (ProcessMacro)
+            {
+                if (ReadBuffer[ReadIndex] != '\n')
+                {
+                    Macro[MacroIndex] = ReadBuffer[ReadIndex];
+                    ++MacroIndex;
+                }
+                else
+                {
+#if 0
+                    // Clear this macro slot
+                    memset(
+                           GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
+                           0, GameState.GlobalMacros.MacroSize);
+                    
+                    // Copy to macro slot
+                    strcpy_s(
+                             GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
+                             GameState.GlobalMacros.MacroSize, Macro);
+#endif
+                    SetMacroSetting(Setting, Macro);
+                    
+                    memset(Setting, 0, 16);
+                    SettingIndex = 0;
+                    
+                    memset(Macro, 0, 256);
+                    MacroIndex = 0;
+                    ProcessMacro = false;
+                }
+            }
+            else
+            {
+                Setting[SettingIndex] = ReadBuffer[ReadIndex];
+                ++SettingIndex;
+            }
         }
         ++ReadIndex;
     }

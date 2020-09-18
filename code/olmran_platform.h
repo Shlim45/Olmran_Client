@@ -143,6 +143,7 @@ extern "C" {
 #define FLAG_SHUFFLE (1 << 5)
     
     
+    const uint8 SETTINGS_COUNT = 5;
     const uint8 MAX_MACROS = 12;
     
     char *MacroLabels[] = 
