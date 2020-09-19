@@ -1,6 +1,6 @@
 
 internal void
-Win32PopulateMacroWindow(HWND MacroWindow)
+Win32PopulateMacroWindow(HWND MacroWindow, char *MacroBuffer, char *PlayerName)
 {
     // Fill each text control with macros from GameState
     const int MACRO_SIZE = 256;
@@ -9,9 +9,18 @@ Win32PopulateMacroWindow(HWND MacroWindow)
     
     for (uint16 Index = 0; Index < MAX_MACROS; Index++)
     {
-        strcpy_s(Macro, MACRO_SIZE, GameState.Macros.Global.MacroBuffer + (Index * MACRO_SIZE));
+        strcpy_s(Macro, MACRO_SIZE, MacroBuffer + (Index * MACRO_SIZE));
         SetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro);
     }
+    
+    if (PlayerName)
+    {
+        char WindowTitle[30] = "";
+        wsprintf(WindowTitle, "%s's Macros", PlayerName);
+        SetWindowTextA(MacroWindow,WindowTitle);
+    }
+    else
+        SetWindowTextA(MacroWindow,"Global Macros");
 }
 
 internal void
@@ -46,7 +55,7 @@ Win32CreateMacroWindow(HWND Window)
     hCtl=CreateWindowA("button","Save",dwStyle,245,PosY,120,30,Window,(HMENU)IDC_MACRO_SAVE,hIns,0);
     hCtl=CreateWindowA("button","Cancel",dwStyle,380,PosY,120,30,Window,(HMENU)IDC_MACRO_CANCEL,hIns,0);
     
-    SetWindowTextA(Window,"Global Macros");
+    SetWindowTextA(Window,"Macros");
     SetFocus(GetDlgItem(Window,IDC_MACRO_F1));
 }
 

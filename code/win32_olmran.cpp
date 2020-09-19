@@ -41,7 +41,7 @@ Win32MacroWindowCallback(HWND   Window,
         
         case WM_SHOWWINDOW:
         {
-            Win32PopulateMacroWindow(Window);
+            //Win32PopulateMacroWindow(Window, GameState.Macros.Global.MacroBuffer);
             BringWindowToTop(Window);
         } break;
         
@@ -59,6 +59,7 @@ Win32MacroWindowCallback(HWND   Window,
             {
                 case IDC_MACRO_SAVE:
                 {
+                    // TODO(jon):  Save player macros
                     UpdateGlobalMacros(Window);
                     SaveUserSettings();
                     ShowWindow(Window, SW_HIDE);
@@ -251,7 +252,10 @@ win32_MainWindowCallback(HWND   Window,
             {
                 case IDM_FILE_QUIT:
                 {
-                    HandleMacroString("quit&yes&");
+                    if (GameState.User.Player.LoggedIn)
+                        HandleMacroString("quit&yes&");
+                    else
+                        GlobalRunning = false;
                 } break;
                 
                 case IDM_EDIT_ECHO:
@@ -378,10 +382,17 @@ win32_MainWindowCallback(HWND   Window,
                 } break;
                 
                 case IDM_MACRO_PLAYER:
-                { } break;
+                {
+                    if (GameState.User.Player.LoggedIn)
+                    {
+                        Win32PopulateMacroWindow(GameState.SubWindows.Macros, GameState.Macros.Player.MacroBuffer, GameState.User.Player.Name);
+                        ShowWindow(GameState.SubWindows.Macros, SW_SHOW);
+                    }
+                } break;
                 
                 case IDM_MACRO_GLOBAL:
                 {
+                    Win32PopulateMacroWindow(GameState.SubWindows.Macros, GameState.Macros.Global.MacroBuffer, 0);
                     ShowWindow(GameState.SubWindows.Macros, SW_SHOW);
                 } break;
             }
@@ -398,7 +409,10 @@ win32_MainWindowCallback(HWND   Window,
         
         case WM_CLOSE:
         {
-            HandleMacroString("quit&yes&");
+            if (GameState.User.Player.LoggedIn)
+                HandleMacroString("quit&yes&");
+            else
+                GlobalRunning = false;
         } break;
         
         case WM_ACTIVATEAPP:
