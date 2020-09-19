@@ -53,9 +53,14 @@ GetMacroString(char *Macro, char *Buffer, uint16 BufferSize)
     
     if (ValidMacro)
     {
+        char *MacroBuffer = GameState.Macros.Player.MacroBuffer + (GameState.Macros.MacroSize * MacroSlot);
+        
+        // use global if no player macro
+        if (strlen(MacroBuffer) == 0)
+            MacroBuffer = GameState.Macros.Global.MacroBuffer + (GameState.Macros.MacroSize * MacroSlot);
+        
         // Copy macro slot to Buffer
-        strcpy_s(Buffer, BufferSize,
-                 GameState.Macros.Global.MacroBuffer + (GameState.Macros.MacroSize * MacroSlot));
+        strcpy_s(Buffer, BufferSize, MacroBuffer);
     }
     
     return ValidMacro;
@@ -64,6 +69,9 @@ GetMacroString(char *Macro, char *Buffer, uint16 BufferSize)
 internal void
 HandleFunctionKey(uint32 VKCode)
 {
+    if (!GameState.User.Player.LoggedIn)
+        return;
+    
     bool32 ValidMacro = false;
     char Macro[256];
     memset(Macro, 0, 256);
