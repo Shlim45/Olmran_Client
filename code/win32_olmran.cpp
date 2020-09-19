@@ -622,9 +622,7 @@ WinMain(
     WindowClass.hIcon = (HICON) LoadImageA(NULL, "images/olmran.ico", IMAGE_ICON,
                                            0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
     //    WindowClass.hCursor = ;
-    //WindowClass.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
     WindowClass.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-    //    WindowClass.lpszMenuName = ;
     WindowClass.lpszClassName = "OlmranWindowClass";
     
     if(RegisterClass(&WindowClass))
@@ -725,9 +723,9 @@ WinMain(
                     
                     GameState.CommandHistory.CurrentSize = 512;
                     
-                    GameState.GlobalMacros.NumberOfMacros = 12;
-                    GameState.GlobalMacros.MacroSize = 256;
-                    GameState.GlobalMacros.BufferSize = (12 * GameState.GlobalMacros.MacroSize);
+                    GameState.Macros.NumberOfMacros = 12;
+                    GameState.Macros.MacroSize = 256;
+                    GameState.Macros.BufferSize = (12 * GameState.Macros.MacroSize);
                     
                     GameState.GMCP.BufferSize = 1024;
                     
@@ -757,9 +755,13 @@ WinMain(
                     GameState.MIDIDevice = (midi_device *) ((uint8 *) GameMemory.TransientStorage + accum);
                     accum += sizeof(midi_device);
                     
-                    GameState.GlobalMacros.Macros = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += (GameState.GlobalMacros.MacroSize * GameState.GlobalMacros.NumberOfMacros);
+                    GameState.Macros.Global.MacroBuffer =
+                        (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += (GameState.Macros.MacroSize * GameState.Macros.NumberOfMacros);
                     
+                    GameState.Macros.Player.MacroBuffer =
+                        (char *) ((uint8 *) GameMemory.TransientStorage + accum);
+                    accum += (GameState.Macros.MacroSize * GameState.Macros.NumberOfMacros);
                     
                     GameMemory.IsInitialized = true;
                 }

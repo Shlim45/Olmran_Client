@@ -55,7 +55,7 @@ GetMacroString(char *Macro, char *Buffer, uint16 BufferSize)
     {
         // Copy macro slot to Buffer
         strcpy_s(Buffer, BufferSize,
-                 GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot));
+                 GameState.Macros.Global.MacroBuffer + (GameState.Macros.MacroSize * MacroSlot));
     }
     
     return ValidMacro;
@@ -164,7 +164,7 @@ SetConfigSetting(char *Setting, bool32 Value)
 }
 
 internal bool32
-SetMacroSetting(char *Macro, char *Value)
+SetMacroSetting(char *Macro, char *Value, char *MacroBuffer)
 {
     uint8 MacroSlot = 0;
     bool32 ValidMacro = false;
@@ -183,14 +183,14 @@ SetMacroSetting(char *Macro, char *Value)
     {
         // Clear this macro slot
         memset(
-               GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
-               0, GameState.GlobalMacros.MacroSize);
+               MacroBuffer + (GameState.Macros.MacroSize * MacroSlot),
+               0, GameState.Macros.MacroSize);
         
         // Copy to macro slot, or leave cleared for empty values
         if (Value)
             strcpy_s(
-                     GameState.GlobalMacros.Macros + (GameState.GlobalMacros.MacroSize * MacroSlot),
-                     GameState.GlobalMacros.MacroSize, Value);
+                     MacroBuffer + (GameState.Macros.MacroSize * MacroSlot),
+                     GameState.Macros.MacroSize, Value);
         
     }
     
@@ -276,7 +276,7 @@ LoadConfigSettings()
                 }
                 else
                 {
-                    SetMacroSetting(Setting, Macro);
+                    SetMacroSetting(Setting, Macro, GameState.Macros.Global.MacroBuffer);
                     
                     memset(Setting, 0, 16);
                     SettingIndex = 0;
@@ -291,6 +291,81 @@ LoadConfigSettings()
                 Setting[SettingIndex] = ReadBuffer[ReadIndex];
                 ++SettingIndex;
             }
+        }
+        ++ReadIndex;
+    }
+}
+
+internal void
+LoadPlayerMacros(char *PlayerName)
+{
+    char ReadBuffer[Kilobytes(64)];
+    uint16 ReadIndex     = 0;
+    char Setting[16];
+    uint16 SettingIndex  = 0;
+    char Macro[256];
+    uint16 MacroIndex    = 0;
+    bool32 Comment       = false;
+    bool32 ProcessMacro  = false;
+    uint8 MacroSlot = 0;
+    
+    char FileName[30] = "";
+    wsprintf(FileName, "%s.cfg", PlayerName);
+    ReadFromFile(FileName, ReadBuffer);
+    
+    memset(Setting, 0, 16);
+    memset(Macro, 0, 256);
+    
+    while (ReadBuffer[ReadIndex])
+    {
+        Comment = (ReadBuffer[ReadIndex] == '#');
+        if (Comment)
+        {
+            while ((ReadBuffer[ReadIndex])!='\n' && (ReadBuffer[ReadIndex])!='\0')
+            {
+                ReadIndex++;
+                continue;
+            }
+            Comment = false;
+            ReadIndex++;
+            continue;
+        }
+        
+        if (ReadBuffer[ReadIndex] == '\n' && !ProcessMacro)
+        {
+            // Skip blank lines
+            ++ReadIndex;
+            continue;
+        }
+        
+        // handle macro
+        if (ReadBuffer[ReadIndex] == '=')
+        {
+            ProcessMacro = true;
+        }
+        else if (ProcessMacro)
+        {
+            if (ReadBuffer[ReadIndex] != '\n')
+            {
+                Macro[MacroIndex] = ReadBuffer[ReadIndex];
+                ++MacroIndex;
+            }
+            else
+            {
+                SetMacroSetting(Setting, Macro, GameState.Macros.Player.MacroBuffer);
+                
+                memset(Setting, 0, 16);
+                SettingIndex = 0;
+                
+                memset(Macro, 0, 256);
+                MacroIndex = 0;
+                ProcessMacro = false;
+            }
+        }
+        else
+        {
+            Setting[SettingIndex] = ReadBuffer[ReadIndex];
+            ++SettingIndex;
         }
         ++ReadIndex;
     }
@@ -341,9 +416,8 @@ SaveConfigSettings(char *Buffer, uint32 BufferSize)
         strcat_s(Buffer, BufferSize, "N\n");
 }
 
-
 internal void
-SaveMacroSettings(char *Buffer, uint32 BufferSize)
+SaveGlobalMacros(char *Buffer, uint32 BufferSize)
 {
     const char *HashLine = "##################################################\n";
     const char *InnerHash = "##########";
@@ -362,12 +436,19 @@ SaveMacroSettings(char *Buffer, uint32 BufferSize)
     {
         memset(Macro, 0, 256);
         strcpy_s(Macro, 256,
-                 GameState.GlobalMacros.Macros + (Index * GameState.GlobalMacros.MacroSize));
+                 GameState.Macros.Global.MacroBuffer + (Index * GameState.Macros.MacroSize));
         strcat_s(Buffer, BufferSize, MacroLabels[Index]);
         strcat_s(Buffer, BufferSize, "=");
         strcat_s(Buffer, BufferSize, Macro);
         strcat_s(Buffer, BufferSize, "\n");
     }
+}
+
+internal void
+SavePlayerMacros(char *Buffer, uint32 BufferSize)
+{
+    const char *HashLine = "##################################################\n";
+    const char *InnerHash = "##########";
     
     strcat_s(Buffer, BufferSize, "\n");
     strcat_s(Buffer, BufferSize, HashLine);
@@ -377,6 +458,34 @@ SaveMacroSettings(char *Buffer, uint32 BufferSize)
     strcat_s(Buffer, BufferSize, "\n");
     strcat_s(Buffer, BufferSize, HashLine);
     strcat_s(Buffer, BufferSize, "\n");
+    
+    char Macro[256];
+    for (uint16 Index = 0; Index < MAX_MACROS; Index++)
+    {
+        memset(Macro, 0, 256);
+        strcpy_s(Macro, 256,
+                 GameState.Macros.Player.MacroBuffer + (Index * GameState.Macros.MacroSize));
+        strcat_s(Buffer, BufferSize, MacroLabels[Index]);
+        strcat_s(Buffer, BufferSize, "=");
+        strcat_s(Buffer, BufferSize, Macro);
+        strcat_s(Buffer, BufferSize, "\n");
+    }
+}
+
+internal void
+SavePlayerSettings(char *PlayerName)
+{
+    if (GameState.User.Player.LoggedIn)
+    {
+        char FileName[30] = "";
+        char Buffer[Kilobytes(64)];
+        memset(Buffer, 0, Kilobytes(64));
+        
+        SavePlayerMacros(Buffer, Kilobytes(64));
+        
+        wsprintf(FileName, "%s.cfg", PlayerName);
+        WriteToFile(FileName, Buffer);
+    }
 }
 
 internal void
@@ -386,7 +495,7 @@ SaveUserSettings()
     memset(Buffer, 0, Kilobytes(64));
     
     SaveConfigSettings(Buffer, Kilobytes(64));
-    SaveMacroSettings(Buffer, Kilobytes(64));
+    SaveGlobalMacros(Buffer, Kilobytes(64));
     
     WriteToFile("olmran.cfg", Buffer);
 }

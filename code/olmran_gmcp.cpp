@@ -1211,6 +1211,7 @@ handle_gmcp(char *subData, int dataSize)
     {
         // create local copy of subdata
         char *data = subData;
+        // TODO(jon):  Need to do an actual copy
         
         // check that string has more than one _
         int count = 0;

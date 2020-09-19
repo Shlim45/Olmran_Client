@@ -46,10 +46,7 @@ struct user_input_history
 
 struct user_macros
 {
-    uint8 NumberOfMacros;
-    uint16 BufferSize;
-    char *Macros;
-    uint16 MacroSize;
+    char *MacroBuffer;
 };
 
 struct gmcp_buffer
@@ -147,6 +144,15 @@ struct sub_windows
     HWND Macros;
 };
 
+struct macro_group
+{
+    uint8 NumberOfMacros;
+    uint16 BufferSize;
+    uint16 MacroSize;
+    user_macros Global;
+    user_macros Player;
+};
+
 struct game_state
 {
     HWND Window;
@@ -154,7 +160,8 @@ struct game_state
     game_buffer GameOutput;
     game_buffer GameInput;
     user_input_history CommandHistory;
-    user_macros GlobalMacros;
+    //user_macros GlobalMacros;
+    macro_group Macros;
     gmcp_buffer GMCP;
     COLORREF CurrentColor;
     bool32 AutoSneak;
@@ -206,5 +213,7 @@ internal void Win32StartActionTimer();
 internal void Win32HandlePlayerLogin();
 internal void Win32HandlePlayerLogoff();
 internal void Win32EchoCommand(const HWND GameOutput, const char *Command);
+internal void LoadPlayerMacros(char *PlayerName);
+internal void SavePlayerSettings(char *PlayerName);
 
 #endif //WIN32_OLMRAN_H

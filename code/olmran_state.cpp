@@ -113,12 +113,12 @@ UpdateGlobalMacros(HWND MacroWindow)
     char Macro[MACRO_SIZE];
     memset(Macro, 0, MACRO_SIZE);
     
-    memset(GameState.GlobalMacros.Macros, 0, GameState.GlobalMacros.BufferSize);
+    memset(GameState.Macros.Global.MacroBuffer, 0, GameState.Macros.BufferSize);
     
     // iterate over each MacroID and update GameState
     for (int Index = 0; Index < MAX_MACROS; Index++)
     {
         GetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro, MACRO_SIZE);
-        strcpy_s(GameState.GlobalMacros.Macros + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
+        strcpy_s(GameState.Macros.Global.MacroBuffer + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
     }
 }

@@ -9,7 +9,7 @@ Win32PopulateMacroWindow(HWND MacroWindow)
     
     for (uint16 Index = 0; Index < MAX_MACROS; Index++)
     {
-        strcpy_s(Macro, MACRO_SIZE, GameState.GlobalMacros.Macros + (Index * MACRO_SIZE));
+        strcpy_s(Macro, MACRO_SIZE, GameState.Macros.Global.MacroBuffer + (Index * MACRO_SIZE));
         SetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro);
     }
 }
@@ -575,6 +575,8 @@ Win32HandlePlayerLogin()
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     
+    LoadPlayerMacros(GameState.User.Player.Name);
+    
     if (GameState.User.Account.Flags & FLAG_MUSIC)
         Win32HandlePlayMusic();
 }
@@ -582,7 +584,9 @@ Win32HandlePlayerLogin()
 internal void
 Win32HandlePlayerLogoff()
 {
+    SavePlayerSettings(GameState.User.Player.Name);
     memset(&GameState.User.Player, 0, sizeof(GameState.User.Player));
+    memset(GameState.Macros.Player.MacroBuffer, 0, GameState.Macros.BufferSize);
     
     Win32UpdateClientTitle();
     ShowWindow(GameState.Display.Vitals, SW_HIDE);
