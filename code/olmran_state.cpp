@@ -107,18 +107,18 @@ UpdateCommandHistory()
 // NOTE(jon):  Takes the text from the text controls on SubWindows.Macros 
 //             and updates GameState.GlobalMacros.Macros
 internal void
-UpdateGlobalMacros(HWND MacroWindow)
+UpdateMacroBuffer(HWND MacroWindow, char *MacroBuffer)
 {
     const int MACRO_SIZE = 256;
     char Macro[MACRO_SIZE];
     memset(Macro, 0, MACRO_SIZE);
     
-    memset(GameState.Macros.Global.MacroBuffer, 0, GameState.Macros.BufferSize);
+    memset(MacroBuffer, 0, GameState.Macros.BufferSize);
     
     // iterate over each MacroID and update GameState
     for (int Index = 0; Index < MAX_MACROS; Index++)
     {
         GetWindowTextA(GetDlgItem(MacroWindow,MacroIDs[Index]), Macro, MACRO_SIZE);
-        strcpy_s(GameState.Macros.Global.MacroBuffer + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
+        strcpy_s(MacroBuffer + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
     }
 }

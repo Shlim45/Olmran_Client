@@ -40,11 +40,6 @@ Win32MacroWindowCallback(HWND   Window,
         } break;
         
         case WM_SHOWWINDOW:
-        {
-            //Win32PopulateMacroWindow(Window, GameState.Macros.Global.MacroBuffer);
-            BringWindowToTop(Window);
-        } break;
-        
         case WM_ACTIVATEAPP:
         {
             BringWindowToTop(Window);
@@ -59,15 +54,20 @@ Win32MacroWindowCallback(HWND   Window,
             {
                 case IDC_MACRO_SAVE:
                 {
-                    // TODO(jon):  Save player macros
-                    UpdateGlobalMacros(Window);
+                    // TODO(jon):  Better method of determining global vs player
+                    char Title[30] = "";
+                    GetWindowTextA(Window, Title, 30);
+                    if (strcmp(Title, "Global Macros")==0)
+                        UpdateMacroBuffer(Window, GameState.Macros.Global.MacroBuffer);
+                    else
+                        UpdateMacroBuffer(Window, GameState.Macros.Player.MacroBuffer);
+                    
                     SaveUserSettings();
                     ShowWindow(Window, SW_HIDE);
                 } break;
                 
                 case IDC_MACRO_CANCEL:
                 {
-                    // reset state
                     ShowWindow(Window, SW_HIDE);
                 } break;
             }

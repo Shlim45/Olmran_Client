@@ -26,7 +26,6 @@ Win32PopulateMacroWindow(HWND MacroWindow, char *MacroBuffer, char *PlayerName)
 internal void
 Win32CreateMacroWindow(HWND Window)
 {
-    //char* szBuffer[]={"Ordinary Box","Box Of Junk","Beer Crate","Wine Box","Candy Box"};
     DWORD dwStyle=WS_CHILD|WS_VISIBLE|WS_TABSTOP;
     HWND hCtl;
     
