@@ -34,7 +34,7 @@ Win32CreateMacroWindow(HWND Window)
     uint8 LabelWidth  = 75;
     uint8 LabelHeight = 25;
     
-    uint8 EditWidth  = 255;
+    uint16 EditWidth = 600;
     uint8 EditHeight = 25;
     
     uint8 LabelX = 10;
@@ -45,9 +45,9 @@ Win32CreateMacroWindow(HWND Window)
     {
         hCtl=CreateWindowA("static",MacroLabels[Index],WS_CHILD|WS_VISIBLE,
                            LabelX,PosY,LabelWidth,LabelHeight,Window,(HMENU)-1,hIns,0);
-        hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle,
+        hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle|ES_AUTOHSCROLL,
                              EditX,PosY,EditWidth,EditHeight,Window,(HMENU)MacroIDs[Index],hIns,0);
-        SendMessageA(hCtl, EM_LIMITTEXT, (WPARAM)255, 0);
+        SendMessageA(hCtl, EM_LIMITTEXT, 255, 0);
         PosY += 40;
     }
     

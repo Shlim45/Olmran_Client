@@ -122,3 +122,71 @@ UpdateMacroBuffer(HWND MacroWindow, char *MacroBuffer)
         strcpy_s(MacroBuffer + (Index * MACRO_SIZE), MACRO_SIZE, Macro);
     }
 }
+
+internal void
+InitializeGameState(game_state *State)
+{
+    // Set starting Text Color
+    State->CurrentColor = C_RESET;
+    
+    // Set autosneak
+    State->AutoSneak = false;
+    
+    State->isInitialized = true;
+    
+}
+
+internal void
+InitializeGameMemory(game_state *State, game_memory *GameMemory)
+{
+    State->GameInput.BufferLength = 512;
+    //State->GameOutput.BufferLength = 4096;
+    
+    State->CommandHistory.BufferSize = 512;
+    State->CommandHistory.NumberOfCommands = 10;
+    State->CommandHistory.CurrentPosition = -1;
+    
+    State->CommandHistory.CurrentSize = 512;
+    
+    State->Macros.NumberOfMacros = 12;
+    State->Macros.MacroSize = 256;
+    State->Macros.BufferSize = (12 * State->Macros.MacroSize);
+    
+    State->GMCP.BufferSize = 1024;
+    
+    State->User.Account = {};
+    State->User.Player = {};
+    
+    uint32 accum = 0;
+    
+    State->GameInput.Buffer = (char *) GameMemory->TransientStorage;
+    accum += State->GameInput.BufferLength;
+    /*
+    State->GameOutput.Buffer = (char *) (&GameMemory->TransientStorage + accum);
+    accum += State->GameOutput.BufferLength;
+    */
+    State->CommandHistory.Commands = (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += (State->CommandHistory.BufferSize * State->CommandHistory.NumberOfCommands);
+    
+    State->CommandHistory.CurrentCommand = (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += State->CommandHistory.BufferSize;
+    
+    State->GMCP.BufferIn = (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += State->GMCP.BufferSize;
+    
+    State->GMCP.BufferOut = (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += State->GMCP.BufferSize;
+    
+    State->MIDIDevice = (midi_device *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += sizeof(midi_device);
+    
+    State->Macros.Global.MacroBuffer =
+        (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += (State->Macros.MacroSize * State->Macros.NumberOfMacros);
+    
+    State->Macros.Player.MacroBuffer =
+        (char *) ((uint8 *) GameMemory->TransientStorage + accum);
+    accum += (State->Macros.MacroSize * State->Macros.NumberOfMacros);
+    
+    GameMemory->IsInitialized = true;
+}

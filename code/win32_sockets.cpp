@@ -180,3 +180,30 @@ SocketListenThreadProc(LPVOID lpParameter)
     
     return 0;
 }
+
+internal bool32
+InitializeSocketConnection(game_state *State, HANDLE *SocketListenThreadHandle, LPDWORD ThreadID)
+{
+    bool32 Result = false;
+    
+    if (Win32InitAndConnectSocket()==0)
+    {
+        OutputDebugStringA("Socket Connected\n");
+        TelnetInit(Telnet);
+        
+        char *Param = "Socket listening.\n";
+        
+        *SocketListenThreadHandle = 
+            CreateThread(0, 0, SocketListenThreadProc, Param, 0, ThreadID);
+        
+        Result = true;
+    }
+    else
+    {
+        Win32AppendText(State->GameOutput.Window, "Could not connect to server.\n");
+        OutputDebugStringA("Error in Win32InitAndConnectSocket()\n");
+        SocketListenThreadHandle = 0;
+    }
+    
+    return Result;
+}

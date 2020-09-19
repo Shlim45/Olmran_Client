@@ -692,20 +692,10 @@ WinMain(
                                     0);
                 
                 if(MacroWindowHandle)
-                {
-                    //SetParent(MacroWindowHandle,WindowHandle);
                     GameState.SubWindows.Macros = MacroWindowHandle;
-                }
             }
             
-            // Set starting Text Color
-            GameState.CurrentColor = C_RESET;
-            
-            // Set autosneak
-            GameState.AutoSneak = false;
-            
-            GameState.isInitialized = true;
-            
+            InitializeGameState(&GameState);
 #if OLMRAN_INTERNAL
 			LPVOID BaseAddress = ((LPVOID)Terabytes(2));
 #else
@@ -714,9 +704,6 @@ WinMain(
 			game_memory GameMemory = {};
 			GameMemory.PermanentStorageSize = Megabytes(64);
 			GameMemory.TransientStorageSize = Gigabytes(1);
-			//GameMemory.DEBUGPlatformFreeFileMemory = DEBUGPlatformFreeFileMemory;
-			//GameMemory.DEBUGPlatformReadEntireFile = DEBUGPlatformReadEntireFile;
-			//GameMemory.DEBUGPlatformWriteEntireFile = DEBUGPlatformWriteEntireFile;
 			
 			Win32State.TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
 			Win32State.GameMemoryBlock = VirtualAlloc(BaseAddress, (size_t)Win32State.TotalSize,
@@ -728,76 +715,13 @@ WinMain(
 			{
                 if (!GameMemory.IsInitialized)
                 {
-                    GameState.GameInput.BufferLength = 512;
-                    //GameState.GameOutput.BufferLength = 4096;
-                    
-                    GameState.CommandHistory.BufferSize = 512;
-                    GameState.CommandHistory.NumberOfCommands = 10;
-                    GameState.CommandHistory.CurrentPosition = -1;
-                    
-                    GameState.CommandHistory.CurrentSize = 512;
-                    
-                    GameState.Macros.NumberOfMacros = 12;
-                    GameState.Macros.MacroSize = 256;
-                    GameState.Macros.BufferSize = (12 * GameState.Macros.MacroSize);
-                    
-                    GameState.GMCP.BufferSize = 1024;
-                    
-                    GameState.User.Account = {};
-                    GameState.User.Player = {};
-                    
-                    uint32 accum = 0;
-                    
-                    GameState.GameInput.Buffer = (char *) GameMemory.TransientStorage;
-                    accum += GameState.GameInput.BufferLength;
-                    /*
-                    GameState.GameOutput.Buffer = (char *) (&GameMemory.TransientStorage + accum);
-                    accum += GameState.GameOutput.BufferLength;
-                    */
-                    GameState.CommandHistory.Commands = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += (GameState.CommandHistory.BufferSize * GameState.CommandHistory.NumberOfCommands);
-                    
-                    GameState.CommandHistory.CurrentCommand = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += GameState.CommandHistory.BufferSize;
-                    
-                    GameState.GMCP.BufferIn = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += GameState.GMCP.BufferSize;
-                    
-                    GameState.GMCP.BufferOut = (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += GameState.GMCP.BufferSize;
-                    
-                    GameState.MIDIDevice = (midi_device *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += sizeof(midi_device);
-                    
-                    GameState.Macros.Global.MacroBuffer =
-                        (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += (GameState.Macros.MacroSize * GameState.Macros.NumberOfMacros);
-                    
-                    GameState.Macros.Player.MacroBuffer =
-                        (char *) ((uint8 *) GameMemory.TransientStorage + accum);
-                    accum += (GameState.Macros.MacroSize * GameState.Macros.NumberOfMacros);
-                    
-                    GameMemory.IsInitialized = true;
+                    InitializeGameMemory(&GameState, &GameMemory);
                 }
+                
                 DWORD ThreadID;
                 HANDLE SocketListenThreadHandle;
-                if (Win32InitAndConnectSocket()==0)
-                {
-                    OutputDebugStringA("Socket Connected\n");
-                    
-                    TelnetInit(Telnet);
-                    
-                    char *Param = "Socket listening.\n";
-                    
-                    SocketListenThreadHandle = 
-                        CreateThread(0, 0, SocketListenThreadProc, Param, 0, &ThreadID);
-                }
-                else
-                {
-                    Win32AppendText(GameState.GameOutput.Window, "Could not connect to server.\n");
-                    OutputDebugStringA("Error in win32_InitAndConnectSocket()\n");
-                    SocketListenThreadHandle = 0;
-                }
+                
+                InitializeSocketConnection(&GameState, &SocketListenThreadHandle, &ThreadID);
                 
                 LoadConfigSettings();
                 Win32UpdateMenus();
