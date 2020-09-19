@@ -7,7 +7,7 @@
    ======================================================================== */
 
 internal DWORD
-win32_StopMIDIPlayback(midi_device *MIDIDevice)
+Win32StopMIDIPlayback(midi_device *MIDIDevice)
 {
     DWORD Return = 0L;
     if (MIDIDevice->DeviceID)
@@ -37,10 +37,10 @@ win32_StopMIDIPlayback(midi_device *MIDIDevice)
 // specified window will be notified when playback is complete. 
 // Returns 0L on success; otherwise, it returns an MCI error code.
 internal DWORD 
-win32_PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
+Win32PlayMIDIFile(midi_device *MIDIDevice, HWND Window, LPSTR MIDIFileName)
 {
     if (MIDIDevice->IsPlaying || MIDIDevice->DeviceID)
-        win32_StopMIDIPlayback(MIDIDevice);
+        Win32StopMIDIPlayback(MIDIDevice);
     
     DWORD dwReturn;
     MCI_PLAY_PARMS mciPlayParms = {};

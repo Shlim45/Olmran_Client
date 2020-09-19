@@ -205,7 +205,7 @@ global_variable game_state GameState;
 global_variable telnet_state Telnet;
 
 internal void Win32AppendText(const HWND GameOutput, const char *newText);
-internal uint32 win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
+internal uint32 Win32WriteToSocket(SOCKET s, char *buf, int bufLen, int flags);
 internal void Win32UpdateVitals(HWND Window);
 internal void Win32UpdatePlayerInfo(HWND Window);
 internal void Win32UpdateCompass(HWND Window);

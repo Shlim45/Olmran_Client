@@ -13,7 +13,7 @@ HandleMacroString(char *MacroString)
     {
         if (MacroString[Index] == '&' || Index == 255)
         {
-            win32_WriteStringToSocket(Socket.sock, GameState.GameInput, Command);
+            Win32WriteStringToSocket(Socket.sock, GameState.GameInput, Command);
             
             memset(Command, 0, 256);
             CommandIndex = 0;

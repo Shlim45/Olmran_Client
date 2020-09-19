@@ -58,7 +58,7 @@ sendGMCP()
     msg[Pos++]=static_cast<char>(255);
     msg[Pos++]=static_cast<char>(240);
     
-    win32_WriteToSocket(Socket.sock, msg, Pos, 0);
+    Win32WriteToSocket(Socket.sock, msg, Pos, 0);
     memset(GameState.GMCP.BufferOut, 0, GameState.GMCP.BufferSize);
 }
 

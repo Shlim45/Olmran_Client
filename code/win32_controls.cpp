@@ -136,28 +136,28 @@ Win32HandlePlayMusic()
     UINT MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK1, MF_BYCOMMAND);
     if (MusicFile & MF_CHECKED)
     {
-        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
+        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
         return;
     }
     
     MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK2, MF_BYCOMMAND);
     if (MusicFile & MF_CHECKED)
     {
-        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
+        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
         return;
     }
     
     MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK3, MF_BYCOMMAND);
     if (MusicFile & MF_CHECKED)
     {
-        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
+        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
         return;
     }
     
     MusicFile = GetMenuState(hSubMenuMusic, IDM_MUSIC_DARK4, MF_BYCOMMAND);
     if (MusicFile & MF_CHECKED)
     {
-        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
+        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
     }
 }
 
@@ -171,9 +171,6 @@ Win32LoadAssets()
                                                             0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
     GameState.Display.ControlSpritesBitmap = (HBITMAP) LoadImageA(NULL, "images/control_sprites.BMP", IMAGE_BITMAP, 
                                                                   0, 0, LR_LOADFROMFILE| LR_DEFAULTSIZE);
-    
-    //GameState.Display.OlmranIcon = (HICON) LoadImageA(NULL, "images/olmran.ico", IMAGE_ICON,
-    //0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
     
     return (GameState.Display.Bitmap && 
             GameState.Display.PortraitBitmap && 
@@ -602,7 +599,7 @@ Win32HandlePlayerLogoff()
     ShowWindow(GameState.Display.ActionTimer, SW_HIDE);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
-    win32_StopMIDIPlayback(GameState.MIDIDevice);
+    Win32StopMIDIPlayback(GameState.MIDIDevice);
 }
 
 internal void 
@@ -672,7 +669,7 @@ internal HWND
 CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
 {
     HWND hwndInput = CreateWindowExA(
-                                     0, TEXT("EDIT"),   // predefined class 
+                                     0, "EDIT",   // predefined class 
                                      NULL,         // no window title 
                                      WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT, 
                                      0, 0, 0, 0,   // set size in WM_SIZE message 

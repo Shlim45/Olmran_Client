@@ -1,5 +1,5 @@
 internal uint32
-win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
+Win32WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
 {
     uint32 iResult;
     iResult = send( s, buf, bufLen, flags );
@@ -14,7 +14,7 @@ win32_WriteToSocket(SOCKET s, char *buf, int bufLen, int flags)
 }
 
 internal uint32
-win32_SendInputThroughSocket(SOCKET s, game_state gState)
+Win32SendInputThroughSocket(SOCKET s, game_state gState)
 {
     int inputLength = GetWindowTextA(                                   // returns length (not including \0)
                                      gState.GameInput.Window,                  // A handle to the edit control.
@@ -38,7 +38,7 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
     }
     
     uint32 iResult;
-    iResult = win32_WriteToSocket( s, gState.GameInput.Buffer, inputLength, 0 );
+    iResult = Win32WriteToSocket( s, gState.GameInput.Buffer, inputLength, 0 );
     
     memset(gState.GameInput.Buffer, 0, gState.GameInput.BufferLength);
     
@@ -46,7 +46,7 @@ win32_SendInputThroughSocket(SOCKET s, game_state gState)
 }
 
 internal uint32
-win32_WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
+Win32WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
 {
     uint32 iResult;
     uint16 inputLength = (uint16) strlen(str);
@@ -59,7 +59,7 @@ win32_WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
         ++inputLength;
     }
     
-    iResult = win32_WriteToSocket( s, GameInput.Buffer, inputLength, 0 );
+    iResult = Win32WriteToSocket( s, GameInput.Buffer, inputLength, 0 );
     
     memset(GameInput.Buffer, 0, GameInput.BufferLength);
     
@@ -67,7 +67,7 @@ win32_WriteStringToSocket(SOCKET s, game_buffer GameInput, char *str)
 }
 
 internal void 
-win32_CloseSocket()
+Win32CloseSocket()
 {
     closesocket(Socket.sock);
     WSACleanup();
@@ -75,7 +75,7 @@ win32_CloseSocket()
 }
 
 internal int64 
-win32_InitAndConnectSocket()
+Win32InitAndConnectSocket()
 {
     // Initialize WinSock
     WSAData data;
@@ -106,7 +106,7 @@ win32_InitAndConnectSocket()
     {
         OutputDebugStringA("Can't connect to server, Err #\n");
         
-        win32_CloseSocket();
+        Win32CloseSocket();
         return SOCKET_ERROR;
     }
     

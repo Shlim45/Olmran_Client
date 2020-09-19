@@ -95,10 +95,10 @@ Win32MacroWindowCallback(HWND   Window,
 }
 
 LRESULT CALLBACK
-win32_MainWindowCallback(HWND   Window,
-                         UINT   Message,
-                         WPARAM WParam,
-                         LPARAM LParam)
+Win32MainWindowCallback(HWND   Window,
+                        UINT   Message,
+                        WPARAM WParam,
+                        LPARAM LParam)
 {
     LRESULT Result = 0;
     HWND GameOutput = {};
@@ -134,30 +134,30 @@ win32_MainWindowCallback(HWND   Window,
             GameState.GameInput.Window = GameInput;
             
             // Create Static Control for Health Bars / Portrait / Player Info Background Image
-            GameControl = CreateWindowExA(0, TEXT("STATIC"), NULL,
+            GameControl = CreateWindowExA(0, "STATIC", NULL,
                                           WS_VISIBLE | WS_CHILD | SS_EDITCONTROL | SS_CENTER,
                                           0, 0, 0, 0, Window, (HMENU)ID_CONTROLBACKGROUND, 
                                           (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE), NULL);
             
             if (GameControl)
             {
-                Vitals = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                Vitals = CreateWindowExA(0, "STATIC", NULL, WS_CHILD | SS_BITMAP,
                                          10, 8, 61, 112, GameControl, (HMENU)ID_CONTROLVITALS, 
                                          (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                Portrait = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                Portrait = CreateWindowExA(0, "STATIC", NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
                                            89, 9, 111, 126, GameControl, (HMENU)ID_CONTROLPORTRAIT, 
                                            (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                PlayerInfo = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
+                PlayerInfo = CreateWindowExA(0, "STATIC", NULL, WS_VISIBLE | WS_CHILD | SS_BITMAP,
                                              174, 14, 106, 126, GameControl, (HMENU)ID_CONTROLPLAYER, 
                                              (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                Compass = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                Compass = CreateWindowExA(0, "STATIC", NULL, WS_CHILD | SS_BITMAP,
                                           108, 115, 330, 21, GameControl, (HMENU)ID_CONTROLCOMPASS, 
                                           (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
-                ActionTimer = CreateWindowExA(0, TEXT("STATIC"), NULL, WS_CHILD | SS_BITMAP,
+                ActionTimer = CreateWindowExA(0, "STATIC", NULL, WS_CHILD | SS_BITMAP,
                                               305, 91, 9, 46, GameControl, (HMENU)ID_CONTROLTIMER, 
                                               (HINSTANCE) GetWindowLongPtr(GameControl, GWLP_HINSTANCE), NULL);
                 
@@ -297,7 +297,7 @@ win32_MainWindowCallback(HWND   Window,
                         GameState.User.Account.Flags &= ~FLAG_MUSIC;
                         CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_UNCHECKED); 
                         
-                        win32_StopMIDIPlayback(GameState.MIDIDevice);
+                        Win32StopMIDIPlayback(GameState.MIDIDevice);
                     } else 
                     {
                         GameState.User.Account.Flags |= FLAG_MUSIC;
@@ -344,7 +344,7 @@ win32_MainWindowCallback(HWND   Window,
                     
                     UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
                     if (Play == MF_CHECKED)
-                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
+                        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark1.mid");
                     
                 } break;
                 
@@ -355,7 +355,7 @@ win32_MainWindowCallback(HWND   Window,
                     
                     UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
                     if (Play == MF_CHECKED)
-                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
+                        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark2.mid");
                     
                 } break;
                 
@@ -366,7 +366,7 @@ win32_MainWindowCallback(HWND   Window,
                     
                     UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
                     if (Play == MF_CHECKED)
-                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
+                        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark3.mid");
                     
                 } break;
                 
@@ -377,7 +377,7 @@ win32_MainWindowCallback(HWND   Window,
                     
                     UINT Play = GetMenuState(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_BYCOMMAND); 
                     if (Play == MF_CHECKED)
-                        win32_PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
+                        Win32PlayMIDIFile(GameState.MIDIDevice, GameState.Window, "audio/dark4.mid");
                     
                 } break;
                 
@@ -466,27 +466,27 @@ Win32HandleKeyboardInput(MSG *Message)
             // TODO(jon):  no numpad/numlock option
             if (VKCode == VK_NUMPAD0 || (!Numlock && VKCode == VK_INSERT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "look");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, "look");
             }
             else if (VKCode == VK_NUMPAD1 || (!Numlock && VKCode == VK_END))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak southwest" : "southwest");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak southwest" : "southwest");
             }
             else if (VKCode == VK_NUMPAD2 || (!Numlock && VKCode == VK_DOWN))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak south" : "south");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak south" : "south");
             }
             else if (VKCode == VK_NUMPAD3 || (!Numlock && VKCode == VK_NEXT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak southeast" : "southeast");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak southeast" : "southeast");
             }
             else if (VKCode == VK_NUMPAD4 || (!Numlock && VKCode == VK_LEFT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak west" : "west");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak west" : "west");
             }
             else if (VKCode == VK_NUMPAD5 || (!Numlock && VKCode == VK_CLEAR))
             {
@@ -498,46 +498,46 @@ Win32HandleKeyboardInput(MSG *Message)
             }
             else if (VKCode == VK_NUMPAD6 || (!Numlock && VKCode == VK_RIGHT))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak east" : "east");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak east" : "east");
             }
             else if (VKCode == VK_NUMPAD7 || (!Numlock && VKCode == VK_HOME))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak northwest" : "northwest");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak northwest" : "northwest");
             }
             else if (VKCode == VK_NUMPAD8 || (!Numlock && VKCode == VK_UP))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak north" : "north");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak north" : "north");
             }
             else if (VKCode == VK_NUMPAD9 || (!Numlock && VKCode == VK_PRIOR))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak northeast" : "northeast");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak northeast" : "northeast");
             }
             else if (VKCode == VK_ADD)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak down" : "down");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak down" : "down");
             }
             else if (VKCode == VK_SUBTRACT)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak up" : "up");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak up" : "up");
             }
             else if (VKCode == VK_MULTIPLY)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, 
-                                          GameState.AutoSneak ? "sneak genportal" : "go genportal");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, 
+                                         GameState.AutoSneak ? "sneak genportal" : "go genportal");
             }
             else if (VKCode == VK_DIVIDE)
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "open genportal");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, "open genportal");
             }
             else if (VKCode == VK_DECIMAL || (!Numlock && VKCode == VK_DELETE))
             {
-                win32_WriteStringToSocket(Socket.sock, GameState.GameInput, "hide");
+                Win32WriteStringToSocket(Socket.sock, GameState.GameInput, "hide");
             }
             else if (VKCode == VK_UP)
             {
@@ -559,7 +559,7 @@ Win32HandleKeyboardInput(MSG *Message)
                 if (inputLength > 0)
                 {
                     UpdateCommandHistory();
-                    win32_SendInputThroughSocket(Socket.sock, GameState);
+                    Win32SendInputThroughSocket(Socket.sock, GameState);
                 }
             }
             else if (VKCode == VK_ESCAPE)
@@ -631,7 +631,7 @@ WinMain(
     WNDCLASSA WindowClass = {};
     // TODO(jon):  Check if any of this is needed.
     WindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
-    WindowClass.lpfnWndProc = win32_MainWindowCallback;
+    WindowClass.lpfnWndProc = Win32MainWindowCallback;
     WindowClass.hInstance = Instance;
     WindowClass.hIcon = (HICON) LoadImageA(NULL, "images/olmran.ico", IMAGE_ICON,
                                            0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
@@ -642,19 +642,19 @@ WinMain(
     if(RegisterClass(&WindowClass))
     {
         HWND WindowHandle =
-            CreateWindowEx(
-                           0,
-                           WindowClass.lpszClassName,
-                           "Olmran Client",
-                           WS_OVERLAPPEDWINDOW|WS_SIZEBOX|WS_VISIBLE,
-                           CW_USEDEFAULT,
-                           CW_USEDEFAULT,
-                           CW_USEDEFAULT,
-                           CW_USEDEFAULT,
-                           0,
-                           0,
-                           Instance,
-                           0);
+            CreateWindowExA(
+                            0,
+                            WindowClass.lpszClassName,
+                            "Olmran Client",
+                            WS_OVERLAPPEDWINDOW|WS_SIZEBOX|WS_VISIBLE,
+                            CW_USEDEFAULT,
+                            CW_USEDEFAULT,
+                            CW_USEDEFAULT,
+                            CW_USEDEFAULT,
+                            0,
+                            0,
+                            Instance,
+                            0);
         
         if(WindowHandle)
         {
@@ -677,19 +677,19 @@ WinMain(
                 int yPos = (GetSystemMetrics(SM_CYSCREEN) - MacroHeight)/2;
                 
                 HWND MacroWindowHandle =
-                    CreateWindowEx(
-                                   0,
-                                   MacroWindowClass.lpszClassName,
-                                   "Macro Window",
-                                   WS_OVERLAPPEDWINDOW | WS_VSCROLL,
-                                   xPos,
-                                   yPos,
-                                   MacroWidth,
-                                   MacroHeight,
-                                   0,
-                                   0,
-                                   Instance,
-                                   0);
+                    CreateWindowExA(
+                                    0,
+                                    MacroWindowClass.lpszClassName,
+                                    "Macro Window",
+                                    WS_OVERLAPPEDWINDOW | WS_VSCROLL,
+                                    xPos,
+                                    yPos,
+                                    MacroWidth,
+                                    MacroHeight,
+                                    0,
+                                    0,
+                                    Instance,
+                                    0);
                 
                 if(MacroWindowHandle)
                 {
@@ -781,7 +781,7 @@ WinMain(
                 }
                 DWORD ThreadID;
                 HANDLE SocketListenThreadHandle;
-                if (win32_InitAndConnectSocket()==0)
+                if (Win32InitAndConnectSocket()==0)
                 {
                     OutputDebugStringA("Socket Connected\n");
                     
@@ -794,7 +794,7 @@ WinMain(
                 }
                 else
                 {
-                    Win32AppendText(GameState.GameOutput.Window, TEXT("Could not connect to server.\n"));
+                    Win32AppendText(GameState.GameOutput.Window, "Could not connect to server.\n");
                     OutputDebugStringA("Error in win32_InitAndConnectSocket()\n");
                     SocketListenThreadHandle = 0;
                 }
@@ -809,7 +809,7 @@ WinMain(
                 }
                 SaveUserSettings();
                 // NOTE(jon):  Is this necessary?  Windows might clean it up itself.
-                win32_CloseSocket();
+                Win32CloseSocket();
                 if (SocketListenThreadHandle) { CloseHandle(SocketListenThreadHandle); }
                 KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER);
             }

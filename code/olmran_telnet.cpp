@@ -10,7 +10,7 @@ TelnetSendResponse(char byte1, char byte2, char byte3)
     outResponse[1] = byte2;
     outResponse[2] = byte3;
     
-    win32_WriteToSocket(Socket.sock, outResponse, 3, 0);
+    Win32WriteToSocket(Socket.sock, outResponse, 3, 0);
 }
 
 internal void
