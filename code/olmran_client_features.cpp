@@ -67,7 +67,7 @@ GetMacroString(char *Macro, char *Buffer, uint16 BufferSize)
 }
 
 internal void
-HandleFunctionKey(uint32 VKCode)
+HandleFunctionKey(uint32 VKCode, bool32 ShiftKey)
 {
     if (!GameState.User.Player.LoggedIn)
         return;
@@ -80,62 +80,62 @@ HandleFunctionKey(uint32 VKCode)
     {
         case VK_F1:
         {
-            ValidMacro = GetMacroString("F1", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F1" : "F1", Macro, 256);
         } break;
         
         case VK_F2:
         {
-            ValidMacro = GetMacroString("F2", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F2" : "F2", Macro, 256);
         } break;
         
         case VK_F3:
         {
-            ValidMacro = GetMacroString("F3", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F3" : "F3", Macro, 256);
         } break;
         
         case VK_F4:
         {
-            ValidMacro = GetMacroString("F4", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F4" : "F4", Macro, 256);
         } break;
         
         case VK_F5:
         {
-            ValidMacro = GetMacroString("F5", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F5" : "F5", Macro, 256);
         } break;
         
         case VK_F6:
         {
-            ValidMacro = GetMacroString("F6", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F6" : "F6", Macro, 256);
         } break;
         
         case VK_F7:
         {
-            ValidMacro = GetMacroString("F7", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F7" : "F7", Macro, 256);
         } break;
         
         case VK_F8:
         {
-            ValidMacro = GetMacroString("F8", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F8" : "F8", Macro, 256);
         } break;
         
         case VK_F9:
         {
-            ValidMacro = GetMacroString("F9", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F9" : "F9", Macro, 256);
         } break;
         
         case VK_F10:
         {
-            ValidMacro = GetMacroString("F10", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F10" : "F10", Macro, 256);
         } break;
         
         case VK_F11:
         {
-            ValidMacro = GetMacroString("F11", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F11" : "F11", Macro, 256);
         } break;
         
         case VK_F12:
         {
-            ValidMacro = GetMacroString("F12", Macro, 256);
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+F12" : "F12", Macro, 256);
         } break;
     }
     

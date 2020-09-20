@@ -448,6 +448,9 @@ Win32HandleKeyboardInput(MSG *Message)
     bool32 WasDown = ((Message->lParam & (1 << 30)) != 0);
     bool32 IsDown = ((Message->lParam & (1 << 31)) == 0);
     bool32 Numlock = (GetKeyState(VK_NUMLOCK) & 1)!=0;
+    bool32 AltKeyWasDown = ((Message->lParam & (1 << 29)) != 0);
+    bool32 ShiftKeyWasDown = (GetKeyState(VK_SHIFT) & 0x8000)!=0;
+    bool32 CtrlKeyWasDown = (GetKeyState(VK_CONTROL) & 0x8000)!=0;
     
     // TODO(jon):  Numlock should not be the toggle for handling keyboards
     // without a numpad.  Should be a config option, but is a bandaid for now.
@@ -459,7 +462,6 @@ Win32HandleKeyboardInput(MSG *Message)
     }
     else if (WasDown != IsDown)
     {
-        bool32 AltKeyWasDown = ((Message->lParam & (1 << 29)) != 0);
         if ((VKCode == VK_F4) && AltKeyWasDown)
         {
             SendMessageA(GameState.Window, WM_CLOSE, 0, 0);
@@ -575,7 +577,7 @@ Win32HandleKeyboardInput(MSG *Message)
             }
             else if (VKCode >= VK_F1 && VKCode <= VK_F24)
             {
-                HandleFunctionKey(VKCode);
+                HandleFunctionKey(VKCode, ShiftKeyWasDown);
             }
             else
             {
@@ -585,7 +587,7 @@ Win32HandleKeyboardInput(MSG *Message)
         }
         else if (Message->message == WM_SYSKEYDOWN && !AltKeyWasDown && VKCode == VK_F10)
         {
-            HandleFunctionKey(VKCode);
+            HandleFunctionKey(VKCode, ShiftKeyWasDown);
         }
         else
         {

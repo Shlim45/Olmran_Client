@@ -148,9 +148,9 @@ InitializeGameMemory(game_state *State, game_memory *GameMemory)
     
     State->CommandHistory.CurrentSize = 512;
     
-    State->Macros.NumberOfMacros = 12;
+    State->Macros.NumberOfMacros = MAX_MACROS;
     State->Macros.MacroSize = 256;
-    State->Macros.BufferSize = (12 * State->Macros.MacroSize);
+    State->Macros.BufferSize = (MAX_MACROS * State->Macros.MacroSize);
     
     State->GMCP.BufferSize = 1024;
     

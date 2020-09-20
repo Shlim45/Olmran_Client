@@ -87,21 +87,33 @@ extern "C" {
 #define ID_CONTROLCOMPASS    106
 #define ID_CONTROLTIMER      107
     
-#define IDC_MACRO_F1         200
-#define IDC_MACRO_F2         201
-#define IDC_MACRO_F3         202
-#define IDC_MACRO_F4         203
-#define IDC_MACRO_F5         204
-#define IDC_MACRO_F6         205
-#define IDC_MACRO_F7         206
-#define IDC_MACRO_F8         207
-#define IDC_MACRO_F9         208
-#define IDC_MACRO_F10        209
-#define IDC_MACRO_F11        210
-#define IDC_MACRO_F12        211
+#define IDC_MACRO_F1         2000
+#define IDC_MACRO_F2         2001
+#define IDC_MACRO_F3         2002
+#define IDC_MACRO_F4         2003
+#define IDC_MACRO_F5         2004
+#define IDC_MACRO_F6         2005
+#define IDC_MACRO_F7         2006
+#define IDC_MACRO_F8         2007
+#define IDC_MACRO_F9         2008
+#define IDC_MACRO_F10        2009
+#define IDC_MACRO_F11        2010
+#define IDC_MACRO_F12        2011
+#define IDC_MACRO_SHIFT_F1   2012
+#define IDC_MACRO_SHIFT_F2   2013
+#define IDC_MACRO_SHIFT_F3   2014
+#define IDC_MACRO_SHIFT_F4   2015
+#define IDC_MACRO_SHIFT_F5   2016
+#define IDC_MACRO_SHIFT_F6   2017
+#define IDC_MACRO_SHIFT_F7   2018
+#define IDC_MACRO_SHIFT_F8   2019
+#define IDC_MACRO_SHIFT_F9   2020
+#define IDC_MACRO_SHIFT_F10  2021
+#define IDC_MACRO_SHIFT_F11  2022
+#define IDC_MACRO_SHIFT_F12  2023
     
-#define IDC_MACRO_SAVE       220
-#define IDC_MACRO_CANCEL     221
+#define IDC_MACRO_SAVE       2254
+#define IDC_MACRO_CANCEL     2255
     
 #define ID_ACTIONTIMER       255
     
@@ -144,7 +156,7 @@ extern "C" {
     
     
     const uint8 SETTINGS_COUNT = 5;
-    const uint8 MAX_MACROS = 12;
+    const uint8 MAX_MACROS = 24;
     
     char *MacroLabels[] = 
     {
@@ -160,6 +172,18 @@ extern "C" {
         "F10",
         "F11",
         "F12",
+        "Shift+F1",
+        "Shift+F2",
+        "Shift+F3",
+        "Shift+F4",
+        "Shift+F5",
+        "Shift+F6",
+        "Shift+F7",
+        "Shift+F8",
+        "Shift+F9",
+        "Shift+F10",
+        "Shift+F11",
+        "Shift+F12",
     };
     
     uint16 MacroIDs[] = 
@@ -175,7 +199,19 @@ extern "C" {
         IDC_MACRO_F9,
         IDC_MACRO_F10,
         IDC_MACRO_F11,
-        IDC_MACRO_F12
+        IDC_MACRO_F12,
+        IDC_MACRO_SHIFT_F1,
+        IDC_MACRO_SHIFT_F2,
+        IDC_MACRO_SHIFT_F3,
+        IDC_MACRO_SHIFT_F4,
+        IDC_MACRO_SHIFT_F5,
+        IDC_MACRO_SHIFT_F6,
+        IDC_MACRO_SHIFT_F7,
+        IDC_MACRO_SHIFT_F8,
+        IDC_MACRO_SHIFT_F9,
+        IDC_MACRO_SHIFT_F10,
+        IDC_MACRO_SHIFT_F11,
+        IDC_MACRO_SHIFT_F12,
     };
     
     
