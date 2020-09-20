@@ -671,12 +671,14 @@ CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
     HWND hwndInput = CreateWindowExA(
                                      0, "EDIT",   // predefined class 
                                      NULL,         // no window title 
-                                     WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT, 
+                                     WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | ES_LEFT | ES_AUTOHSCROLL, 
                                      0, 0, 0, 0,   // set size in WM_SIZE message 
                                      hwndOwner,         // parent window 
                                      controlId,   // edit control ID 
                                      hinst, 
                                      NULL);        // pointer not needed 
+    
+    SendMessageA(hwndInput, EM_LIMITTEXT, 254, 0);
     
     return hwndInput;
 }
