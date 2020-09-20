@@ -51,8 +51,8 @@ Win32CreateMacroWindow(HWND Window)
         PosY += 40;
     }
     
-    hCtl=CreateWindowA("button","Save",dwStyle,245,PosY,120,30,Window,(HMENU)IDC_MACRO_SAVE,hIns,0);
-    hCtl=CreateWindowA("button","Cancel",dwStyle,380,PosY,120,30,Window,(HMENU)IDC_MACRO_CANCEL,hIns,0);
+    hCtl=CreateWindowA("button","Save",dwStyle|BS_DEFPUSHBUTTON,245,PosY,120,30,Window,(HMENU)IDC_MACRO_SAVE,hIns,0);
+    hCtl=CreateWindowA("button","Cancel",dwStyle|BS_PUSHBUTTON,380,PosY,120,30,Window,(HMENU)IDCANCEL,hIns,0);
     
     SetWindowTextA(Window,"Macros");
     SetFocus(GetDlgItem(Window,IDC_MACRO_F1));

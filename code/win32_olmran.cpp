@@ -66,7 +66,7 @@ Win32MacroWindowCallback(HWND   Window,
                     ShowWindow(Window, SW_HIDE);
                 } break;
                 
-                case IDC_MACRO_CANCEL:
+                case IDCANCEL:
                 {
                     ShowWindow(Window, SW_HIDE);
                 } break;
@@ -84,6 +84,9 @@ Win32MacroWindowCallback(HWND   Window,
         {
             ShowWindow(Window, SW_HIDE);
         } break;
+        
+        case DM_GETDEFID: break;
+        case DM_SETDEFID: break;
         
         default:
         {
@@ -172,6 +175,9 @@ Win32MainWindowCallback(HWND   Window,
             
             if (!Win32LoadAssets())
                 Win32AppendText(GameState.GameOutput.Window, "Failed to load asset(s).\n");
+            
+            
+            SetFocus(GameState.GameInput.Window);
             
         } break;
         
@@ -595,25 +601,32 @@ Win32ProcessPendingMessages()
     MSG Message;
     while (PeekMessageA(&Message, nullptr, 0, 0, PM_REMOVE))
     {
-        switch(Message.message)
+        if (IsDialogMessage(GameState.SubWindows.Macros, &Message)) 
         {
-            case WM_QUIT:
+            /* Already handled by dialog manager */
+        } 
+        else
+        {
+            switch(Message.message)
             {
-                GlobalRunning = false;
-            } break;
-            
-            case WM_SYSKEYDOWN:
-            case WM_SYSKEYUP:
-            case WM_KEYDOWN:
-            case WM_KEYUP:
-            {
-                Win32HandleKeyboardInput(&Message);
-            } break;
-            
-            default:
-            {
-                TranslateMessage(&Message);
-                DispatchMessageA(&Message);
+                case WM_QUIT:
+                {
+                    GlobalRunning = false;
+                } break;
+                
+                case WM_SYSKEYDOWN:
+                case WM_SYSKEYUP:
+                case WM_KEYDOWN:
+                case WM_KEYUP:
+                {
+                    Win32HandleKeyboardInput(&Message);
+                } break;
+                
+                default:
+                {
+                    TranslateMessage(&Message);
+                    DispatchMessageA(&Message);
+                }
             }
         }
     }
