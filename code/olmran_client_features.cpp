@@ -151,6 +151,8 @@ SetConfigSetting(char *Setting, bool32 Value)
         Flag = FLAG_ECHO;
     else if (strcmp("PERSIST", Setting) == 0)
         Flag = FLAG_PERSIST;
+    else if (strcmp("CHAT", Setting) == 0)
+        Flag = FLAG_CHAT;
     else if (strcmp("MUSIC", Setting) == 0)
         Flag = FLAG_MUSIC;
     else if (strcmp("LOOP", Setting) == 0)
@@ -401,6 +403,12 @@ SaveConfigSettings(char *Buffer, uint32 BufferSize)
     
     strcat_s(Buffer, BufferSize, "PERSIST=");
     if (GameState.User.Account.Flags & FLAG_PERSIST)
+        strcat_s(Buffer, BufferSize, "Y\n");
+    else
+        strcat_s(Buffer, BufferSize, "N\n");
+    
+    strcat_s(Buffer, BufferSize, "CHAT=");
+    if (GameState.User.Account.Flags & FLAG_CHAT)
         strcat_s(Buffer, BufferSize, "Y\n");
     else
         strcat_s(Buffer, BufferSize, "N\n");

@@ -80,12 +80,14 @@ extern "C" {
     
 #define ID_EDITCHILD         100
 #define ID_INPUTCHILD        101
-#define ID_CONTROLBACKGROUND 102
-#define ID_CONTROLVITALS     103
-#define ID_CONTROLPORTRAIT   104
-#define ID_CONTROLPLAYER     105
-#define ID_CONTROLCOMPASS    106
-#define ID_CONTROLTIMER      107
+#define ID_CHATCHILD         102
+    
+#define ID_CONTROLBACKGROUND 200
+#define ID_CONTROLVITALS     201
+#define ID_CONTROLPORTRAIT   202
+#define ID_CONTROLPLAYER     203
+#define ID_CONTROLCOMPASS    204
+#define ID_CONTROLTIMER      205
     
 #define IDC_MACRO_F1         2000
 #define IDC_MACRO_F2         2001
@@ -121,6 +123,7 @@ extern "C" {
     
 #define IDM_EDIT_ECHO    10
 #define IDM_EDIT_PERSIST 11
+#define IDM_EDIT_CHAT    12
     
 #define IDM_MUSIC_ENABLED 20  
 #define IDM_MUSIC_LOOP    21
@@ -153,6 +156,7 @@ extern "C" {
 #define FLAG_MUSIC   (1 << 3)
 #define FLAG_LOOP    (1 << 4)
 #define FLAG_SHUFFLE (1 << 5)
+#define FLAG_CHAT    (1 << 6)
     
     
     const uint8 SETTINGS_COUNT = 5;

@@ -72,20 +72,85 @@ Win32MacroWindowCallback(HWND   Window,
     return Result;
 }
 
+internal void
+Win32HandleGameResize(uint16 NewWidth, uint16 NewHeight)
+{
+    bool32 ChatWindow = (GameState.User.Account.Flags & FLAG_CHAT);
+    uint16 ChatHeight = 150;
+    // Make the control the size of the window's client 
+    MoveWindow(GameState.GameOutput.Window, 
+               5, 5 + (ChatWindow ? ChatHeight : 0), // starting x- and y-coordinates 
+               NewWidth-10,     // width of client area 
+               NewHeight-(190 + (ChatWindow ? ChatHeight : 0)),    // height of client area 
+               TRUE);                 // repaint window 
+    
+    MoveWindow(GameState.GameChat.Window, 
+               5, 5,                  // starting x- and y-coordinates 
+               NewWidth-10,     // width of client area 
+               ChatHeight,                   // height of client area 
+               TRUE);                 // repaint window 
+    
+    MoveWindow(GameState.GameInput.Window, 
+               5, NewHeight-180,
+               NewWidth-10,
+               20,
+               TRUE);
+    
+    MoveWindow(GameState.Display.Control,
+               5, NewHeight-150,
+               450,
+               143,
+               TRUE);
+    
+    MoveWindow(GameState.Display.Vitals,
+               10, 8,                  // starting x- and y-coordinates 
+               61,                     // width of client area 
+               112,                    // height of client area 
+               TRUE);                  // repaint window 
+    
+    MoveWindow(GameState.Display.Portrait,
+               89, 9,                  // starting x- and y-coordinates 
+               111,                    // width of client area 
+               126,                    // height of client area 
+               TRUE);                  // repaint window 
+    
+    MoveWindow(GameState.Display.PlayerInfo,
+               174, 14,                // starting x- and y-coordinates 
+               106,                    // width of client area 
+               126,                    // height of client area 
+               TRUE);                  // repaint window 
+    
+    MoveWindow(GameState.Display.Compass,
+               330, 21,                // starting x- and y-coordinates 
+               108,                    // width of client area 
+               115,                    // height of client area 
+               TRUE);                  // repaint window 
+    
+    MoveWindow(GameState.Display.ActionTimer,
+               305, 91,                // starting x- and y-coordinates 
+               9,                      // width of client area 
+               46,                     // height of client area 
+               TRUE);                  // repaint window 
+    
+    SetFocus(GameState.GameInput.Window);
+}
+
 LRESULT CALLBACK
 Win32MainWindowCallback(HWND   Window,
                         UINT   Message,
                         WPARAM WParam,
                         LPARAM LParam)
 {
-    LRESULT Result = 0;
-    HWND GameOutput = {};
-    HWND GameInput = {};
+    LRESULT Result   = 0;
+    
+    HWND GameOutput  = {};
+    HWND GameInput   = {};
+    HWND GameChat    = {};
     HWND GameControl = {};
-    HWND Vitals = {};
-    HWND Portrait = {};
-    HWND PlayerInfo = {};
-    HWND Compass = {};
+    HWND Vitals      = {};
+    HWND Portrait    = {};
+    HWND PlayerInfo  = {};
+    HWND Compass     = {};
     HWND ActionTimer = {};
     
     local_persist HMENU hMenu;         // handle to main menu 
@@ -104,6 +169,12 @@ Win32MainWindowCallback(HWND   Window,
                                           (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
             GameState.GameOutput = {};
             GameState.GameOutput.Window = GameOutput;
+            
+            // Create Game Chat
+            GameChat = CreateGameOutput(Window, 0, 0, 0, 0, (HMENU) ID_CHATCHILD,
+                                        (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE));
+            GameState.GameChat = {};
+            GameState.GameChat.Window = GameChat;
             
             // Create Input Control
             GameInput = CreateGameInput(Window, (HMENU) ID_INPUTCHILD, 
@@ -151,7 +222,6 @@ Win32MainWindowCallback(HWND   Window,
             if (!Win32LoadAssets())
                 Win32AppendText(GameState.GameOutput.Window, "Failed to load asset(s).\n");
             
-            
             SetFocus(GameState.GameInput.Window);
             
         } break;
@@ -174,57 +244,7 @@ Win32MainWindowCallback(HWND   Window,
         
         case WM_SIZE:
         {
-            // Make the control the size of the window's client 
-            MoveWindow(GameState.GameOutput.Window, 
-                       5, 5,                  // starting x- and y-coordinates 
-                       LOWORD(LParam)-10,     // width of client area 
-                       HIWORD(LParam)-190,     // height of client area 
-                       TRUE);                 // repaint window 
-            
-            MoveWindow(GameState.GameInput.Window, 
-                       5, HIWORD(LParam)-180,
-                       LOWORD(LParam)-10,
-                       20,
-                       TRUE);
-            
-            MoveWindow(GameState.Display.Control,
-                       5, HIWORD(LParam)-150,
-                       450,
-                       143,
-                       TRUE);
-            
-            MoveWindow(GameState.Display.Vitals,
-                       10, 8,                  // starting x- and y-coordinates 
-                       61,                     // width of client area 
-                       112,                    // height of client area 
-                       TRUE);                  // repaint window 
-            
-            MoveWindow(GameState.Display.Portrait,
-                       89, 9,                  // starting x- and y-coordinates 
-                       111,                    // width of client area 
-                       126,                    // height of client area 
-                       TRUE);                  // repaint window 
-            
-            MoveWindow(GameState.Display.PlayerInfo,
-                       174, 14,                // starting x- and y-coordinates 
-                       106,                    // width of client area 
-                       126,                    // height of client area 
-                       TRUE);                  // repaint window 
-            
-            MoveWindow(GameState.Display.Compass,
-                       330, 21,                // starting x- and y-coordinates 
-                       108,                    // width of client area 
-                       115,                    // height of client area 
-                       TRUE);                  // repaint window 
-            
-            MoveWindow(GameState.Display.ActionTimer,
-                       305, 91,                // starting x- and y-coordinates 
-                       9,                      // width of client area 
-                       46,                     // height of client area 
-                       TRUE);                  // repaint window 
-            
-            
-            SetFocus(GameState.GameInput.Window);
+            Win32HandleGameResize(LOWORD(LParam), HIWORD(LParam));
         } break;
         
         case WM_COMMAND:
@@ -266,6 +286,23 @@ Win32MainWindowCallback(HWND   Window,
                     {
                         GameState.User.Account.Flags |= FLAG_PERSIST;
                         CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_CHECKED);  
+                    }
+                } break;
+                
+                case IDM_EDIT_CHAT:
+                {
+                    UINT state = GetMenuState(hMenu, IDM_EDIT_CHAT, MF_BYCOMMAND); 
+                    
+                    if (state == MF_CHECKED) 
+                    {
+                        ShowWindow(GameState.GameChat.Window, SW_HIDE);
+                        GameState.User.Account.Flags &= ~FLAG_CHAT;
+                        CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_UNCHECKED);  
+                    } else 
+                    {
+                        ShowWindow(GameState.GameChat.Window, SW_SHOW);
+                        GameState.User.Account.Flags |= FLAG_CHAT;
+                        CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_CHECKED);  
                     }
                 } break;
                 

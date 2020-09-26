@@ -83,6 +83,7 @@ Win32AddMenus(HWND Window) {
     
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_ECHO, "&Local Echo");
     AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_PERSIST, "&Persist Command");
+    AppendMenuA(hMenuEdit, MF_STRING, IDM_EDIT_CHAT, "&Chat Window");
     AppendMenuA(hMenuEdit, MF_SEPARATOR, 0, NULL);
     
     // Edit->Music
@@ -119,6 +120,8 @@ Win32UpdateMenus()
         CheckMenuItem(hMenu, IDM_EDIT_ECHO, MF_CHECKED);  
     if (GameState.User.Account.Flags & FLAG_PERSIST)
         CheckMenuItem(hMenu, IDM_EDIT_PERSIST, MF_CHECKED);
+    if (GameState.User.Account.Flags & FLAG_CHAT)
+        CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_CHECKED);
     if (GameState.User.Account.Flags & FLAG_MUSIC)
         CheckMenuItem(hSubMenuMusic, IDM_MUSIC_ENABLED, MF_CHECKED);
     if (GameState.User.Account.Flags & FLAG_LOOP)
@@ -577,6 +580,10 @@ Win32HandlePlayerLogin()
     ShowWindow(GameState.Display.Vitals, SW_SHOW);
     ShowWindow(GameState.Display.Compass, SW_SHOW);
     ShowWindow(GameState.Display.ActionTimer, SW_SHOW);
+    if ((GameState.User.Account.Flags & FLAG_CHAT))
+        ShowWindow(GameState.GameChat.Window, SW_SHOW);
+    else
+        ShowWindow(GameState.GameChat.Window, SW_HIDE);
     
     RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
     
@@ -637,6 +644,7 @@ Win32EchoCommand(const HWND GameOutput, const char *Command)
     GameState.CurrentColor = C_RESET;
 }
 
+// TODO(jon):  Rename to CreateRichEdit()
 internal HWND
 CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
                  int x, int y,          // Location.
@@ -665,6 +673,7 @@ CreateGameOutput(HWND hwndOwner,        // Dialog box handle.
     return hwndOutput;
 }
 
+// TODO(jon):  Rename to CreateTextEdit()
 internal HWND
 CreateGameInput(HWND hwndOwner, HMENU controlId, HINSTANCE hinst)
 {

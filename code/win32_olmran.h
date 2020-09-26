@@ -153,14 +153,19 @@ struct macro_group
     user_macros Player;
 };
 
+struct game_chat
+{
+    HWND Window;
+};
+
 struct game_state
 {
     HWND Window;
     bool32 isInitialized;
     game_buffer GameOutput;
     game_buffer GameInput;
+    game_chat GameChat;
     user_input_history CommandHistory;
-    //user_macros GlobalMacros;
     macro_group Macros;
     gmcp_buffer GMCP;
     COLORREF CurrentColor;

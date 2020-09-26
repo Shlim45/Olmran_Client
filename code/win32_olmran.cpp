@@ -219,7 +219,7 @@ Win32ProcessPendingMessages()
 }
 
 internal void
-ShutdownClient(HANDLE *SocketListenThreadHandle)
+ShutdownClient(HANDLE SocketListenThreadHandle)
 {
     SaveUserSettings();
     Win32StopMIDIPlayback(GameState.MIDIDevice);
@@ -339,13 +339,16 @@ WinMain(
                 LoadConfigSettings();
                 Win32UpdateMenus();
                 
+                if (!(GameState.User.Account.Flags & FLAG_CHAT))
+                    ShowWindow(GameState.GameChat.Window, SW_HIDE);
+                
                 GlobalRunning = true;
                 while (GlobalRunning)
                 {
                     Win32ProcessPendingMessages();
                 }
                 
-                ShutdownClient(&SocketListenThreadHandle);
+                ShutdownClient(SocketListenThreadHandle);
             }
             else
             {
