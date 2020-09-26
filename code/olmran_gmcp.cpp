@@ -1201,7 +1201,115 @@ GMCP In: room.info
             }
         }
     }
+    
+    else if (strcmp("comm.channel", command) == 0)
+    {
+        
+        jsmn_init(&parser);
+        
+        int Result = jsmn_parse(&parser, jsonObject, strlen(jsonObject), tokens, 128);
+        
+        if (Result > 0)
+        {
+            if (tokens[0].type == JSMN_OBJECT)
+            {
+                char Channel[32]  = {};
+                char Message[256] = {};
+                char Player[32]   = {};
+                
+                for (int Index = 1, Size = Result; Index < Size; Index+=2)
+                {
+                    if (tokens[Index].type != JSMN_STRING)
+                    {
+                        OutputDebugStringA("JSON Error:  Key not a string\n");
+                        continue;
+                    }
+                    
+                    int start = tokens[Index+1].start;
+                    int size = tokens[Index+1].end - start;
+                    if (jsoneq(jsonObject, &tokens[Index], "chan") == 0) 
+                    {
+                        memcpy( Channel, &jsonObject[start], size );
+                        
+                        // use the value
+                        OutputDebugStringA("Channel:   ");
+                        OutputDebugStringA(Channel);
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "msg") == 0) 
+                    {
+                        memcpy( Message, &jsonObject[start], size );
+                        
+                        // use the value
+                        OutputDebugStringA("Message:   ");
+                        OutputDebugStringA(Message);
+                    }
+                    else if (jsoneq(jsonObject, &tokens[Index], "player") == 0) 
+                    {
+                        memcpy( Player, &jsonObject[start], size );
+                        
+                        // use the value
+                        OutputDebugStringA("Player:    ");
+                        OutputDebugStringA(Player);
+                    }
+                    else
+                    {
+                        OutputDebugStringA("Unhandled key.\n");
+                    }
+                    
+                    // print the value for now
+                    OutputDebugStringA("\n");
+                    
+                    // clear the value
+                    //memset(Message, 0, 256);
+                }
+                
+                Win32HandleChatMessage(Channel, Player, Message);
+                
+                //Win32UpdatePlayerInfo(GameState.Display.PlayerInfo);
+                //RedrawWindow(GameState.Window, 0, 0, RDW_INVALIDATE);
+            }
+        }
+        else if (Result == JSMN_ERROR_INVAL)
+        {
+            OutputDebugStringA("bad token, JSON string is corrupted\n");
+        }
+        else if (Result == JSMN_ERROR_NOMEM)
+        {
+            // If you get JSMN_ERROR_NOMEM, you can re-allocate more tokens and call jsmn_parse once more.
+            OutputDebugStringA("not enough tokens, JSON string is too large\n");
+        }
+        else if (Result == JSMN_ERROR_PART)
+        {
+            /*
+            If you read json data from the stream, you can periodically call jsmn_parse and check if 
+                return value is JSMN_ERROR_PART. You will get this error until you reach the end of JSON data.
+                */
+            OutputDebugStringA("JSON string is too short, expecting more JSON data\n");
+        }
+        else
+        {
+            OutputDebugStringA("Failed to parse JSON\n");
+        }
+    }
 }
+
+/*
+GMCP In: comm.channel {"chan":"PLAN","msg":"[Plan] Karsus: 'hi'","player":"Karsus"}
+GMCP Command: comm.channel
+
+GMCP In: comm.channel {"chan":"tell","msg":"Karsus sends, \"hi\"","player":"Karsus"}
+GMCP Command: comm.channel
+
+GMCP In: comm.channel {"chan":"say","msg":"Karsus says 'hi'","player":"Karsus"}
+GMCP Command: comm.channel
+
+GMCP In: comm.channel {"chan":"GSEND","msg":"[Guild] Karsus: 'hello'","player":"Karsus"}
+GMCP Command: comm.channel
+
+GMCP In: comm.channel {"chan":"Party","msg":"[Party] Karsus: 'hello'","player":"Karsus"}
+GMCP Command: comm.channel
+
+*/
 
 internal void
 handle_gmcp(char *subData, int dataSize)
