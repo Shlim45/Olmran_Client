@@ -73,6 +73,23 @@ Win32MacroWindowCallback(HWND   Window,
 }
 
 internal void
+Win32ResizeGameOutput()
+{
+    RECT ClientRect = {};
+    if (GetClientRect(GameState.Window, &ClientRect))
+    {
+        bool32 ChatWindow = (GameState.User.Account.Flags & FLAG_CHAT);
+        uint16 ChatHeight = 150;
+        
+        MoveWindow(GameState.GameOutput.Window, 
+                   5, 5 + (ChatWindow ? ChatHeight : 0), // starting x- and y-coordinates 
+                   ClientRect.right-10,     // width of client area 
+                   ClientRect.bottom-(190 + (ChatWindow ? ChatHeight : 0)),    // height of client area 
+                   TRUE);                 // repaint window 
+    }
+}
+
+internal void
 Win32HandleGameResize(uint16 NewWidth, uint16 NewHeight)
 {
     bool32 ChatWindow = (GameState.User.Account.Flags & FLAG_CHAT);
@@ -295,13 +312,15 @@ Win32MainWindowCallback(HWND   Window,
                     
                     if (state == MF_CHECKED) 
                     {
-                        ShowWindow(GameState.GameChat.Window, SW_HIDE);
                         GameState.User.Account.Flags &= ~FLAG_CHAT;
-                        CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_UNCHECKED);  
+                        Win32ResizeGameOutput();
+                        ShowWindow(GameState.GameChat.Window, SW_HIDE);
+                        CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_UNCHECKED);
                     } else 
                     {
-                        ShowWindow(GameState.GameChat.Window, SW_SHOW);
                         GameState.User.Account.Flags |= FLAG_CHAT;
+                        Win32ResizeGameOutput();
+                        ShowWindow(GameState.GameChat.Window, SW_SHOW);
                         CheckMenuItem(hMenu, IDM_EDIT_CHAT, MF_CHECKED);  
                     }
                 } break;
