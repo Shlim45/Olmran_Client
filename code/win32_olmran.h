@@ -220,5 +220,5 @@ internal void Win32HandlePlayerLogoff();
 internal void Win32EchoCommand(const HWND GameOutput, const char *Command);
 internal void LoadPlayerMacros(char *PlayerName);
 internal void SavePlayerSettings(char *PlayerName);
-
+internal void Win32HandleChatMessage(const char *Channel, const char *Player, const char *Message);
 #endif //WIN32_OLMRAN_H

@@ -636,6 +636,35 @@ Win32AppendText(const HWND GameOutput, const char *newText)
 }
 
 internal void
+Win32HandleChatMessage(const char *Channel, const char *Player, const char *Message)
+{
+    if (strcmp(Channel, "PLAN") == 0)
+        GameState.CurrentColor = D_YELLOW;
+    else if (strcmp(Channel, "GSEND") == 0)
+        GameState.CurrentColor = D_CYAN;
+    else if (strcmp(Channel, "say") == 0)
+        GameState.CurrentColor = B_WHITE;
+    else if (strcmp(Channel, "Party") == 0)
+        GameState.CurrentColor = B_MAGENTA;
+    else if (strcmp(Channel, "tell") == 0)
+    {
+        GameState.CurrentColor = B_RED;
+        // convert \" to ' for consistancy, or change on the game server!
+    }
+    
+    Win32AppendText(GameState.GameChat.Window, Message);
+    Win32AppendText(GameState.GameChat.Window, "\n");
+    
+    if (!(GameState.User.Account.Flags & FLAG_CHAT))
+    {
+        Win32AppendText(GameState.GameOutput.Window, Message);
+        Win32AppendText(GameState.GameOutput.Window, "\n");
+    }
+    
+    GameState.CurrentColor = C_RESET;
+}
+
+internal void
 Win32EchoCommand(const HWND GameOutput, const char *Command)
 {
     GameState.CurrentColor = D_WHITE;
