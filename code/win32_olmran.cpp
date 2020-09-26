@@ -159,6 +159,12 @@ Win32HandleKeyboardInput(MSG *Message)
                 SetWindowTextA(GameState.GameInput.Window, "");
                 GameState.CommandHistory.CurrentPosition = -1;
             }
+            else if (CtrlKeyWasDown &&
+                     (VKCode != 'c' && VKCode != 'C' && VKCode != 'v' && VKCode != 'V') &&
+                     ((VKCode >= 'a' && VKCode <= 'z') || (VKCode >= 'A' && VKCode <= 'Z')))
+            {
+                HandleCtrlKey(VKCode, ShiftKeyWasDown);
+            }
             else if (VKCode >= VK_F1 && VKCode <= VK_F24)
             {
                 HandleFunctionKey(VKCode, ShiftKeyWasDown);

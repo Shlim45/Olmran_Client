@@ -113,6 +113,54 @@ extern "C" {
 #define IDC_MACRO_SHIFT_F10  2021
 #define IDC_MACRO_SHIFT_F11  2022
 #define IDC_MACRO_SHIFT_F12  2023
+#define IDC_MACRO_CTRL_A     2024
+#define IDC_MACRO_CTRL_B     2025
+#define IDC_MACRO_CTRL_D     2026
+#define IDC_MACRO_CTRL_E     2027
+#define IDC_MACRO_CTRL_F     2028
+#define IDC_MACRO_CTRL_G     2029
+#define IDC_MACRO_CTRL_H     2030
+#define IDC_MACRO_CTRL_I     2031
+#define IDC_MACRO_CTRL_J     2032
+#define IDC_MACRO_CTRL_K     2033
+#define IDC_MACRO_CTRL_L     2034
+#define IDC_MACRO_CTRL_M     2035
+#define IDC_MACRO_CTRL_N     2036
+#define IDC_MACRO_CTRL_O     2037
+#define IDC_MACRO_CTRL_P     2038
+#define IDC_MACRO_CTRL_Q     2039
+#define IDC_MACRO_CTRL_R     2040
+#define IDC_MACRO_CTRL_S     2041
+#define IDC_MACRO_CTRL_T     2042
+#define IDC_MACRO_CTRL_U     2043
+#define IDC_MACRO_CTRL_W     2044
+#define IDC_MACRO_CTRL_X     2045
+#define IDC_MACRO_CTRL_Y     2046
+#define IDC_MACRO_CTRL_Z     2047
+#define IDC_MACRO_SHIFT_CTRL_A     2048
+#define IDC_MACRO_SHIFT_CTRL_B     2049
+#define IDC_MACRO_SHIFT_CTRL_D     2050
+#define IDC_MACRO_SHIFT_CTRL_E     2051
+#define IDC_MACRO_SHIFT_CTRL_F     2052
+#define IDC_MACRO_SHIFT_CTRL_G     2053
+#define IDC_MACRO_SHIFT_CTRL_H     2054
+#define IDC_MACRO_SHIFT_CTRL_I     2055
+#define IDC_MACRO_SHIFT_CTRL_J     2056
+#define IDC_MACRO_SHIFT_CTRL_K     2057
+#define IDC_MACRO_SHIFT_CTRL_L     2058
+#define IDC_MACRO_SHIFT_CTRL_M     2059
+#define IDC_MACRO_SHIFT_CTRL_N     2060
+#define IDC_MACRO_SHIFT_CTRL_O     2061
+#define IDC_MACRO_SHIFT_CTRL_P     2062
+#define IDC_MACRO_SHIFT_CTRL_Q     2063
+#define IDC_MACRO_SHIFT_CTRL_R     2064
+#define IDC_MACRO_SHIFT_CTRL_S     2065
+#define IDC_MACRO_SHIFT_CTRL_T     2066
+#define IDC_MACRO_SHIFT_CTRL_U     2067
+#define IDC_MACRO_SHIFT_CTRL_W     2068
+#define IDC_MACRO_SHIFT_CTRL_X     2069
+#define IDC_MACRO_SHIFT_CTRL_Y     2070
+#define IDC_MACRO_SHIFT_CTRL_Z     2071
     
 #define IDC_MACRO_SAVE       2254
 #define IDC_MACRO_CANCEL     2255
@@ -160,7 +208,7 @@ extern "C" {
     
     
     const uint8 SETTINGS_COUNT = 5;
-    const uint8 MAX_MACROS = 24;
+    const uint8 MAX_MACROS = 72;
     
     char *MacroLabels[] = 
     {
@@ -188,6 +236,54 @@ extern "C" {
         "Shift+F10",
         "Shift+F11",
         "Shift+F12",
+        "Ctrl+A",
+        "Ctrl+B",
+        "Ctrl+D",
+        "Ctrl+E",
+        "Ctrl+F",
+        "Ctrl+G",
+        "Ctrl+H",
+        "Ctrl+I",
+        "Ctrl+J",
+        "Ctrl+K",
+        "Ctrl+L",
+        "Ctrl+M",
+        "Ctrl+N",
+        "Ctrl+O",
+        "Ctrl+P",
+        "Ctrl+Q",
+        "Ctrl+R",
+        "Ctrl+S",
+        "Ctrl+T",
+        "Ctrl+U",
+        "Ctrl+W",
+        "Ctrl+X",
+        "Ctrl+Y",
+        "Ctrl+Z",
+        "Shift+Ctrl+A",
+        "Shift+Ctrl+B",
+        "Shift+Ctrl+D",
+        "Shift+Ctrl+E",
+        "Shift+Ctrl+F",
+        "Shift+Ctrl+G",
+        "Shift+Ctrl+H",
+        "Shift+Ctrl+I",
+        "Shift+Ctrl+J",
+        "Shift+Ctrl+K",
+        "Shift+Ctrl+L",
+        "Shift+Ctrl+M",
+        "Shift+Ctrl+N",
+        "Shift+Ctrl+O",
+        "Shift+Ctrl+P",
+        "Shift+Ctrl+Q",
+        "Shift+Ctrl+R",
+        "Shift+Ctrl+S",
+        "Shift+Ctrl+T",
+        "Shift+Ctrl+U",
+        "Shift+Ctrl+W",
+        "Shift+Ctrl+X",
+        "Shift+Ctrl+Y",
+        "Shift+Ctrl+Z",
     };
     
     uint16 MacroIDs[] = 
@@ -216,6 +312,54 @@ extern "C" {
         IDC_MACRO_SHIFT_F10,
         IDC_MACRO_SHIFT_F11,
         IDC_MACRO_SHIFT_F12,
+        IDC_MACRO_CTRL_A,
+        IDC_MACRO_CTRL_B,
+        IDC_MACRO_CTRL_D,
+        IDC_MACRO_CTRL_E,
+        IDC_MACRO_CTRL_F,
+        IDC_MACRO_CTRL_G,
+        IDC_MACRO_CTRL_H,
+        IDC_MACRO_CTRL_I,
+        IDC_MACRO_CTRL_J,
+        IDC_MACRO_CTRL_K,
+        IDC_MACRO_CTRL_L,
+        IDC_MACRO_CTRL_M,
+        IDC_MACRO_CTRL_N,
+        IDC_MACRO_CTRL_O,
+        IDC_MACRO_CTRL_P,
+        IDC_MACRO_CTRL_Q,
+        IDC_MACRO_CTRL_R,
+        IDC_MACRO_CTRL_S,
+        IDC_MACRO_CTRL_T,
+        IDC_MACRO_CTRL_U,
+        IDC_MACRO_CTRL_W,
+        IDC_MACRO_CTRL_X,
+        IDC_MACRO_CTRL_Y,
+        IDC_MACRO_CTRL_Z,
+        IDC_MACRO_SHIFT_CTRL_A,
+        IDC_MACRO_SHIFT_CTRL_B,
+        IDC_MACRO_SHIFT_CTRL_D,
+        IDC_MACRO_SHIFT_CTRL_E,
+        IDC_MACRO_SHIFT_CTRL_F,
+        IDC_MACRO_SHIFT_CTRL_G,
+        IDC_MACRO_SHIFT_CTRL_H,
+        IDC_MACRO_SHIFT_CTRL_I,
+        IDC_MACRO_SHIFT_CTRL_J,
+        IDC_MACRO_SHIFT_CTRL_K,
+        IDC_MACRO_SHIFT_CTRL_L,
+        IDC_MACRO_SHIFT_CTRL_M,
+        IDC_MACRO_SHIFT_CTRL_N,
+        IDC_MACRO_SHIFT_CTRL_O,
+        IDC_MACRO_SHIFT_CTRL_P,
+        IDC_MACRO_SHIFT_CTRL_Q,
+        IDC_MACRO_SHIFT_CTRL_R,
+        IDC_MACRO_SHIFT_CTRL_S,
+        IDC_MACRO_SHIFT_CTRL_T,
+        IDC_MACRO_SHIFT_CTRL_U,
+        IDC_MACRO_SHIFT_CTRL_W,
+        IDC_MACRO_SHIFT_CTRL_X,
+        IDC_MACRO_SHIFT_CTRL_Y,
+        IDC_MACRO_SHIFT_CTRL_Z,
     };
     
     

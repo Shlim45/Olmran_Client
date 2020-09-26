@@ -143,6 +143,168 @@ HandleFunctionKey(uint32 VKCode, bool32 ShiftKey)
         HandleMacroString(Macro);
 }
 
+internal void
+HandleCtrlKey(uint32 VKCode, bool32 ShiftKey)
+{
+    if (!GameState.User.Player.LoggedIn)
+        return;
+    
+    bool32 ValidMacro = false;
+    char Macro[256];
+    memset(Macro, 0, 256);
+    
+    switch (VKCode)
+    {
+        case 'a':
+        case 'A':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+A" : "Ctrl+A", Macro, 256);
+        } break;
+        
+        case 'b':
+        case 'B':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+B" : "Ctrl+B", Macro, 256);
+        } break;
+        
+        case 'd':
+        case 'D':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+D" : "Ctrl+D", Macro, 256);
+        } break;
+        
+        case 'e':
+        case 'E':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+E" : "Ctrl+E", Macro, 256);
+        } break;
+        
+        case 'f':
+        case 'F':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+F" : "Ctrl+F", Macro, 256);
+        } break;
+        
+        case 'g':
+        case 'G':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+G" : "Ctrl+G", Macro, 256);
+        } break;
+        
+        case 'h':
+        case 'H':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+H" : "Ctrl+H", Macro, 256);
+        } break;
+        
+        case 'i':
+        case 'I':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+I" : "Ctrl+I", Macro, 256);
+        } break;
+        
+        case 'j':
+        case 'J':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+J" : "Ctrl+J", Macro, 256);
+        } break;
+        
+        case 'k':
+        case 'K':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+K" : "Ctrl+K", Macro, 256);
+        } break;
+        
+        case 'l':
+        case 'L':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+L" : "Ctrl+L", Macro, 256);
+        } break;
+        
+        case 'm':
+        case 'M':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+M" : "Ctrl+M", Macro, 256);
+        } break;
+        
+        case 'n':
+        case 'N':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+N" : "Ctrl+N", Macro, 256);
+        } break;
+        
+        case 'o':
+        case 'O':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+O" : "Ctrl+O", Macro, 256);
+        } break;
+        
+        case 'p':
+        case 'P':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+P" : "Ctrl+P", Macro, 256);
+        } break;
+        
+        case 'q':
+        case 'Q':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+Q" : "Ctrl+Q", Macro, 256);
+        } break;
+        
+        case 'r':
+        case 'R':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+R" : "Ctrl+R", Macro, 256);
+        } break;
+        
+        case 's':
+        case 'S':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+S" : "Ctrl+S", Macro, 256);
+        } break;
+        
+        case 't':
+        case 'T':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+T" : "Ctrl+T", Macro, 256);
+        } break;
+        
+        case 'u':
+        case 'U':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+U" : "Ctrl+U", Macro, 256);
+        } break;
+        
+        case 'w':
+        case 'W':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+W" : "Ctrl+W", Macro, 256);
+        } break;
+        
+        case 'x':
+        case 'X':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+X" : "Ctrl+X", Macro, 256);
+        } break;
+        
+        case 'y':
+        case 'Y':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+Y" : "Ctrl+Y", Macro, 256);
+        } break;
+        
+        case 'z':
+        case 'Z':
+        {
+            ValidMacro = GetMacroString(ShiftKey ? "Shift+Ctrl+Z" : "Ctrl+Z", Macro, 256);
+        } break;
+        
+    }
+    
+    if (ValidMacro)
+        HandleMacroString(Macro);
+}
+
 internal bool32
 SetConfigSetting(char *Setting, bool32 Value)
 {
