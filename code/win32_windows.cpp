@@ -1,3 +1,23 @@
+#ifndef SPI_GETWHEELSCROLLLINES
+#define SPI_GETWHEELSCROLLLINES   104
+#endif
+#include <VersionHelpers.h>
+
+/*********************************************************
+* FUNCTION: GetNumScrollLines
+* Returns : UINT:  Number of scroll lines where WHEEL_PAGESCROLL 
+*           indicates to scroll a page at a time.
+*********************************************************/
+internal UINT 
+GetNumScrollLines()
+{
+    UINT ucNumLines=3;  // 3 is the default
+    
+    if (IsWindowsXPOrGreater())
+        SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &ucNumLines, 0);
+    
+    return ucNumLines;
+}
 
 LRESULT CALLBACK
 Win32MacroWindowCallback(HWND   Window,
@@ -88,6 +108,34 @@ Win32MacroWindowCallback(HWND   Window,
                 default:
                 break; 
             }
+            
+            // Set the position and then retrieve it.  Due to adjustments
+            // by Windows it may not be the same as the value set.
+            si.fMask = SIF_POS;
+            SetScrollInfo (Window, SB_VERT, &si, TRUE);
+            GetScrollInfo (Window, SB_VERT, &si);
+            
+            // If the position has changed, scroll window and update it.
+            if (si.nPos != yPos)
+            {                    
+                ScrollWindow(Window, 0, yChar * (yPos - si.nPos), NULL, NULL);
+                UpdateWindow (Window);
+            }
+            
+        } break;
+        
+        case WM_MOUSEWHEEL:
+        {
+            // Get all the vertial scroll bar information.
+            si.cbSize = sizeof (si);
+            si.fMask  = SIF_ALL;
+            GetScrollInfo (Window, SB_VERT, &si);
+            
+            int zDelta = (GET_WHEEL_DELTA_WPARAM(WParam) / WHEEL_DELTA) * GetNumScrollLines();
+            
+            // Save the position for comparison later on.
+            yPos = si.nPos;
+            si.nPos -= zDelta;
             
             // Set the position and then retrieve it.  Due to adjustments
             // by Windows it may not be the same as the value set.
