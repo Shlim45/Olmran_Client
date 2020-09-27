@@ -19,6 +19,78 @@ GetNumScrollLines()
     return ucNumLines;
 }
 
+internal void
+Win32CreateWindow(WNDCLASSA *WindowClass, WNDPROC WindowProc, 
+                  const char *WindowClassName, const char *WindowTitle, 
+                  HINSTANCE Instance, HWND *Handle,
+                  uint32 ClassStyle, uint32 WindowStyle,
+                  int Width, int Height, int xPos, int yPos)
+{
+    WindowClass->style = ClassStyle;
+    WindowClass->lpfnWndProc = WindowProc;
+    WindowClass->hInstance = Instance;
+    WindowClass->hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+    WindowClass->lpszClassName = WindowClassName;
+    
+    if(RegisterClass(WindowClass))
+    {
+        HWND WindowHandle =
+            CreateWindowExA(
+                            0,
+                            WindowClass->lpszClassName,
+                            WindowTitle,
+                            WindowStyle,
+                            xPos,
+                            yPos,
+                            Width,
+                            Height,
+                            0,
+                            0,
+                            Instance,
+                            0);
+        
+        if(WindowHandle)
+            *Handle = WindowHandle;
+    }
+    
+}
+
+LRESULT CALLBACK
+Win32LoginWindowCallback(HWND   Window,
+                         UINT   Message,
+                         WPARAM WParam,
+                         LPARAM LParam)
+{
+    LRESULT Result = 0;
+    
+    switch(Message)
+    {
+        case WM_CREATE:
+        {
+            Win32CreateLoginWindow(Window);
+        } break;
+        
+        case WM_SHOWWINDOW:
+        case WM_ACTIVATEAPP:
+        {
+            BringWindowToTop(Window);
+        } break;
+        
+        case WM_CLOSE:
+        case WM_DESTROY:
+        {
+            ShowWindow(Window, SW_HIDE);
+        } break;
+        
+        case DM_GETDEFID: break;
+        case DM_SETDEFID: break;
+        
+        default: Result = DefWindowProcA(Window, Message, WParam, LParam);
+    }
+    
+    return Result;
+}
+
 LRESULT CALLBACK
 Win32MacroWindowCallback(HWND   Window,
                          UINT   Message,

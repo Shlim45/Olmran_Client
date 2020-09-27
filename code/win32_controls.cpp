@@ -58,6 +58,33 @@ Win32CreateMacroWindow(HWND Window)
     SetFocus(GetDlgItem(Window,IDC_MACRO_F1));
 }
 
+internal void
+Win32CreateLoginWindow(HWND Window)
+{
+    DWORD dwStyle=WS_CHILD|WS_VISIBLE|WS_TABSTOP;
+    HWND hCtl;
+    
+    HINSTANCE hIns = (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE);
+    
+    hCtl=CreateWindowA("static","Username:",WS_CHILD|WS_VISIBLE,
+                       25,50,100,25,Window,(HMENU)-1,hIns,0);
+    hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle|ES_AUTOHSCROLL,
+                         135,50,225,25,Window,(HMENU)IDC_LOGIN_USERNAME,hIns,0);
+    SendMessageA(hCtl, EM_LIMITTEXT, 50, 0);
+    
+    hCtl=CreateWindowA("static","Password:",WS_CHILD|WS_VISIBLE,
+                       25,90,100,25,Window,(HMENU)-1,hIns,0);
+    hCtl=CreateWindowExA(WS_EX_CLIENTEDGE,"edit","",dwStyle|ES_AUTOHSCROLL|ES_PASSWORD,
+                         135,90,225,25,Window,(HMENU)IDC_LOGIN_PASSWORD,hIns,0);
+    SendMessageA(hCtl, EM_LIMITTEXT, 50, 0);
+    
+    hCtl=CreateWindowA("button","Login",dwStyle|BS_DEFPUSHBUTTON,75,130,120,30,Window,(HMENU)IDC_LOGIN_SUBMIT,hIns,0);
+    hCtl=CreateWindowA("button","Cancel",dwStyle|BS_PUSHBUTTON,210,130,120,30,Window,(HMENU)IDCANCEL,hIns,0);
+    
+    SetWindowTextA(Window, "Login to Olmran");
+    SetFocus(GetDlgItem(Window,IDC_LOGIN_USERNAME));
+}
+
 internal void 
 Win32AddMenus(HWND Window) {
     

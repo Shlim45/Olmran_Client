@@ -193,7 +193,8 @@ Win32ProcessPendingMessages()
     MSG Message;
     while (PeekMessageA(&Message, nullptr, 0, 0, PM_REMOVE))
     {
-        if (IsDialogMessage(GameState.SubWindows.Macros, &Message)) 
+        if (IsDialogMessage(GameState.SubWindows.Macros, &Message)
+            || IsDialogMessage(GameState.SubWindows.Login, &Message)) 
         {
             /* Already handled by dialog manager */
         } 
@@ -238,39 +239,14 @@ ShutdownClient(HANDLE SocketListenThreadHandle)
     KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER);
 }
 
-internal void
-Win32CreateWindow(WNDCLASSA *WindowClass, WNDPROC WindowProc, 
-                  const char *WindowClassName, const char *WindowTitle, 
-                  HINSTANCE Instance, HWND *Handle, 
-                  int Width, int Height, int xPos, int yPos)
+internal bool32
+PromptUserLogin()
 {
-    WindowClass->style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
-    WindowClass->lpfnWndProc = WindowProc;
-    WindowClass->hInstance = Instance;
-    WindowClass->hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-    WindowClass->lpszClassName = WindowClassName;
+    bool32 Result = 0;
     
-    if(RegisterClass(WindowClass))
-    {
-        HWND WindowHandle =
-            CreateWindowExA(
-                            0,
-                            WindowClass->lpszClassName,
-                            WindowTitle,
-                            WS_OVERLAPPEDWINDOW | WS_VSCROLL,
-                            xPos,
-                            yPos,
-                            Width,
-                            Height,
-                            0,
-                            0,
-                            Instance,
-                            0);
-        
-        if(WindowHandle)
-            *Handle = WindowHandle;
-    }
+    ShowWindow(GameState.SubWindows.Login, SW_SHOW);
     
+    return Result;
 }
 
 int CALLBACK
@@ -314,18 +290,35 @@ WinMain(
         {
             GameState.Window = WindowHandle;
             
-            // Create other windows
+            // Create macro window
             WNDCLASSA MacroWindowClass = {}; 
             
-            int MacroWidth = 800;
-            int MacroHeight = 600;
-            int xPos = (GetSystemMetrics(SM_CXSCREEN) - MacroWidth)/2;
-            int yPos = (GetSystemMetrics(SM_CYSCREEN) - MacroHeight)/2;
+            int WindowWidth = 800;
+            int WindowHeight = 600;
+            int xPos = (GetSystemMetrics(SM_CXSCREEN) - WindowWidth)/2;
+            int yPos = (GetSystemMetrics(SM_CYSCREEN) - WindowHeight)/2;
             
             Win32CreateWindow(&MacroWindowClass, Win32MacroWindowCallback, 
                               "MacroWindowClass", "Macro Window", 
                               Instance, &GameState.SubWindows.Macros, 
-                              MacroWidth, MacroHeight, xPos, yPos);
+                              CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
+                              WS_OVERLAPPEDWINDOW | WS_VSCROLL,
+                              WindowWidth, WindowHeight, xPos, yPos);
+            
+            // Create login window
+            WNDCLASSA LoginWindowClass = {}; 
+            
+            WindowWidth = 400;
+            WindowHeight = 300;
+            xPos = (GetSystemMetrics(SM_CXSCREEN) - WindowWidth)/2;
+            yPos = (GetSystemMetrics(SM_CYSCREEN) - WindowHeight)/2;
+            
+            Win32CreateWindow(&LoginWindowClass, Win32LoginWindowCallback, 
+                              "LoginWindowClass", "Login Window", 
+                              Instance, &GameState.SubWindows.Login,
+                              CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
+                              WS_OVERLAPPEDWINDOW,
+                              WindowWidth, WindowHeight, xPos, yPos);
             
             InitializeGameState(&GameState);
 #if OLMRAN_INTERNAL
@@ -353,15 +346,19 @@ WinMain(
                 DWORD ThreadID;
                 HANDLE SocketListenThreadHandle;
                 
-                InitializeSocketConnection(&GameState, &SocketListenThreadHandle, &ThreadID);
+                if (InitializeSocketConnection(&GameState, &SocketListenThreadHandle, &ThreadID))
+                {
+                    LoadConfigSettings();
+                    Win32UpdateMenus();
+                    
+                    PromptUserLogin();
+                    
+                    if (!(GameState.User.Account.Flags & FLAG_CHAT))
+                        ShowWindow(GameState.GameChat.Window, SW_HIDE);
+                    
+                    GlobalRunning = true;
+                }
                 
-                LoadConfigSettings();
-                Win32UpdateMenus();
-                
-                if (!(GameState.User.Account.Flags & FLAG_CHAT))
-                    ShowWindow(GameState.GameChat.Window, SW_HIDE);
-                
-                GlobalRunning = true;
                 while (GlobalRunning)
                 {
                     Win32ProcessPendingMessages();

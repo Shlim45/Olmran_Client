@@ -141,6 +141,7 @@ struct game_display_controls
 
 struct sub_windows
 {
+    HWND Login;
     HWND Macros;
 };
 

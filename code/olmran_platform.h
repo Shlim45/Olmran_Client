@@ -163,7 +163,11 @@ extern "C" {
 #define IDC_MACRO_SHIFT_CTRL_Z     2071
     
 #define IDC_MACRO_SAVE       2254
-#define IDC_MACRO_CANCEL     2255
+    //#define IDC_MACRO_CANCEL     2255
+    
+#define IDC_LOGIN_USERNAME   3000
+#define IDC_LOGIN_PASSWORD   3001
+#define IDC_LOGIN_SUBMIT     3002
     
 #define ID_ACTIONTIMER       255
     
