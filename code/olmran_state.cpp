@@ -73,6 +73,7 @@ CycleThroughUserInputHistory(int8 Direction)
 internal void
 UpdateCommandHistory()
 {
+    bool32 Position = GameState.CommandHistory.CurrentPosition >= 0;
     uint16 BufferSize = GameState.CommandHistory.BufferSize;
     
     if (strcmp(GameState.CommandHistory.CurrentCommand, GameState.CommandHistory.Commands) == 0)
@@ -90,6 +91,10 @@ UpdateCommandHistory()
          Slot >= 0;
          Slot--)
     {
+        // prevent double entries if using up&enter (doesnt prevent retyped doubles not sequential)
+        if (Position && Slot > GameState.CommandHistory.CurrentPosition)
+            continue;
+        
         // clear this buffer slot
         memset(GameState.CommandHistory.Commands + (BufferSize * Slot),
                0, BufferSize);
