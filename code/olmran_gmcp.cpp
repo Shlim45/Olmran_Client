@@ -506,9 +506,24 @@ handleGMCP()
         
         // TODO(jon):  "allIdols", "idolUpdate"
     }
+    else if (strcmp("accountprompt", command) == 0)
+    {
+        ShowWindow(GameState.SubWindows.Login, SW_SHOW);
+    }
+    else if (strcmp("invalidpassword", command) == 0)
+    {
+        MessageBoxA(NULL,//GameState.SubWindows.Login,
+                    "Invalid username and password.",
+                    "Invalid Credentials",
+                    MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
+    }
     else if (strcmp("loggedin", command) == 0)
     {
         GameState.User.Account.Flags |= FLAG_LOGGEDIN;
+        
+        SetWindowTextA(GameState.GameOutput.Window, "");
+        ShowWindow(GameState.SubWindows.Login, SW_HIDE);
+        ShowWindow(GameState.Window, SW_SHOW);
     }
     else if (strcmp("logoff", command) == 0)
     {

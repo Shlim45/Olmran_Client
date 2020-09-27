@@ -55,6 +55,37 @@ Win32CreateWindow(WNDCLASSA *WindowClass, WNDPROC WindowProc,
     
 }
 
+internal void
+HandleUserLogin()
+{
+    if (GameState.User.Account.Flags & FLAG_LOGGEDIN)
+        return;
+    
+    char Username[51];
+    char Password[51];
+    memset(Username, 0, 51);
+    memset(Password, 0, 51);
+    
+    int unLength = GetWindowTextA(GetDlgItem(GameState.SubWindows.Login,IDC_LOGIN_USERNAME), Username, 50);
+    int pwLength = GetWindowTextA(GetDlgItem(GameState.SubWindows.Login,IDC_LOGIN_PASSWORD), Password, 50);
+    
+    if (unLength < 3 || pwLength < 3)
+    {
+        MessageBoxA(GameState.SubWindows.Login,
+                    "Please enter a valid username and password.",
+                    "Fields Required",
+                    MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL
+                    );
+        return;
+    }
+    
+    if (Username && Password)
+    {
+        Win32WriteStringToSocket(Socket.sock, GameState.GameInput, Username);
+        Win32WriteStringToSocket(Socket.sock, GameState.GameInput, Password);
+    }
+}
+
 LRESULT CALLBACK
 Win32LoginWindowCallback(HWND   Window,
                          UINT   Message,

@@ -193,11 +193,30 @@ Win32ProcessPendingMessages()
     MSG Message;
     while (PeekMessageA(&Message, nullptr, 0, 0, PM_REMOVE))
     {
-        if (IsDialogMessage(GameState.SubWindows.Macros, &Message)
-            || IsDialogMessage(GameState.SubWindows.Login, &Message)) 
+        if (IsDialogMessage(GameState.SubWindows.Macros, &Message)) 
         {
             /* Already handled by dialog manager */
         } 
+        else if (IsDialogMessage(GameState.SubWindows.Login, &Message))
+        {
+            uint32 VKCode = (uint32) Message.wParam;
+            bool32 WasDown = ((Message.lParam & (1 << 30)) != 0);
+            bool32 IsDown = ((Message.lParam & (1 << 31)) == 0);
+            
+            if (WasDown != IsDown)
+            {
+                if (VKCode == VK_RETURN)
+                {
+                    HandleUserLogin();
+                }
+                else if (VKCode == VK_ESCAPE)
+                {
+                    SetWindowTextA(GameState.GameInput.Window, "");
+                    GameState.CommandHistory.CurrentPosition = -1;
+                }
+            }
+            
+        }
         else
         {
             switch(Message.message)
@@ -239,16 +258,6 @@ ShutdownClient(HANDLE SocketListenThreadHandle)
     KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER);
 }
 
-internal bool32
-PromptUserLogin()
-{
-    bool32 Result = 0;
-    
-    ShowWindow(GameState.SubWindows.Login, SW_SHOW);
-    
-    return Result;
-}
-
 int CALLBACK
 WinMain(
         HINSTANCE   Instance,
@@ -276,7 +285,7 @@ WinMain(
                             0,
                             WindowClass.lpszClassName,
                             "Olmran Client",
-                            WS_OVERLAPPEDWINDOW|WS_SIZEBOX|WS_VISIBLE,
+                            WS_OVERLAPPEDWINDOW|WS_SIZEBOX,//|WS_VISIBLE,
                             CW_USEDEFAULT,
                             CW_USEDEFAULT,
                             CW_USEDEFAULT,
@@ -350,8 +359,6 @@ WinMain(
                 {
                     LoadConfigSettings();
                     Win32UpdateMenus();
-                    
-                    PromptUserLogin();
                     
                     if (!(GameState.User.Account.Flags & FLAG_CHAT))
                         ShowWindow(GameState.GameChat.Window, SW_HIDE);
