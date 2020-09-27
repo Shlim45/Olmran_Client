@@ -74,6 +74,18 @@ internal void
 UpdateCommandHistory()
 {
     uint16 BufferSize = GameState.CommandHistory.BufferSize;
+    
+    if (strcmp(GameState.CommandHistory.CurrentCommand, GameState.CommandHistory.Commands) == 0)
+    {
+        // Clear CurrentCommand buffer
+        memset(GameState.CommandHistory.CurrentCommand, 0, GameState.CommandHistory.CurrentSize);
+        
+        // Reset position
+        GameState.CommandHistory.CurrentPosition = -1;
+        
+        return;
+    }
+    
     for (int Slot = GameState.CommandHistory.NumberOfCommands - 1;
          Slot >= 0;
          Slot--)
