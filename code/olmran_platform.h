@@ -363,7 +363,7 @@ extern "C" {
     };
     
     
-#if 1
+#if OLMRAN_INTERNAL
     // Connect to local server
 #define HOST_ADDRESS "192.168.1.208"
 #else

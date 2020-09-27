@@ -131,14 +131,14 @@ Win32MacroWindowCallback(HWND   Window,
             si.fMask  = SIF_ALL;
             GetScrollInfo (Window, SB_VERT, &si);
             
-            int zDelta = (GET_WHEEL_DELTA_WPARAM(WParam) / WHEEL_DELTA) * GetNumScrollLines();
+            int yScroll = (GET_WHEEL_DELTA_WPARAM(WParam) / WHEEL_DELTA) * GetNumScrollLines();
             
             // Save the position for comparison later on.
             yPos = si.nPos;
-            si.nPos -= zDelta;
             
             // Set the position and then retrieve it.  Due to adjustments
             // by Windows it may not be the same as the value set.
+            si.nPos -= yScroll;
             si.fMask = SIF_POS;
             SetScrollInfo (Window, SB_VERT, &si, TRUE);
             GetScrollInfo (Window, SB_VERT, &si);
