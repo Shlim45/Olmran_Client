@@ -238,6 +238,41 @@ ShutdownClient(HANDLE SocketListenThreadHandle)
     KillTimer(GameState.Display.ActionTimer, ID_ACTIONTIMER);
 }
 
+internal void
+Win32CreateWindow(WNDCLASSA *WindowClass, WNDPROC WindowProc, 
+                  const char *WindowClassName, const char *WindowTitle, 
+                  HINSTANCE Instance, HWND *Handle, 
+                  int Width, int Height, int xPos, int yPos)
+{
+    WindowClass->style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
+    WindowClass->lpfnWndProc = WindowProc;
+    WindowClass->hInstance = Instance;
+    WindowClass->hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+    WindowClass->lpszClassName = WindowClassName;
+    
+    if(RegisterClass(WindowClass))
+    {
+        HWND WindowHandle =
+            CreateWindowExA(
+                            0,
+                            WindowClass->lpszClassName,
+                            WindowTitle,
+                            WS_OVERLAPPEDWINDOW | WS_VSCROLL,
+                            xPos,
+                            yPos,
+                            Width,
+                            Height,
+                            0,
+                            0,
+                            Instance,
+                            0);
+        
+        if(WindowHandle)
+            *Handle = WindowHandle;
+    }
+    
+}
+
 int CALLBACK
 WinMain(
         HINSTANCE   Instance,
@@ -280,39 +315,17 @@ WinMain(
             GameState.Window = WindowHandle;
             
             // Create other windows
+            WNDCLASSA MacroWindowClass = {}; 
             
-            WNDCLASSA MacroWindowClass = {};
-            MacroWindowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
-            MacroWindowClass.lpfnWndProc = Win32MacroWindowCallback;
-            MacroWindowClass.hInstance = Instance;
-            MacroWindowClass.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
-            MacroWindowClass.lpszClassName = "MacroWindowClass";
+            int MacroWidth = 800;
+            int MacroHeight = 600;
+            int xPos = (GetSystemMetrics(SM_CXSCREEN) - MacroWidth)/2;
+            int yPos = (GetSystemMetrics(SM_CYSCREEN) - MacroHeight)/2;
             
-            if(RegisterClass(&MacroWindowClass))
-            {
-                int MacroWidth = 800;
-                int MacroHeight = 600;
-                int xPos = (GetSystemMetrics(SM_CXSCREEN) - MacroWidth)/2;
-                int yPos = (GetSystemMetrics(SM_CYSCREEN) - MacroHeight)/2;
-                
-                HWND MacroWindowHandle =
-                    CreateWindowExA(
-                                    0,
-                                    MacroWindowClass.lpszClassName,
-                                    "Macro Window",
-                                    WS_OVERLAPPEDWINDOW | WS_VSCROLL,
-                                    xPos,
-                                    yPos,
-                                    MacroWidth,
-                                    MacroHeight,
-                                    0,
-                                    0,
-                                    Instance,
-                                    0);
-                
-                if(MacroWindowHandle)
-                    GameState.SubWindows.Macros = MacroWindowHandle;
-            }
+            Win32CreateWindow(&MacroWindowClass, Win32MacroWindowCallback, 
+                              "MacroWindowClass", "Macro Window", 
+                              Instance, &GameState.SubWindows.Macros, 
+                              MacroWidth, MacroHeight, xPos, yPos);
             
             InitializeGameState(&GameState);
 #if OLMRAN_INTERNAL
