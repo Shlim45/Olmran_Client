@@ -31,14 +31,14 @@ Win32CreateMacroWindow(HWND Window)
     
     HINSTANCE hIns = (HINSTANCE) GetWindowLongPtr(Window, GWLP_HINSTANCE);
     
-    uint8 LabelWidth  = 75;
+    uint8 LabelWidth  = 90;
     uint8 LabelHeight = 25;
     
     uint16 EditWidth = 600;
     uint8 EditHeight = 25;
     
     uint8 LabelX = 10;
-    uint8 EditX  = 100;
+    uint8 EditX  = 110;
     uint16 PosY = 10;
     
     for (uint16 Index = 0; Index < MAX_MACROS; Index++)

@@ -5,6 +5,14 @@ Win32MacroWindowCallback(HWND   Window,
                          WPARAM WParam,
                          LPARAM LParam)
 {
+    //HDC hdc; 
+    //PAINTSTRUCT ps; 
+    SCROLLINFO si;
+    local_persist int xClient; // width of client area 
+    local_persist int yClient; // height of client area 
+    local_persist int yChar;   // v scroll unit
+    local_persist int yPos;    // v scroll position
+    
     LRESULT Result = 0;
     
     switch(Message)
@@ -12,6 +20,93 @@ Win32MacroWindowCallback(HWND   Window,
         case WM_CREATE:
         {
             Win32CreateMacroWindow(Window);
+            yChar = 40;
+        } break;
+        
+        case WM_SIZE: 
+        {
+            // Retrieve the dimensions of the client area. 
+            yClient = HIWORD (LParam); 
+            xClient = LOWORD (LParam); 
+            
+            // Set the vertical scrolling range and page size
+            si.cbSize = sizeof(si); 
+            si.fMask  = SIF_RANGE | SIF_PAGE; 
+            si.nMin   = 0; 
+            si.nMax   = MAX_MACROS + 1; 
+            si.nPage  = yClient / yChar; 
+            SetScrollInfo(Window, SB_VERT, &si, TRUE); 
+        } break; 
+        
+        case WM_VSCROLL:
+        {
+            // Get all the vertial scroll bar information.
+            si.cbSize = sizeof (si);
+            si.fMask  = SIF_ALL;
+            GetScrollInfo (Window, SB_VERT, &si);
+            
+            // Save the position for comparison later on.
+            yPos = si.nPos;
+            switch (LOWORD (WParam))
+            {
+                
+                // User clicked the HOME keyboard key.
+                case SB_TOP:
+                si.nPos = si.nMin;
+                break;
+                
+                // User clicked the END keyboard key.
+                case SB_BOTTOM:
+                si.nPos = si.nMax;
+                break;
+                
+                // User clicked the top arrow.
+                case SB_LINEUP:
+                si.nPos -= 1;
+                break;
+                
+                // User clicked the bottom arrow.
+                case SB_LINEDOWN:
+                si.nPos += 1;
+                break;
+                
+                // User clicked the scroll bar shaft above the scroll box.
+                case SB_PAGEUP:
+                si.nPos -= si.nPage;
+                break;
+                
+                // User clicked the scroll bar shaft below the scroll box.
+                case SB_PAGEDOWN:
+                si.nPos += si.nPage;
+                break;
+                
+                // User dragged the scroll box.
+                case SB_THUMBTRACK:
+                si.nPos = si.nTrackPos;
+                break;
+                
+                default:
+                break; 
+            }
+            
+            // Set the position and then retrieve it.  Due to adjustments
+            // by Windows it may not be the same as the value set.
+            si.fMask = SIF_POS;
+            SetScrollInfo (Window, SB_VERT, &si, TRUE);
+            GetScrollInfo (Window, SB_VERT, &si);
+            
+            // If the position has changed, scroll window and update it.
+            if (si.nPos != yPos)
+            {                    
+                ScrollWindow(Window, 0, yChar * (yPos - si.nPos), NULL, NULL);
+                UpdateWindow (Window);
+            }
+            
+        } break;
+        
+        case WM_PAINT :
+        {
+            Win32HandlePaint(Window, 0);
         } break;
         
         case WM_SHOWWINDOW:
@@ -47,11 +142,6 @@ Win32MacroWindowCallback(HWND   Window,
                 } break;
             }
             
-        } break;
-        
-        case WM_PAINT:
-        {
-            Win32HandlePaint(Window, 0);
         } break;
         
         case WM_CLOSE:
